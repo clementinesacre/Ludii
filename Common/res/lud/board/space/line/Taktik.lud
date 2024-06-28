@@ -1,0 +1,71 @@
+//-----------------------------------------------
+// Main routine
+
+(game "Taktik"
+    (players 2)
+    (equipment {
+        (board (rotate 90 (hex Prism 5 8)))
+        (piece "Ball" Each)
+        (piece "Square" Neutral)
+    })
+    (rules
+        (start {
+            (place "Square0" {"A5" "A4" "A3" "B5" "B6" "C7" "J3" "K4" "K5" "L5" "L6" "L7"})
+            (place "Ball1" (coord "A2"))
+            (place "Ball1" (coord "D8"))
+            (place "Ball1" (coord "K6"))
+            (place "Ball1" (coord "J4"))
+            (place "Ball2" (coord "B4"))
+            (place "Ball2" (coord "C6"))
+            (place "Ball2" (coord "L8"))
+            (place "Ball2" (coord "I2"))
+        })
+        (play (move Add (to (sites Empty))))
+        (end ("Line3Win"))
+    )
+)
+
+//---------------------------------------------
+// Options
+
+(option "Board Size" <Board> args:{<side> <area> <white> <black>}
+    {
+    (item "Order 4"
+        <5>
+        <(sites Inner)>
+        <(place "Ball1" {7 12 15 21 24 28 31 38 41 44 47 52})>
+        <(place "Ball2" {8 13 16 19 22 29 32 36 39 45 48 53})>
+    "Order 4 board")*
+
+    (item "Order 5"
+        <5>
+        <(sites Board)>
+        <(place "Ball1" {0 3 7 10 12 15 18 21 24 28 31 34 35 38 41 44 47 52 55 56 59})>
+        <(place "Ball2" {1 4 5 8 13 16 19 22 25 26 29 32 36 39 42 45 48 50 53 57 60})>
+    "Order 5 board")
+    }
+)
+
+//---------------------------------------------
+
+(metadata
+    (info {
+        (description "Invented in 1988 by Walter Zamkauskas and first published in the Argentine magzine El Acertijo in December 1992.")
+        (rules "F")
+        (source "https://en.wikipedia.org/wiki/Game_of_the_Amazons")
+        (version "1.0.0")
+        (classification "board/space/blocking")
+        (author "Walter Zamkauskas")
+        (credit "Eric Piette")
+        (origin "This game is from Argentina, on 1988.")
+    })
+    (graphics {
+        (piece Scale "Square" 0.5)
+        (piece Colour "Square" fillColour:(colour Black))
+        (piece Scale "Ball" 0.6)
+        (board Style Board)
+    })
+    (ai
+        "Amazons_ai"
+    )
+)
