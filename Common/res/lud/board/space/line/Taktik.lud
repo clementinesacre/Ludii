@@ -5,7 +5,8 @@
     (players 2)
     (equipment {
         (board (rotate 90 (hex Prism 5 8)))
-        (piece "Ball" Each)
+        //(piece "Ball" Each)
+        (piece "Ball" Each (move Slide (directions {FL FR BL BR Rightward Leftward} of:All)))
         (piece "Square" Neutral)
     })
     (rules
@@ -20,8 +21,8 @@
             (place "Ball2" (coord "L8"))
             (place "Ball2" (coord "I2"))
         })
-        (play (move Add (to (sites Empty))))
-        (end ("Line3Win"))
+        (play (forEach Piece))
+        (end (if (is Line 4) (result Mover Win)))
     )
 )
 
