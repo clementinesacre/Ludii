@@ -5,7 +5,6 @@
     (players 2)
     (equipment {
         (board (rotate 90 (hex Prism 5 8)))
-        //(piece "Ball" Each)
         (piece "Ball" Each (move Slide (directions {FL FR BL BR Rightward Leftward} of:All)))
         (piece "Square" Neutral)
     })
@@ -26,26 +25,6 @@
     )
 )
 
-//---------------------------------------------
-// Options
-
-(option "Board Size" <Board> args:{<side> <area> <white> <black>}
-    {
-    (item "Order 4"
-        <5>
-        <(sites Inner)>
-        <(place "Ball1" {7 12 15 21 24 28 31 38 41 44 47 52})>
-        <(place "Ball2" {8 13 16 19 22 29 32 36 39 45 48 53})>
-    "Order 4 board")*
-
-    (item "Order 5"
-        <5>
-        <(sites Board)>
-        <(place "Ball1" {0 3 7 10 12 15 18 21 24 28 31 34 35 38 41 44 47 52 55 56 59})>
-        <(place "Ball2" {1 4 5 8 13 16 19 22 25 26 29 32 36 39 42 45 48 50 53 57 60})>
-    "Order 5 board")
-    }
-)
 
 //---------------------------------------------
 
@@ -66,7 +45,4 @@ GOAL - Wins the player that aligns his 4 stones.")
         (piece Scale "Ball" 0.6)
         (board Style Board)
     })
-    (ai
-        "Amazons_ai"
-    )
 )
