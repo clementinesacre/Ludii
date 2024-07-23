@@ -51,14 +51,14 @@
 
 (metadata
     (info {
-        (description "Invented in 1988 by Walter Zamkauskas and first published in the Argentine magzine El Acertijo in December 1992.")
-        (rules "F")
-        (source "https://en.wikipedia.org/wiki/Game_of_the_Amazons")
-        (version "1.0.0")
-        (classification "board/space/blocking")
-        (author "Walter Zamkauskas")
-        (credit "Eric Piette")
-        (origin "This game is from Argentina, on 1988.")
+        (description "Inspired by the traditional Tic-Tac-Toe game beloved of high-school students, Taktik is a simple but highly enjoyable game.")
+        (aliases {"Brainline"})
+        (rules "MOVE - Each stone may slide any number of empty cells on any direction (they cannot jump other stones).
+GOAL - Wins the player that aligns his 4 stones.")
+        (source "https://www.di.fc.ul.pt/~jpn/gv/taktik.htm")
+        (classification "board/space/line")
+        (credit "Clémentine Sacré")
+        (origin "The author and precise year of this game remain unknown, we just know that it was during the 70s.")
     })
     (graphics {
         (piece Scale "Square" 0.5)
