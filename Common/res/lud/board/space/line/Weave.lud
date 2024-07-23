@@ -1,19 +1,21 @@
+(define "ConnectedEdges"
+    (or (is Connected Orthogonal Mover) (is Connected Diagonal Mover))
+)
+
 //-----------------------------------------------
 // Main routine
 (game "Weave"
     (players 2)
     (equipment {
         (board (square 10) use:Vertex)
-        (piece "Ball" Each ("StepToEmpty" Orthogonal))
+        (piece "Ball" Each)
         (hand Each)
+        (regions P1 {(sites Left) (sites Right)})
+        (regions P2 {(sites Top) (sites Bottom)})
     })
     (rules
-        (start {
-            (place "Ball1" (intersection (sites Phase 0) (union (sites Top) (sites Bottom))))
-            (place "Ball2" (intersection (sites Phase 1) (union (sites Top) (sites Bottom))))
-        })
-        (play (forEach Piece))
-        (end ("Line3Win" All))
+        (play (move Add (to (sites Empty))))
+        (end (if "ConnectedEdges" (result Mover Win)))
     )
 )
 
