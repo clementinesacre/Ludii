@@ -7,7 +7,7 @@
 (game "Weave"
     (players 2)
     (equipment {
-        (board (square 10) use:Vertex)
+        (board (square <Board:size>) use:Vertex)
         (piece "Ball" Each)
         (hand Each)
         (regions P1 {(sites Left) (sites Right)})
@@ -18,6 +18,16 @@
         (end (if "ConnectedEdges" (result Mover Win)))
     )
 )
+
+//------------------------------------------------------------------------------
+
+(option "Board Size" <Board> args:{ <size> }
+    {
+    (item "4" <4> "The game is played on a 4x4 board.")
+    (item "6" <6> "The game is played on a 6x6 board.")
+    (item "8" <8> "The game is played on a 8x8 board.")
+    (item "10" <10> "The game is played on a 10x10 board.")*
+})
 
 //------------------------------------------------------------------------------
 
