@@ -34,10 +34,11 @@
         (aliases {"Brainline"})
         (rules "MOVE - Each stone may slide any number of empty cells on any direction (they cannot jump other stones).
 GOAL - Wins the player that aligns his 4 stones.")
-        (source "https://www.di.fc.ul.pt/~jpn/gv/taktik.htm")
+        (source "<a href=\"https://www.di.fc.ul.pt/~jpn/gv/taktik.htm\" target=\"_blank\" class=\"style1\" style=\"color: #0000EE\" />www.di.fc.ul.pt</a>")
+        (author "Berliner Spiele")
         (classification "board/space/line")
         (credit "Clémentine Sacré")
-        (origin "The author and precise year of this game remain unknown, we just know that it was during the 70s.")
+        (date "1978?")
     })
     (graphics {
         (piece Scale "Square" 0.5)
