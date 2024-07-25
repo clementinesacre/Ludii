@@ -5,31 +5,39 @@
     (players 2)
     (equipment {
         (board (rotate 90 (hex 10)))
-        //(piece "Queen" Each (move Slide (then (moveAgain))))
-        //(piece "Dot" Neutral)
         (piece "Disc" Each)
-        (piece "Ring" Each)
+        (piece "Ring" Each (move Slide (directions {Forward Backward} of:All)))
+        (hand Each)
     })
     (rules
-        (start {
-            (place "Disc1" {"D1"})
-            (place "Ring1" {"D2"})
+        (start (place "Ring" "Hand" count:1))
 
-            (place "Disc2" {"A7"})
-            (place "Ring2" {"A8"})
-        })
-        (play
-            (if (is Even (count Moves))
-                (forEach Piece)
-                (move Shoot (piece "Ring1"))
+        phases:{
+            (phase "Placement"
+                (play
+                    (move
+                        (from (handSite Mover))
+                        (to (sites Empty))
+                    )
+                )
+                (nextPhase Mover ("HandEmpty" Mover) "AddingDisc")
             )
-        )
-        (end
-            (if
-                (no Moves Next)
-                (result Mover Win)
+
+            (phase "AddingDisc"
+                (play
+                    (move Add (piece (id "Disc" Mover)) (to (sites Occupied by:Mover)))
+                )
+                (nextPhase "MovingRing")
             )
-        )
+
+            (phase "MovingRing"
+                (play
+                    (forEach Piece "Ring")
+                )
+            )
+        }
+
+        (end (if (no Moves Next) (result Mover Win)))
     )
 )
 
