@@ -59,6 +59,7 @@ GOAL - Wins the player that aligns his 4 stones.")
         (classification "board/space/line")
         (credit "Clémentine Sacré")
         (date "1978?")
+        (version "1.3.12")
     })
     (graphics {
         (piece Scale "Square" 0.5)
