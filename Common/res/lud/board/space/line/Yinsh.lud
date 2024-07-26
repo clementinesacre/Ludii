@@ -12,7 +12,6 @@
     )
 )
 
-
 (define "AddDisk"
     (move
         Add (piece (id "Disc" Mover))
@@ -21,11 +20,13 @@
 )
 
 (define "MoveRing"
-    (move
-        (from (sites Occupied by:Mover component:"Ring"))
-        (to (sites Empty))
+    (forEach Piece "Ring"
         (then (moveAgain))
     )
+)
+
+(define "RingMovements"
+    (move Slide (directions Adjacent))
 )
 
 
@@ -38,11 +39,11 @@
     (equipment {
         (board (rotate 90 (hex 10)))
         (piece "Disc" Each)
-        (piece "Ring" Each (move Slide (directions {Forward Backward} of:All)))
+        (piece "Ring" Each "RingMovements")
         (hand Each)
     })
     (rules
-        (start (place "Ring" "Hand" count:2))
+        (start (place "Ring" "Hand" count:1))
 
         (play
             (if
