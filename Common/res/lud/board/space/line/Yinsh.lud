@@ -1,5 +1,37 @@
+(define "Phase1"
+    (move
+        (from (handSite Mover))
+        (to (sites Empty))
+    )
+)
+
+(define "Phase2"
+    (if ("SameTurn")
+        "AddDisk"
+        "MoveRing"
+    )
+)
+
+
+(define "AddDisk"
+    (move
+        Add (piece (id "Disc" Mover))
+        (to (last From))
+    )
+)
+
+(define "MoveRing"
+    (move
+        (from (sites Occupied by:Mover component:"Ring"))
+        (to (sites Empty))
+        (then (moveAgain))
+    )
+)
+
+
 //-----------------------------------------------
 // Main routine
+
 
 (game "Yinsh"
     (players 2)
@@ -10,34 +42,20 @@
         (hand Each)
     })
     (rules
-        (start (place "Ring" "Hand" count:1))
+        (start (place "Ring" "Hand" count:2))
 
-        phases:{
-            (phase "Placement"
-                (play
-                    (move
-                        (from (handSite Mover))
-                        (to (sites Empty))
-                    )
-                )
-                (nextPhase Mover ("HandEmpty" Mover) "AddingDisc")
+        (play
+            (if
+                ("HandEmpty" Mover)
+                "Phase2"
+                "Phase1"
             )
+        )
 
-            (phase "AddingDisc"
-                (play
-                    (move Add (piece (id "Disc" Mover)) (to (sites Occupied by:Mover)))
-                )
-                (nextPhase "MovingRing")
-            )
-
-            (phase "MovingRing"
-                (play
-                    (forEach Piece "Ring")
-                )
-            )
-        }
-
-        (end (if (no Moves Next) (result Mover Win)))
+        (end {
+            (if (is Line 5 what:(id "Disc" P1)) (result P1 Win))
+            (if (is Line 5 what:(id "Disc" P2)) (result P2 Win))
+        })
     )
 )
 
