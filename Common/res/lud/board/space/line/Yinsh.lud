@@ -25,8 +25,15 @@
     )
 )
 
+(define "AllDiscs"
+    (union (sites Occupied by:Mover component:"Disc") (sites Occupied by:Enemy component:"Disc"))
+)
+
 (define "RingMovements"
-    (move Slide (directions Adjacent))
+    (slide
+        Adjacent
+        (between if:(or (is Empty (to)) (is In (to) "AllDiscs")))
+    )
 )
 
 
