@@ -13,9 +13,16 @@
 )
 
 (define "AddDisk"
-    (move
-        Add (piece (id "Disc" Mover))
-        (to (last From))
+    (if
+         (is Mover P1)
+         (move
+             Add (piece (id "Disc0") state:1)
+             (to (last From))
+         )
+         (move
+             Add (piece (id "Disc0") state:2)
+             (to (last From))
+         )
     )
 )
 
@@ -25,17 +32,17 @@
     )
 )
 
-(define "AllDiscs"
-    (union (sites Occupied by:Mover component:"Disc") (sites Occupied by:Enemy component:"Disc"))
-)
-
 (define "RingMovements"
     (slide
         Adjacent
-        (between if:(or (is Empty (to)) (is In (to) "AllDiscs")))
+        (between
+            if:(or (is Empty (to)) (is In (to) (sites Occupied by:Neutral component:"Disc")))
+            (apply
+                (flip (between))
+            )
+        )
     )
 )
-
 
 //-----------------------------------------------
 // Main routine
@@ -45,7 +52,7 @@
     (players 2)
     (equipment {
         (board (rotate 90 (hex 10)))
-        (piece "Disc" Each)
+        (piece "Disc" Neutral (flips 1 2))
         (piece "Ring" Each "RingMovements")
         (hand Each)
     })
@@ -61,8 +68,9 @@
         )
 
         (end {
-            (if (is Line 5 what:(id "Disc" P1)) (result P1 Win))
-            (if (is Line 5 what:(id "Disc" P2)) (result P2 Win))
+            (if (is Line 5 if:(= (state at:(to)) 1)) (result P1 Win))
+            (if (is Line 5 if:(= (state at:(to)) 2)) (result P2 Win))
+
         })
     )
 )
@@ -84,5 +92,7 @@
         (piece Scale "Disc" 0.8)
         (piece Scale "Ring" 0.8)
         (board Style Board)
+        (piece Colour state:1 fillColour:(colour White))
+        (piece Colour state:2 fillColour:(colour Black))
     })
 )
