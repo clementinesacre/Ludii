@@ -32,15 +32,26 @@
     )
 )
 
-(define "RingMovements"
-    (slide
-        Adjacent
+(define "HopCaptureDistanceDiscs"
+    (move Hop
+        #1
+        #2
         (between
-            if:(or (is Empty (to)) (is In (to) (sites Occupied by:Neutral component:"Disc")))
-            (apply
-                (flip (between))
-            )
+            before:(count Rows)
+            #3
+            after:0
+            if:(is In (between) (sites Occupied by:Neutral component:"Disc"))
+            (apply (flip (between)))
         )
+        (to if:(is Empty (to)))
+        #4
+    )
+)
+
+(define "RingMovements"
+    (or
+        (move Slide)
+        ("HopCaptureDistanceDiscs" (from) Adjacent (range 1 Infinity))
     )
 )
 
@@ -57,7 +68,7 @@
         (hand Each)
     })
     (rules
-        (start (place "Ring" "Hand" count:1))
+        (start (place "Ring" "Hand" count:3))
 
         (play
             (if
@@ -70,7 +81,6 @@
         (end {
             (if (is Line 5 if:(= (state at:(to)) 1)) (result P1 Win))
             (if (is Line 5 if:(= (state at:(to)) 2)) (result P2 Win))
-
         })
     )
 )
