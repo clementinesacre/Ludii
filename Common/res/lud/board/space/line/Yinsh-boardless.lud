@@ -1,0 +1,115 @@
+(define "Phase1"
+    (move
+        (from (handSite Mover))
+        (to (sites Empty))
+    )
+)
+
+
+(define "Phase2"
+    (if ("SameTurn")
+        "AddDisk"
+        "MoveRing"
+    )
+)
+
+(define "AddDisk"
+    (if
+         (is Mover P1)
+         (move
+             Add (piece (id "Disc0") state:1)
+             (to (last From))
+         )
+         (move
+             Add (piece (id "Disc0") state:2)
+             (to (last From))
+         )
+    )
+)
+
+(define "MoveRing"
+    (forEach Piece "Ring"
+        (then (moveAgain))
+    )
+)
+
+(define "HopCaptureDistanceDiscs"
+    (move Hop
+        #1
+        #2
+        (between
+            before:(count Rows)
+            #3
+            after:0
+            if:(is In (between) (sites Occupied by:Neutral component:"Disc"))
+            (apply (flip (between)))
+        )
+        (to if:(is Empty (to)))
+        #4
+    )
+)
+
+(define "RingMovements"
+    (or
+        (move Slide)
+        ("HopCaptureDistanceDiscs" (from) Adjacent (range 1 Infinity))
+    )
+)
+
+
+//-----------------------------------------------
+// Main routine
+
+
+(game "Yinsh-boardless"
+    (players 2)
+        (equipment {
+            //(boardless (rotate 90 (hex 10)))
+            (boardless Hexagonal)
+            (piece "Disc" Neutral (flips 1 2))
+            (piece "Ring" Each "RingMovements")
+            (piece "Hex" Neutral)
+            (hand Each)
+        })
+        (rules
+            (start
+                (place "Ring" "Hand" count:1)
+                (place "Square0" {"A5" "A4" "A3" "B5" "B6" "C7" "J3" "K4" "K5" "L5" "L6" "L7"})
+            )
+
+            (play
+                (if
+                    ("HandEmpty" Mover)
+                    "Phase2"
+                    "Phase1"
+                )
+            )
+
+            (end {
+                (if (no Moves Next) (result Mover Win))
+
+            })
+        )
+)
+
+//------------------------------------------------------------------------------
+
+(metadata
+    (info {
+        (description "Yinsh is a French abstract combinatorial strategy game by Kris Burm released in 2003 and published by Don & Co.")
+        (rules "")
+        (source "<a href=\"https://www.jeuxdenim.be/jeu-Yinsh?srsltid=AfmBOoqCkHgkw7ILP9atzxYEfuy1raTChToPxVjVafPx7WVwOXbuM0bW\" target=\"_blank\" class=\"style1\" style=\"color: #0000EE\" />www.di.fc.ul.pt</a>")
+        (version "1.3.12")
+        (classification "board/space/line")
+        (author "Kris Burm")
+        (credit "Clémentine Sacré")
+        (date "2003")
+    })
+    (graphics {
+        (piece Scale "Disc" 0.8)
+        (piece Scale "Ring" 0.8)
+        //(board Style Board)
+        (piece Colour state:1 fillColour:(colour White))
+        (piece Colour state:2 fillColour:(colour Black))
+    })
+)
