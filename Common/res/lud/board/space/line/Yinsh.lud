@@ -5,22 +5,10 @@
     )
 )
 
-(define "Clem"
-    (forEach
-        Site
-        (sites Board)
-        if:(is Line 3 if:(is In (sites State 1)))
-        (result P1 Win)
-    )
-)
-
 (define "Phase2"
-    (do
-        (if ("SameTurn")
-            "AddDisk"
-            "MoveRing"
-        )
-        next:"Clem"
+    (if ("SameTurn")
+        "AddDisk"
+        "MoveRing"
     )
 )
 
@@ -67,58 +55,19 @@
     )
 )
 
-(define "VerticalLine2"
-    (<= 3 (count Sites
-            in:(forEach (sites Row 0)
-                if:(all Sites (sites Column (column of:(site))) if:(= 1 (state at:(site))))
-            )
-    ))
-)
-
-(define "HorizontalLine2"
-    (<= 3 (count Sites
-            in:(forEach (sites Column 0)
-                if:(all Sites (sites Row (row of:(site))) if:(= 1 (state at:(site))))
-            )
-    ))
-)
-
 (define "IsLine"
-    (not
-        (all Sites
-            (sites Occupied by:Neutral component:"Disc")
-            if:(and
-                    (not (is Line 2 through:(site)))
-                    (= (state at:(site)) 1)
-               )
-        )
-    )
-)
-
-
-(define "Xxa"
-    (= 3
+    (toBool
         (count Sites
             in:(forEach
-                (sites)
-                //if:(= (what at:(site)) (what at:(coord row:0 column:(column of:(site)))))
-                if:(= (state at:(site)) 1)
+                (sites Occupied by:Neutral component:"Disc")
+                if:(is Line 5
+                    through:(site)
+                    if:(is In (sites State #1))
+                )
             )
         )
     )
 )
-
-(define "Coucou"
-    (forEach Site
-        (sites Board)
-        if:(is Line 3
-            (site)
-            if:(is In (sites State 1))
-        )
-        (result P1 Win)
-    )
-)
-
 
 //-----------------------------------------------
 // Main routine
@@ -133,7 +82,7 @@
         (hand Each)
     })
     (rules
-        (start (place "Ring" "Hand" count:1))
+        (start (place "Ring" "Hand" count:3))
 
         (play
             (if
@@ -144,25 +93,8 @@
         )
 
         (end {
-            //(if (is Line 3 what:(id "Disc") if:(= (state at:(site)) 1)) (result P1 Win))
-            //(if (is Line 3 what:(id "Disc") if:(= (state at:(site)) 2)) (result P2 Win))
-
-            //(if (is Line 3 if:(= (state at:(last From)) 1)) (result P1 Win))
-            //(if (is Line 3 if:(= (state at:(last From)) 2)) (result P2 Win))
-            //(if (or ("VerticalLine2") ("HorizontalLine2")) (result P1 Win))
-
-            //(if ("IsLine") (result P1 Win))
-            //(if (is Line 3 All if:(= (state at:(to)) 1)) (result P1 Win))
-            //(if (is Line 3) (result P1 Win))
-
-            //(if (is Line 3 if:(is In (to) (sites Mover))) (result P1 Win))
-            //(if (is Line 3 if:(is In (sites State 1))) (result P1 Win))
-            //(if (is Line 3 if:(is In (sites State 2))) (result P2 Win))
-
-
-
-            (if (no Moves Next) (result Mover Win))
-
+            (if ("IsLine" 1) (result P1 Win))
+            (if ("IsLine" 2) (result P2 Win))
         })
     )
 )
