@@ -5,7 +5,6 @@
     )
 )
 
-
 (define "Phase2"
     (if ("SameTurn")
         "AddDisk"
@@ -56,26 +55,39 @@
     )
 )
 
+(define "IsLine"
+    (toBool
+        (count Sites
+            in:(forEach
+                (sites Occupied by:Neutral component:"Disc")
+                if:(is Line 5
+                    through:(site)
+                    if:(is In (sites State #1))
+                )
+            )
+        )
+    )
+)
 
 //-----------------------------------------------
 // Main routine
 
-
 (game "Yinsh-boardless"
     (players 2)
         (equipment {
-            //(boardless (rotate 90 (hex 10)))
             (boardless Hexagonal)
             (piece "Disc" Neutral (flips 1 2))
             (piece "Ring" Each "RingMovements")
-            (piece "Hex" Neutral)
+            (tile "Hex" Neutral)
             (hand Each)
         })
         (rules
-            (start
-                (place "Ring" "Hand" count:1)
-                (place "Square0" {"A5" "A4" "A3" "B5" "B6" "C7" "J3" "K4" "K5" "L5" "L6" "L7"})
-            )
+            (start {
+                (place "Ring" "Hand" count:3)
+                (place "Hex0" (centrePoint))
+                (place "Hex0" (ahead (centrePoint) E))
+                (place "Hex0" (ahead (centrePoint) W))
+            })
 
             (play
                 (if
@@ -86,8 +98,8 @@
             )
 
             (end {
-                (if (no Moves Next) (result Mover Win))
-
+                (if ("IsLine" 1) (result P1 Win))
+                (if ("IsLine" 2) (result P2 Win))
             })
         )
 )
@@ -108,8 +120,9 @@
     (graphics {
         (piece Scale "Disc" 0.8)
         (piece Scale "Ring" 0.8)
-        //(board Style Board)
         (piece Colour state:1 fillColour:(colour White))
         (piece Colour state:2 fillColour:(colour Black))
+        (piece Colour "Hex0" fillColour:(colour LightGrey))
+        //(board Style Board)
     })
 )
