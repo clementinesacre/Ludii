@@ -57,7 +57,7 @@
 )
 
 (define "IsLine"
-    (toBool
+    (<= 1
         (count Sites
             in:(forEach
                 (sites Occupied by:Neutral component:"Disc")
