@@ -1,7 +1,7 @@
 (define "Phase1"
     (move
         (from (handSite Mover))
-        (to (sites Empty))
+        (to (sites Playable))
     )
 )
 
@@ -44,13 +44,14 @@
             (apply (flip (between)))
         )
         (to if:(is Empty (to)))
+        //(to if:(is Playable (to)))
         #4
     )
 )
 
 (define "RingMovements"
     (or
-        (move Slide)
+        ("StepToEmpty")
         ("HopCaptureDistanceDiscs" (from) Adjacent (range 1 Infinity))
     )
 )
