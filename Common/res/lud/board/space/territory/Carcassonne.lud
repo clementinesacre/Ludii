@@ -65,11 +65,14 @@
         //(date "")
     })
     (graphics {
-        (piece Scale "Disc" 0.8)
-        (piece Colour state:1 fillColour:(colour White))
-        (piece Colour state:2 fillColour:(colour Black))
-        //(piece Colour "Hex0" fillColour:(colour LightGrey))
+        (piece Scale "Disc" 0.4)
         (piece Colour "Square0" fillColour:(colour Black))
+
+        (player Colour P1 (colour Blue))
+        (player Colour P2 (colour Green))
+        (player Colour P3 (colour Yellow))
+        (player Colour P4 (colour Red))
+        (player Colour P5 (colour White))
 
         (board Style Board)
     })
