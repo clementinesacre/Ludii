@@ -1,16 +1,24 @@
-
 (define "PlaceTile"
     (move Add
         (piece (id "Square0"))
         (to
             (sites Around
-                (sites Occupied by:Neutral)
+                (sites Occupied by:All)
                 Orthogonal
                 if:(is Empty (to))
             )
         )
+        (then (moveAgain))
     )
 )
+
+(define "PlaceMeeple"
+    (move Add
+        (to (sites Occupied by:Neutral))
+        stack:True
+    )
+)
+
 //-----------------------------------------------
 // Main routine
 
@@ -25,10 +33,15 @@
         (rules
             (start {
                 (place "Square0" (centrePoint))
+                (place "Square0" (ahead (centrePoint) E))
+                (place "Square0" (ahead (centrePoint) W))
             })
 
             (play
-                "PlaceTile"
+                (if ("SameTurn")
+                    "PlaceMeeple"
+                    "PlaceTile"
+                )
             )
 
             (end (if (no Moves Next) (result Mover Win)))
