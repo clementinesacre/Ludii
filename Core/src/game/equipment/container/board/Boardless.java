@@ -67,6 +67,7 @@ public class Boardless extends Board
 	@Override
 	public boolean isBoardless()
 	{
+		System.out.println("test clementine");
 		return true;
 	}
 
