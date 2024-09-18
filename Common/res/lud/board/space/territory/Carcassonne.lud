@@ -39,7 +39,10 @@
 
             (play
                 (if ("SameTurn")
-                    "PlaceMeeple"
+                    (or
+                        "PlaceMeeple"
+                        (move Pass)
+                    )
                     "PlaceTile"
                 )
             )
