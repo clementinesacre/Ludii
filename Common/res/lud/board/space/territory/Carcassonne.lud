@@ -1,0 +1,60 @@
+
+(define "PlaceTile"
+    (move Add
+        (piece (id "Square0"))
+        (to
+            (sites Around
+                (sites Occupied by:Neutral)
+                Orthogonal
+                if:(is Empty (to))
+            )
+        )
+    )
+)
+//-----------------------------------------------
+// Main routine
+
+(game "Carcassonne"
+    (players 2)
+        (equipment {
+            (boardless Square 11)
+            (piece "Disc" Each)
+            (tile "Square" Neutral)
+            (hand Each)
+        })
+        (rules
+            (start {
+                (place "Square0" (centrePoint))
+            })
+
+            (play
+                "PlaceTile"
+            )
+
+            (end (if (no Moves Next) (result Mover Win)))
+        )
+)
+
+//------------------------------------------------------------------------------
+
+(metadata
+    (info {
+        (description "")
+        (rules "")
+        //(source "<a href=\"https://www.jeuxdenim.be/jeu-Yinsh?srsltid=AfmBOoqCkHgkw7ILP9atzxYEfuy1raTChToPxVjVafPx7WVwOXbuM0bW\" target=\"_blank\" class=\"style1\" style=\"color: #0000EE\" />www.di.fc.ul.pt</a>")
+        (version "1.3.12")
+        (classification "board/space/territory")
+        //(author "")
+        (credit "Clémentine Sacré")
+        //(date "")
+    })
+    (graphics {
+        (piece Scale "Disc" 0.8)
+        (piece Colour state:1 fillColour:(colour White))
+        (piece Colour state:2 fillColour:(colour Black))
+        //(piece Colour "Hex0" fillColour:(colour LightGrey))
+        (piece Colour "Square0" fillColour:(colour Black))
+
+        (board Style Board)
+    })
+)
