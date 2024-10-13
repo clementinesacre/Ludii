@@ -2750,5 +2750,12 @@ public class Topology implements Serializable
 //
 //		return minWalks;
 //	}
+	
+	public void clearTopology()
+	{
+		vertices.clear();
+		edges.clear();
+		cells.clear();
+	}
 
 }

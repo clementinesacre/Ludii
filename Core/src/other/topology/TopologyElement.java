@@ -438,5 +438,18 @@ public abstract class TopologyElement
 	{
 		return supportedAdjacentDirections;
 	}
+	
+	@Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        int topoObject = (int) o;
+        return this.index() == topoObject;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(this.index());
+    }
 
 }

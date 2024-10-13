@@ -1,16 +1,32 @@
 package app.move;
 
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.List;
 
 import app.PlayerApp;
+import app.move.animation.MoveAnimation;
+import app.utils.GUIUtil;
+import app.utils.MVCSetup;
 import app.utils.PuzzleSelectionType;
+import bridge.ViewControllerFactory;
+import game.Game;
 import game.equipment.component.Component;
+import game.equipment.container.Container;
+import game.equipment.container.board.Boardless;
+import game.functions.dim.DimConstant;
+import game.functions.graph.GraphFunction;
+import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
+import game.types.play.RoleType;
 import game.util.directions.AbsoluteDirection;
 import main.Constants;
 import main.collections.FastArrayList;
+import manager.Referee;
+import manager.ai.AIUtil;
+import metadata.Metadata;
 import other.action.Action;
 import other.action.puzzle.ActionReset;
 import other.action.puzzle.ActionSet;
@@ -20,6 +36,7 @@ import other.location.FullLocation;
 import other.location.Location;
 import other.move.Move;
 import other.state.container.ContainerState;
+import other.topology.TopologyElement;
 import other.topology.Vertex;
 import util.ContainerUtil;
 
@@ -41,6 +58,7 @@ public class MoveHandler
 	 */
 	public static boolean tryGameMove(final PlayerApp app, final Location locnFromInfo, final Location locnToInfo, final boolean passMove, final int selectPlayerMove)
 	{
+		System.out.println("MoveHandler.java tryGameMove() out ----------------------------------------------");
 		final Context context = app.manager().ref().context();
 		final Moves legal = context.game().moves(context);
 		final FastArrayList<Move> possibleMoves = new FastArrayList<>();
@@ -129,11 +147,103 @@ public class MoveHandler
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
+				checkMoveImpactOnBoard(app, possibleMoves.get(0));
 				return true; // move found
 			}
 		}
 
 		return false; // move not found
+	}
+	
+	/** 
+	 * Check if user touched an edge of the board by performing a dichotomic search on a TopologyElement list.
+	 * 
+	 * @param topologyElements List into the search needs to be done. Made up of edges element.
+	 * @param target Value we are looking for into the list.
+	 * @return Index of the element in the list if found, -1 otherwise.
+	 */
+	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
+		if (target == Constants.UNDEFINED) return false;
+		
+        int start = 0;
+        int end = topologyElements.size() - 1;
+
+        while (start <= end) {
+            int midIndex = start + (end - start) / 2;
+            int midValue = topologyElements.get(midIndex).index();
+
+            if (midValue == target) {
+                return true;
+            } else if (midValue < target) {
+            	start = midIndex + 1; // Check on right remaining side
+            } else {
+            	end = midIndex - 1; // Check on left remaining side
+            }
+        }
+
+        return false;
+    }
+	
+	/** 
+	 * Update the board dimensions and update the visual to reflect the new size.
+	 *
+	 */
+	private static void updateBoardDimensions(final PlayerApp app, Game game) 
+	{
+		int growingStep = 2;
+		// Test 1
+		//updateBoardSize(); //todo
+		
+		
+		// Test 2
+		//board().init(board().defaultSite(), true);
+		Boardless currBoard = (Boardless) game.board();
+		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(currBoard.getDimension() + growingStep), null, null, null);
+		//Boolean.valueOf(false)
+		game.board().setGraphFunction(newGraphFunction);
+		/*
+		graphicsCache().boardImage() = null; //voir ligne 292 PlayerApp.java
+		bridge.graphicsRenderer().drawBoard(context, g2d, containerPlacement.unscaledPlacement());
+		*/
+		
+		
+
+		
+		// Update the visual 
+		// Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
+		MVCSetup.setMVC(app);
+		
+		// Check this line is useful (inspired from GameUtil.resetUIVariables())
+		EventQueue.invokeLater(() -> 
+		{
+			app.repaint();
+		});
+	}
+
+	
+	/** 
+	 * Check if the move was made on a boardless board and on one edge of the board. 
+	 * If so, update the size of the  board.
+	 *
+	 */
+	private static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
+	{
+		System.out.println("MoveHandler.java tryGameMove() checkMoveImpactOnBoard() in ----------------------------------------------");
+		final Context context = app.manager().ref().context();
+		Game game = context.game();
+		
+		if (game.isBoardless()) 
+		{
+			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+			System.out.println("Movehandler.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
+			if (isTouchingEdge(perimeter, move.to())) 
+			{
+				//todo check that the move is applied on a board type container
+				System.out.println("Movehandler.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
+				updateBoardDimensions(app, game);
+				
+			}
+		}
 	}
 	
 	//-------------------------------------------------------------------------

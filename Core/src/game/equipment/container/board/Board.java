@@ -48,7 +48,7 @@ public class Board extends Container
 	protected Graph graph = null;
 
 	/** The graph function. */
-	private final GraphFunction graphFunction;
+	protected GraphFunction graphFunction;
 	
 	/** The domain of the edge variables. */
 	private Range edgeRange;
@@ -431,4 +431,34 @@ public class Board extends Container
 	{
 		return largeStack;
 	}
+	
+	/**
+	 * Updates the graph function of the board.
+	 * 
+	 * @param newGraphFunction new graph function.
+	 */
+	public void setGraphFunction(GraphFunction newGraphFunction)
+	{
+		graphFunction = newGraphFunction;
+		//updateRanges();
+
+		topology.clearTopology();
+		createTopology(0, 0);
+		
+		
+	}
+	
+	
+	public void updateRanges()
+	{
+		if (vertexRange == null)
+			vertexRange = new Range(new IntConstant(0), new IntConstant(0));
+
+		if (edgeRange == null)
+			edgeRange = new Range(new IntConstant(0), new IntConstant(0));
+
+		if (cellRange == null)
+			cellRange = new Range(new IntConstant(0), new IntConstant(0));
+	}
+
 }
