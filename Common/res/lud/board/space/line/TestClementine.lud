@@ -1,6 +1,36 @@
+(define "Phase1"
+    (move
+        (from (handSite Mover))
+        (to (sites Playable))
+    )
+)
 
+(define "Phase2"
+    (if ("SameTurn")
+        "AddDisk"
+        "MoveRing"
+    )
+)
 
+(define "AddDisk"
+    (if
+         (is Mover P1)
+         (move
+             Add (piece (id "Disc0") state:1)
+             (to (last From))
+         )
+         (move
+             Add (piece (id "Disc0") state:2)
+             (to (last From))
+         )
+    )
+)
 
+(define "MoveRing"
+    (forEach Piece "Ring"
+        (then (moveAgain))
+    )
+)
 
 (define "HopCaptureDistanceDiscs"
     (move Hop
@@ -14,7 +44,6 @@
             (apply (flip (between)))
         )
         (to if:(is Empty (to)))
-        //(to if:(is Playable (to)))
         #4
     )
 )
@@ -46,26 +75,44 @@
 (game "TestClementine"
     (players 2)
         (equipment {
-            (boardless Hexagonal 10)
+            (boardless <Tiling:type> 5)
             (piece "Disc" Neutral (flips 1 2))
             (piece "Ring" Each "RingMovements")
-            (tile "Hex" Neutral)
+            (tile <Tiling:tile> Neutral)
             (hand Each)
         })
         (rules
             (start {
-                (place "Hex0" (centrePoint))
+                (place "Ring" "Hand" count:3)
+                (place <Tiling:piece0> (centrePoint))
+                (place <Tiling:piece0> (ahead (centrePoint) E))
+                (place <Tiling:piece0> (ahead (centrePoint) W))
             })
 
             (play
-                (forEach Piece "Ring")
+                (if
+                    ("HandEmpty" Mover)
+                    "Phase2"
+                    "Phase1"
+                )
             )
 
             (end {
                 (if ("IsLine" 1) (result P1 Win))
+                (if ("IsLine" 2) (result P2 Win))
             })
         )
 )
+
+//------------------------------------------------------------------------------
+
+(option "Tiling" <Tiling> args:{ <type> <tile> <numSides> <piece0> }
+{
+    (item "Hexagonal" <Hexagonal> <"Hex"> <numSides:6> <"Hex0"> "The game uses hexagonal tiles.")
+    (item "Square" <Square>  <"Square"> <numSides:4> <"Square0"> "The game uses square tiles")**
+    (item "Triangle" <Triangular> <"Triangle"> <numSides:3> <"Triangle0"> "The game uses triangle tiles")
+    //(item "Rectangle" <Rectangle> <"Rectangle"> <numSides:4> <"Rectangle0"> "The game uses rectangle tiles")
+})
 
 //------------------------------------------------------------------------------
 
