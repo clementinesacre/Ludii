@@ -884,6 +884,7 @@ public class DesktopApp extends PlayerApp
 	@Override
 	public void repaint()
 	{
+		System.out.println("DesktopApp.java repaint()");
 		view.isPainting = true;
 		view.repaint();
 		view.revalidate();
@@ -1033,6 +1034,7 @@ public class DesktopApp extends PlayerApp
 	@Override
 	public void repaint(final Rectangle rect)
 	{
+		System.out.println("DesktopApp.java repaint(rect) rect : "+rect);
 		view.repaint(rect);
 	}
 

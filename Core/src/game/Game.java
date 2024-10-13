@@ -19,11 +19,13 @@ import org.apache.commons.rng.RandomProviderState;
 
 import annotations.Hide;
 import annotations.Opt;
+//import app.PlayerApp;
 import game.equipment.Equipment;
 import game.equipment.Item;
 import game.equipment.component.Component;
 import game.equipment.container.Container;
 import game.equipment.container.board.Board;
+import game.equipment.container.board.Boardless;
 import game.equipment.container.board.Track;
 import game.equipment.container.other.Deck;
 import game.equipment.container.other.Dice;
@@ -33,6 +35,7 @@ import game.functions.booleans.deductionPuzzle.ForAll;
 import game.functions.booleans.is.Is;
 import game.functions.booleans.is.IsLineType;
 import game.functions.dim.DimConstant;
+import game.functions.dim.DimFunction;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.functions.ints.IntConstant;
 import game.functions.ints.IntFunction;
@@ -111,6 +114,8 @@ import other.topology.Topology;
 import other.topology.TopologyElement;
 import other.translation.LanguageUtils;
 import other.trial.Trial;
+import game.functions.graph.GraphFunction;
+//import app.DesktopApp;
 
 /**
  * Defines the main ludeme that describes the players, mode, equipment and rules of a game.
@@ -120,6 +125,7 @@ import other.trial.Trial;
 public class Game extends BaseLudeme implements API, Serializable
 {
 	private static final long serialVersionUID = 1L;
+	//private PlayerApp app = null;
 
 	//-------------------------------------------------------------------------
 
@@ -2978,8 +2984,37 @@ public class Game extends BaseLudeme implements API, Serializable
 		return realMoveToApply;
 	}
 	
+	/** 
+	 * Check if user touched an edge of the board by performing a dichotomic search on a TopologyElement list.
+	 * 
+	 * @param topologyElements List into the search needs to be done. Made up of edges element.
+	 * @param target Value we are looking for into the list.
+	 * @return Index of the element in the list if found, -1 otherwise.
+	 */
+	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
+		if (target == Constants.UNDEFINED) return false;
+		
+        int start = 0;
+        int end = topologyElements.size() - 1;
+
+        while (start <= end) {
+            int midIndex = start + (end - start) / 2;
+            int midValue = topologyElements.get(midIndex).index();
+
+            if (midValue == target) {
+                return true;
+            } else if (midValue < target) {
+            	start = midIndex + 1; // Check on right remaining side
+            } else {
+            	end = midIndex - 1; // Check on left remaining side
+            }
+        }
+
+        return false;
+    }
+	
 	/**
-	 * Apply a move to the current context
+	 * Applies a move to the current context
 	 * 
 	 * @param context      The context.
 	 * @param move         The move to apply.
@@ -2989,7 +3024,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	 * @return Applied move (with consequents resolved etc.
 	 */
 	public Move apply(final Context context, final Move move, final boolean skipEndRules)
-	{
+	{	        
 		context.getLock().lock();
 		
 		try
@@ -3012,6 +3047,29 @@ public class Game extends BaseLudeme implements API, Serializable
 		finally
 		{
 			context.getLock().unlock();
+
+			/*List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+			System.out.println("Game.java apply() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
+			if (isBoardless() && isTouchingEdge(perimeter, move.to())) 
+			{
+				//todo check that the move is applied on a board type container
+				System.out.println("Game.java apply() : touching an edge in a boardless game --> need to increase board size");
+				
+				
+				// Test 2
+				//board().init(board().defaultSite(), true);
+				Boardless currBoard = (Boardless) board();
+				GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(currBoard.getDimension()+1), null, null, null);
+				//Boolean.valueOf(false)
+				board().setGraphFunction(newGraphFunction);
+				//board().createTopology(0, 0);
+				
+				//graphicsCache().boardImage() = null; //voir ligne 292 PlayerApp.java
+				//bridge.graphicsRenderer().drawBoard(context, g2d, containerPlacement.unscaledPlacement());
+				
+				
+				System.out.println("Game.java apply() OUIIIIIIIIIIIIIII ------------------------------------------------------------------------------------------------------------------------------");
+			}*/
 		}
 	}
 	
@@ -4028,5 +4086,12 @@ public class Game extends BaseLudeme implements API, Serializable
 		
 		return true;
 	}
+	
+	/**
+	 * @param app
+	 */
+	/*public void setPlayerApp(PlayerApp app) {
+		this.app = app;
+	}*/
 
 }

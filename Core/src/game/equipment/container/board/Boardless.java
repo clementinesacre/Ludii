@@ -29,6 +29,7 @@ import other.concept.Concept;
 public class Boardless extends Board
 {
 	private static final long serialVersionUID = 1L;
+	private DimFunction dimension;
 
 	//-------------------------------------------------------------------------
 
@@ -62,12 +63,12 @@ public class Boardless extends Board
 		);
 
 		this.style = ContainerStyleType.Boardless;
+		this.dimension = dimension;
 	}
 
 	@Override
 	public boolean isBoardless()
 	{
-		System.out.println("test clementine");
 		return true;
 	}
 
@@ -106,5 +107,15 @@ public class Boardless extends Board
 	public String toEnglish(final Game game) 
 	{
 		return "table" ;
+	}
+	
+	/**
+	 * Gets the dimension of the board.
+	 * 
+	 * @return dimension of the board.
+	 */
+	public int getDimension()
+	{
+		return this.dimension.eval();
 	}
 }
