@@ -22,7 +22,7 @@ public final class ActionSetPhase extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** The site with the new phase. */
-	private final int to;
+	private int to;
 
 	/** The phase to set. */
 	private final int phase;
@@ -250,6 +250,13 @@ public final class ActionSetPhase extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.SetPhase;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

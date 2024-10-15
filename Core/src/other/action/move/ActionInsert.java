@@ -27,7 +27,7 @@ public final class ActionInsert extends BaseAction
 	private SiteType type;
 
 	/** Site index. */
-	private final int to;
+	private int to;
 
 	/** Level index. */
 	private final int level;
@@ -387,5 +387,13 @@ public final class ActionInsert extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.Insert;
+	}
+	
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 }

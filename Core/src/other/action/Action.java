@@ -269,6 +269,20 @@ public interface Action extends Serializable
 	public void setLevelTo(final int levelB);
 
 	/**
+	 * To set the from location of the action.
+	 * 
+	 * @param from The level to set.
+	 */
+	public void setFrom(final int from);
+
+	/**
+	 * To set the to location of the action.
+	 * 
+	 * @param to The level to set.
+	 */
+	public void setTo(final int to);
+
+	/**
 	 * @return True if the move has to be used in the . . . in the GUI.
 	 */
 	public boolean isOtherMove();

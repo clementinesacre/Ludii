@@ -26,7 +26,7 @@ public final class ActionPromote extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** Site index. */
-	private final int to;
+	private int to;
 
 	/** Level. */
 	private int level = Constants.UNDEFINED;
@@ -420,6 +420,13 @@ public final class ActionPromote extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.Promote;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	/**

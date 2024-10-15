@@ -26,7 +26,7 @@ public final class ActionSetRotation extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** Loc index. */
-	private final int to;
+	private int to;
 
 	/** The new rotation value. */
 	private final int rotation;
@@ -359,6 +359,13 @@ public final class ActionSetRotation extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.SetRotation;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 	
 	//-------------------------------------------------------------------------

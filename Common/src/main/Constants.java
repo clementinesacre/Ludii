@@ -131,6 +131,9 @@ public final class Constants
 
 	/** Size of default board for boardless games. */
 	public static final int SIZE_BOARDLESS = 41;
+
+	/** Size of the board will increase when a player touches one of its edges in a boardless game. */
+	public static final int GROWING_STEP = 2;
 	
 	//-------------------------------------------------------------------------
 	// Emergency game descriptions

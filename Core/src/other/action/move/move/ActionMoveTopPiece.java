@@ -40,13 +40,13 @@ public class ActionMoveTopPiece extends BaseAction
 	private final SiteType typeFrom;
 
 	/** From site index. */
-	private final int from;
+	private int from;
 
 	/** The graph element type of the to site. */
 	private final SiteType typeTo;
 
 	/** To site index. */
-	private final int to;
+	private int to;
 
 	/** Site state value of the to site. */
 	private final int state;
@@ -959,6 +959,20 @@ public class ActionMoveTopPiece extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.Move;
+	}
+	
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

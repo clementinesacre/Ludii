@@ -24,7 +24,7 @@ public final class ActionRemoveNonApplied extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** Location where to remove the component(s). */
-	private final int to;
+	private int to;
 
 	/** The graph element type. */
 	private SiteType type;
@@ -226,6 +226,13 @@ public final class ActionRemoveNonApplied extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.Remove;
+	}
+	
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

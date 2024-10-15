@@ -40,7 +40,7 @@ public final class ActionMoveLevelFrom extends BaseAction
 	private final SiteType typeFrom;
 
 	/** From site index. */
-	private final int from;
+	private int from;
 
 	/** From level index (e.g. stacking game). */
 	private int levelFrom;
@@ -49,7 +49,7 @@ public final class ActionMoveLevelFrom extends BaseAction
 	private final SiteType typeTo;
 
 	/** To site index. */
-	private final int to;
+	private int to;
 
 	/** Site state value of the to site. */
 	private final int state;
@@ -928,6 +928,20 @@ public final class ActionMoveLevelFrom extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.Move;
+	}
+	
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

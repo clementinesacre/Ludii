@@ -31,7 +31,7 @@ public class ActionSetCount extends BaseAction
 	private final int what;
 
 	/** Site index. */
-	private final int to;
+	private int to;
 
 	/** Count. */
 	private final int count;
@@ -384,6 +384,13 @@ public class ActionSetCount extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.SetCount;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

@@ -23,10 +23,10 @@ public final class ActionSelect extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** Location From index. */
-	private final int from;
+	private int from;
 
 	/** Location To index. */
-	private final int to;
+	private int to;
 
 	/** Level From. */
 	private final int levelFrom;
@@ -370,5 +370,18 @@ public final class ActionSelect extends BaseAction
 	{
 		return ActionType.Select;
 	}
+	
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
 
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
+	}
 }

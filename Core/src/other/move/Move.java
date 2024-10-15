@@ -1250,6 +1250,21 @@ public class Move extends BaseAction
 	{
 		this.to = to;
 	}
+	
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
+	}
+
 
 	/**
 	 * @return The between sites of the move whatever the decision action.

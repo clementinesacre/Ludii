@@ -385,6 +385,21 @@ public abstract class BaseAction implements Action
 	{
 		// do nothing in general.
 	}
+	
+
+	@Override
+	public void setFrom(int from) 
+	{
+		// do nothing in general.
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		// do nothing in general.
+		
+	}
 
 	@Override
 	public boolean isOtherMove()
