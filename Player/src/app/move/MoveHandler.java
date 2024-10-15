@@ -1,5 +1,6 @@
 package app.move;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -7,7 +8,9 @@ import java.util.List;
 
 import app.PlayerApp;
 import app.move.animation.MoveAnimation;
+import app.move.MoveVisuals;
 import app.utils.GUIUtil;
+import app.utils.GameUtil;
 import app.utils.MVCSetup;
 import app.utils.PuzzleSelectionType;
 import bridge.ViewControllerFactory;
@@ -38,6 +41,7 @@ import other.move.Move;
 import other.state.container.ContainerState;
 import other.topology.TopologyElement;
 import other.topology.Vertex;
+import other.trial.Trial;
 import util.ContainerUtil;
 
 /**
@@ -58,7 +62,6 @@ public class MoveHandler
 	 */
 	public static boolean tryGameMove(final PlayerApp app, final Location locnFromInfo, final Location locnToInfo, final boolean passMove, final int selectPlayerMove)
 	{
-		System.out.println("MoveHandler.java tryGameMove() out ----------------------------------------------");
 		final Context context = app.manager().ref().context();
 		final Moves legal = context.game().moves(context);
 		final FastArrayList<Move> possibleMoves = new FastArrayList<>();
@@ -156,11 +159,12 @@ public class MoveHandler
 	}
 	
 	/** 
-	 * Check if user touched an edge of the board by performing a dichotomic search on a TopologyElement list.
+	 * Checks if player touched an edge of the board by performing a dichotomic search on a TopologyElement list.
 	 * 
 	 * @param topologyElements List into the search needs to be done. Made up of edges element.
 	 * @param target Value we are looking for into the list.
 	 * @return Index of the element in the list if found, -1 otherwise.
+	 * @author Clémentine.Sacré
 	 */
 	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
 		if (target == Constants.UNDEFINED) return false;
@@ -185,29 +189,27 @@ public class MoveHandler
     }
 	
 	/** 
-	 * Update the board dimensions and update the visual to reflect the new size.
-	 *
+	 * Updates the board dimensions and update the visual to reflect the new size.
+	 * 
+	 * @author Clémentine.Sacré
 	 */
-	private static void updateBoardDimensions(final PlayerApp app, Game game) 
+	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
 	{
-		int growingStep = 2;
 		// Test 1
-		//updateBoardSize(); //todo
+		//updateBoardSize(); // TODO
 		
 		
 		// Test 2
 		//board().init(board().defaultSite(), true);
-		Boardless currBoard = (Boardless) game.board();
-		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(currBoard.getDimension() + growingStep), null, null, null);
-		//Boolean.valueOf(false)
-		game.board().setGraphFunction(newGraphFunction);
+		System.out.println("ModeHandler.java updateBoardDimensions() curr size : "+board.getDimension()+ " - new size : "+(board.getDimension() + Constants.GROWING_STEP));
+		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(board.getDimension() + Constants.GROWING_STEP), null, null, null);
+		board.setGraphFunction(newGraphFunction);
+		
+		board.setDimension(board.getDimension() + Constants.GROWING_STEP);
 		/*
 		graphicsCache().boardImage() = null; //voir ligne 292 PlayerApp.java
 		bridge.graphicsRenderer().drawBoard(context, g2d, containerPlacement.unscaledPlacement());
 		*/
-		
-		
-
 		
 		// Update the visual 
 		// Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -219,16 +221,117 @@ public class MoveHandler
 			app.repaint();
 		});
 	}
+	
+	/** 
+	 * Start over the game on the new board and apply the historic of move mapped to the new board.
+	 * 
+	 * @author Clémentine.Sacré
+	 */
+	private static void remakeTrial(final PlayerApp app, int previousDimensionBoard) 
+	{
+
+		final Context context = app.manager().ref().context();
+		Trial trial = context.trial();
+		
+		//System.out.println("MoveHandler.java remakeTrial() trial : "+trial);
+		//System.out.println("MoveHandler.java remakeTrial() generateCompleteMovesList : "+trial.generateCompleteMovesList());
+		List<Move> movesDone = trial.generateCompleteMovesList();
+		System.out.println("MoveHandler.java remakeTrial() generateCompleteMovesList : "+movesDone);
+		
+		
+		// --- Restore to initial state - code take from ToolView.jumpToMove() ---
+		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
+		app.settingsPlayer().setWebGameResultValid(false);
+		
+
+		// Store the previous saved trial, and reload it after resetting the game.
+		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
+		allMoves.addAll(app.manager().undoneMoves());
+		
+		GameUtil.resetGame(app, true);
+		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
+		
+		final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
+		
+		
+		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
+		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
+		
+		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
+		//app.manager().ref().makeSavedMoves(app.manager(), trial.generateCompleteMovesList());
+		app.manager().setUndoneMoves(newUndoneMoves);
+		
+		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
+		context.game().incrementGameStartCount();
+
+		app.bridge().settingsVC().setSelectedFromLocation(new FullLocation(Constants.UNDEFINED));
+		GameUtil.resetUIVariables(app);
+		
+		
+		// --- replay the moves mapped to the proper new tiles ---
+		Move move = null;
+		System.out.println("\nMoveHandler.java remakeTrial() moves :");
+		for (int i = 5; i < movesDone.size(); i++) // TODO : fix 5
+		{
+			move = movesDone.get(i);
+			int lastTo = move.to();
+			int inter = lastTo / previousDimensionBoard;
+			int newTo = lastTo + previousDimensionBoard + Constants.GROWING_STEP + 1 + (2 * (inter));
+			System.out.println("MoveHandler.java remakeTrial() current move : "+move + " - lastTo : "+lastTo+" - newTo "+newTo+ " - actions : "+move.actions());
+			
+			int newFrom;
+			int lastFrom;
+			
+			List<Action> actions = move.actions();
+			List<Action> newActions = new ArrayList<Action>();
+			for (int j=0; j<actions.size(); j++) 
+			{
+				Action action = actions.get(j);
+				System.out.println("MoveHandler.java remakeTrial() newAction BEFORE : "+action+" - from : "+action.from());
+				
+				// update 'to' if needed
+				if (action.to() != Constants.UNDEFINED) 
+				{
+					System.out.println("MoveHandler.java remakeTrial() update .to()");
+					lastTo = action.to();
+					inter = lastTo / previousDimensionBoard;
+					newTo = lastTo + previousDimensionBoard + Constants.GROWING_STEP + 1 + (2 * (inter));
+					//System.out.println("MoveHandler.java remakeTrial() current to() lastTo : "+lastTo+" - newTo "+newTo+" - action : "+action);
+					action.setTo(newTo);
+				}
+				
+				// update 'from' if needed
+				if (action.from() != Constants.UNDEFINED && action.from() != 25 && action.from() != 26) 
+				{
+					System.out.println("MoveHandler.java remakeTrial() update .from()");
+					lastFrom = action.from();
+					inter = lastFrom / previousDimensionBoard;
+					newFrom = lastFrom + previousDimensionBoard + Constants.GROWING_STEP + 1 + (2 * (inter));
+					//System.out.println("MoveHandler.java remakeTrial() current from() lastFrom : "+lastFrom+" - newFrom "+newFrom+" - action : "+action);
+					action.setFrom(newFrom);
+				}
+				//action.setTo(10);
+				newActions.add(action);
+				
+				System.out.println("MoveHandler.java remakeTrial() newAction AFTER : "+action+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
+			}
+			
+			Move newMove = new Move(newActions);
+			System.out.println("MoveHandler.java remakeTrial() newMove : "+newMove + " - actions : "+newMove.actions());
+			context.game().apply(context, newMove);
+		}
+
+	}
 
 	
 	/** 
 	 * Check if the move was made on a boardless board and on one edge of the board. 
 	 * If so, update the size of the  board.
-	 *
+	 * 
+	 * @author Clémentine.Sacré
 	 */
 	private static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
 	{
-		System.out.println("MoveHandler.java tryGameMove() checkMoveImpactOnBoard() in ----------------------------------------------");
 		final Context context = app.manager().ref().context();
 		Game game = context.game();
 		
@@ -238,10 +341,16 @@ public class MoveHandler
 			System.out.println("Movehandler.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
-				//todo check that the move is applied on a board type container
+
+				Boardless board = (Boardless) game.board();
+				int previousDimensionBoard = board.getDimension();
+				// TODO check that the move is applied on a board type container
 				System.out.println("Movehandler.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
-				updateBoardDimensions(app, game);
 				
+				updateBoardDimensions(app, board);
+				
+				// TODO take the historic and apply it to the new board
+				remakeTrial(app, previousDimensionBoard);
 			}
 		}
 	}

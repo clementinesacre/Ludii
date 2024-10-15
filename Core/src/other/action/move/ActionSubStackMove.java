@@ -37,7 +37,7 @@ public final class ActionSubStackMove extends BaseAction
 	private final SiteType typeFrom;
 
 	/** From index. */
-	private final int from;
+	private int from;
 
 	/** The level of the origin. */
 	private int levelFrom = 0;
@@ -46,7 +46,7 @@ public final class ActionSubStackMove extends BaseAction
 	private final SiteType typeTo;
 
 	/** To index. */
-	private final int to;
+	private int to;
 
 	/** The level of the target. */
 	private int levelTo = 0;
@@ -636,6 +636,20 @@ public final class ActionSubStackMove extends BaseAction
 		return ActionType.StackMove;
 	}
 
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
+	}
+	
 	//-------------------------------------------------------------------------
 
 	@Override

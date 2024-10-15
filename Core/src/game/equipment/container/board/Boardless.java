@@ -29,7 +29,7 @@ import other.concept.Concept;
 public class Boardless extends Board
 {
 	private static final long serialVersionUID = 1L;
-	private DimFunction dimension;
+	private int dimension;
 
 	//-------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ public class Boardless extends Board
 		);
 
 		this.style = ContainerStyleType.Boardless;
-		this.dimension = dimension;
+		this.dimension = dimension.eval();
 	}
 
 	@Override
@@ -116,6 +116,16 @@ public class Boardless extends Board
 	 */
 	public int getDimension()
 	{
-		return this.dimension.eval();
+		return this.dimension;
 	}
+	
+	/**
+	 * Set a new dimension to the board.
+	 * 
+	 * @param newDimension the new dimension of the board.
+	 */
+	public void setDimension(int newDimension) {
+		this.dimension = newDimension;
+	}
+	
 }

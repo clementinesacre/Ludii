@@ -25,7 +25,7 @@ public final class ActionSetHiddenRotation extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** The index of the graph element. */
-	private final int to;
+	private int to;
 
 	/** The cost to set. */
 	private int level = Constants.UNDEFINED;
@@ -301,6 +301,13 @@ public final class ActionSetHiddenRotation extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.SetHiddenRotation;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

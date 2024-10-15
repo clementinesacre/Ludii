@@ -38,13 +38,13 @@ public final class ActionMoveN extends BaseAction
 	private final SiteType typeFrom;
 
 	/** From site index. */
-	private final int from;
+	private int from;
 
 	/** The graph element type of the to site. */
 	private final SiteType typeTo;
 
 	/** To site index. */
-	private final int to;
+	private int to;
 
 	/** The number of pieces to move. */
 	private final int count;
@@ -604,6 +604,21 @@ public final class ActionMoveN extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.MoveN;
+	}
+	
+	
+	@Override
+	public void setFrom(int from) 
+	{
+		this.from = from;
+		
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

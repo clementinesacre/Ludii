@@ -33,7 +33,7 @@ public final class ActionAdd extends BaseAction
 	private SiteType type;
 
 	/** Location index. */
-	private final int to;
+	private int to;
 
 	/** Item index */
 	private final int what;
@@ -815,6 +815,13 @@ public final class ActionAdd extends BaseAction
 	public void setLevelTo(final int level)
 	{
 		this.level = level;
+	}
+	
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------

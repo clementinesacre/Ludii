@@ -11,7 +11,6 @@ public class StartDesktopApp
 	
 	public static void main(final String[] args)
 	{
-		System.out.println("test clementine");
 		// The actual launching
 		if (args.length == 0)
 		{

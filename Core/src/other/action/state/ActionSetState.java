@@ -24,7 +24,7 @@ public class ActionSetState extends BaseAction
 	//-------------------------------------------------------------------------
 
 	/** Loc index. */
-	private final int to;
+	private int to;
 
 	/** Level index. */
 	private final int level;
@@ -391,6 +391,13 @@ public class ActionSetState extends BaseAction
 	public ActionType actionType()
 	{
 		return ActionType.SetState;
+	}
+
+	@Override
+	public void setTo(int to) 
+	{
+		this.to = to;
+		
 	}
 
 	//-------------------------------------------------------------------------
