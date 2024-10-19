@@ -332,6 +332,20 @@ public final class Region extends BaseLudeme implements Serializable
 		bitSet.andNot(other.bitSet());
 	}
 	
+	/**
+	 * Updates the sites, by removing all previous sites and putting only the new ones.
+	 * 
+	 * @param newSites new sites.
+	 */
+	public void setSites(int[] newSites)
+	{
+		int[] prevSites = sites();
+		for (int i=0; i<prevSites.length; i++)
+            remove(prevSites[i]);
+		for (int i=0; i<newSites.length; i++)
+            add(newSites[i]);
+	}
+	
 	//-------------------------------------------------------------------------
 
 	@Override

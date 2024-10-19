@@ -397,12 +397,12 @@ public class Trial implements Serializable
 	{
 		moves = new MoveSequence(null);
 		numInitialPlacementMoves = 0;
-		
+
 		if (startingPos != null)
 			startingPos.clear();
 		
 		status = null;
-		
+
 		if (legalMoves != null)
 			clearLegalMoves();
 		
@@ -1051,5 +1051,16 @@ public class Trial implements Serializable
 	{
 		endData = null;
 		RNGStates = null;
+	}
+	
+	/**
+	 * Updates moves with a new move sequence. Also updates the number of initial 
+	 * placement moves due to this change of move sequence.
+	 * @param newMoves the new sequence move.
+	 * @param newNumInitialPlacementMoves the new number of initial placement moves.
+	 */
+	public void setMoves(MoveSequence newMoves, int newNumInitialPlacementMoves) {
+		this.moves = newMoves;
+		this.numInitialPlacementMoves = newNumInitialPlacementMoves;
 	}
 }

@@ -248,4 +248,16 @@ public class HashedChunkSet implements Serializable
 	 */
 	public boolean violatesNot(final ChunkSet mask, final ChunkSet pattern, final int startWord) { return internalState.violatesNot(mask, pattern, startWord); }
 
+	/**
+	 * @return the internal state of this hashed chunkset.
+	 */
+	public ChunkSet internalState() { return internalState; }
+	
+	/**
+	 * @return hashes
+	 */
+	public long[][] hashes() {
+		return this.hashes;
+	}
+
 }

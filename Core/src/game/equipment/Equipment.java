@@ -1033,4 +1033,20 @@ public final class Equipment extends BaseLudeme implements Serializable
 		}
 		return new Integer[0][0];
 	}
+	
+	/**
+	 * @param newContainerId
+	 */
+	public void setContainerId(int[] newContainerId) 
+	{
+		this.containerId = newContainerId;
+	}
+	
+	/**
+	 * @param newContainerId
+	 */
+	public void setSitesFrom(int[] newSitesFrom) 
+	{
+		this.sitesFrom = newSitesFrom;
+	}
 }
