@@ -388,7 +388,7 @@ public class Context
 		
 		if (state != null)
 			state.resetStateTo(game.stateReference(), game);
-		
+
 		trial.reset(game);
 		
 		if (scores != null)
@@ -404,7 +404,7 @@ public class Context
 		winners.reset();
 		losers.reset();
 		haveStarted = true;
-		
+
 		if (subcontext != null)
 		{
 			final Game subgame = game.instances()[0].getGame();

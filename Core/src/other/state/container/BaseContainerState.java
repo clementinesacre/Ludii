@@ -43,7 +43,7 @@ public abstract class BaseContainerState implements ContainerState
 	private final Map<Long, Long> canonicalHashLookup;
 	
 	/** Which slots are empty. */
-	protected final Region empty;
+	protected Region empty;
 	
 	/** Offset for this state's container */
 	protected final int offset;

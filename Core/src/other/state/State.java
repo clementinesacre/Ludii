@@ -2225,4 +2225,15 @@ public class State implements Serializable
 		return concepts;
 	}
 	
+	/**
+	 * Updates a specific containerState of the containerStates list.
+	 *
+	 * @param index index of the container state to update.
+	 * @param newContainerState new container state.
+	 */
+	public void setContainerStates(int index, ContainerState newContainerState)
+	{
+		this.containerStates[index] = newContainerState;
+	}
+	
 }

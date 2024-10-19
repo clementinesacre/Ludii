@@ -7,8 +7,10 @@ import game.Game;
 import game.equipment.container.Container;
 import game.types.board.SiteType;
 import game.types.state.GameType;
+import game.util.equipment.Region;
 import main.Constants;
 import main.collections.ChunkSet;
+import other.Sites;
 import other.state.State;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
@@ -67,6 +69,14 @@ public class ContainerFlatState extends BaseContainerState
 
 	/** Which site has the value information hidden for each player. */
 	protected final HashedBitSet[] hiddenValue;
+	
+	protected final ZobristHashGenerator generator;
+	
+	final int maxWhatVal;
+	final int maxStateVal;
+	final int maxCountVal;
+	final int maxRotationVal;
+	final int maxPieceValue;
 
 	//-------------------------------------------------------------------------
 
@@ -103,6 +113,12 @@ public class ContainerFlatState extends BaseContainerState
 			numSites
 		);
 		final int numPlayers = game.players().count();
+		this.generator = generator;
+		this.maxWhatVal = maxWhatVal;
+		this.maxStateVal = maxStateVal;
+		this.maxCountVal = maxCountVal;
+		this.maxRotationVal = maxRotationVal;
+		this.maxPieceValue = maxPieceValue;
 
 		if ((game.gameFlags() & GameType.HiddenInfo) == 0L)
 		{
@@ -161,6 +177,13 @@ public class ContainerFlatState extends BaseContainerState
 	{
 		super(other);
 
+		this.generator = other.generator;
+		this.maxWhatVal =  other.maxWhatVal;
+		this.maxStateVal =  other.maxStateVal;
+		this.maxCountVal =  other.maxCountVal;
+		this.maxRotationVal =  other.maxRotationVal;
+		this.maxPieceValue =  other.maxPieceValue;
+		
 		who = (other.who == null) ? null : other.who.clone();
 
 		if (other.hidden != null)
@@ -210,6 +233,107 @@ public class ContainerFlatState extends BaseContainerState
 		state = (other.state == null) ? null : other.state.clone();
 		rotation = (other.rotation == null) ? null : other.rotation.clone();
 		value = (other.value == null) ? null : other.value.clone();
+	}
+	
+	/**
+	 * @param game
+	 * @param container
+	 * @param numSites
+	 * @param who
+	 * @param what
+	 * @param count
+	 * @param state
+	 * @param rotation
+	 * @param value
+	 * @param playable
+	 * @param empty 
+	 * @param numPlayers 
+	 * @param maxWhatVal 
+	 * @param maxStateVal 
+	 * @param maxCountVal 
+	 * @param maxRotationVal 
+	 * @param maxPieceValue 
+	 * @param generator 
+	 */
+	public ContainerFlatState(
+			final Game game, 
+			final Container container, 
+			final int numSites,
+			HashedChunkSet who,
+			HashedChunkSet what,
+			HashedChunkSet count,
+			HashedChunkSet state,
+			HashedChunkSet rotation,
+			HashedChunkSet value,
+			HashedBitSet playable,
+			Region empty,
+			int numPlayers,
+			int maxWhatVal,
+			int maxStateVal,
+			int maxCountVal,
+			int maxRotationVal,
+			int maxPieceValue,
+			final ZobristHashGenerator generator
+		)
+	{
+		super
+		(
+			game, 
+			container, 
+			numSites
+		);
+
+		this.generator = generator;
+		this.maxWhatVal =  maxWhatVal;
+		this.maxStateVal =  maxStateVal;
+		this.maxCountVal =  maxCountVal;
+		this.maxRotationVal =  maxRotationVal;
+		this.maxPieceValue =  maxPieceValue;
+		
+		this.who = who;
+		this.what = what;
+		this.count = count;
+		this.state = state;
+		this.rotation = rotation;
+		this.value = value;
+		this.playable = playable;
+		this.empty = empty;
+		
+		// TODO : have already created hidden 
+		if ((game.gameFlags() & GameType.HiddenInfo) == 0L)
+		{
+			hidden = null;
+			hiddenWhat = null;
+			hiddenWho = null;
+			hiddenCount = null;
+			hiddenRotation = null;
+			hiddenValue = null;
+			hiddenState = null;
+		}
+		else
+		{
+			hidden = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hidden[i] = new HashedBitSet(generator, numSites);
+			hiddenWhat = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenWhat[i] = new HashedBitSet(generator, numSites);
+			hiddenWho = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenWho[i] = new HashedBitSet(generator, numSites);
+			hiddenCount = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenCount[i] = new HashedBitSet(generator, numSites);
+			hiddenState = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenState[i] = new HashedBitSet(generator, numSites);
+			hiddenRotation = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenRotation[i] = new HashedBitSet(generator, numSites);
+			hiddenValue = new HashedBitSet[numPlayers + 1];
+			for (int i = 1; i < (numPlayers + 1); i++)
+				hiddenValue[i] = new HashedBitSet(generator, numSites);
+		}
 	}
 
 	@Override
@@ -1462,5 +1586,127 @@ public class ContainerFlatState extends BaseContainerState
 	public int valueEdge(int site, int level)
 	{
 		return valueEdge(site);
+	}
+	
+	/**
+	 * @return who
+	 */
+	public HashedChunkSet who()
+	{
+		return this.who;
+	}
+	
+	/**
+	 * @return playable
+	 */
+	public HashedBitSet playable()
+	{
+		return this.playable;
+	}
+	
+	/**
+	 * @return what
+	 */
+	public ChunkSet whatCell() 
+	{ 
+		return defaultIfNull(what).internalState(); 
+	}
+	
+	/**
+	 * @return count
+	 */
+	public HashedChunkSet count()
+	{
+		return this.count;
+	}
+
+	/**
+	 * Updates the empty sites.
+	 * 
+	 * @param newSites new empty sites.
+	 */
+	public void setEmptySites(int[] newSites)
+	{
+		empty.setSites(newSites);
+	}
+	
+	/**
+	 * @return generator
+	 */
+	public ZobristHashGenerator getGenerator()
+	{
+		return this.generator;
+	}
+	
+	/**
+	 * @return maxWhatVal
+	 */
+	public int getMaxWhatVal() 
+	{
+		return this.maxWhatVal;
+	}
+	
+	/**
+	 * @return maxStateVal
+	 */
+	public int getMaxStateVal() 
+	{
+		return this.maxStateVal;
+	}
+	
+	/**
+	 * @return maxCountVal
+	 */
+	public int getMaxCountVal() 
+	{
+		return this.maxCountVal;
+	}
+	
+	/**
+	 * @return maxRotationVal
+	 */
+	public int getMaxRotationVal() 
+	{
+		return this.maxRotationVal;
+	}
+	
+	/**
+	 * @return maxPieceValue
+	 */
+	public int getMaxPieceValue() 
+	{
+		return this.maxPieceValue;
+	}
+	
+	/**
+	 * @return state
+	 */
+	public HashedChunkSet state()
+	{
+		return this.state;
+	}
+	
+	/**
+	 * @return rotation
+	 */
+	public HashedChunkSet rotation()
+	{
+		return this.rotation;
+	}
+	
+	/**
+	 * @return value
+	 */
+	public HashedChunkSet value()
+	{
+		return this.value;
+	}
+	
+	/**
+	 * @return what
+	 */
+	public HashedChunkSet what()
+	{
+		return this.what;
 	}
 }
