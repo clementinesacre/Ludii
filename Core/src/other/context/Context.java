@@ -385,7 +385,7 @@ public class Context
 		// ** Don't clear state here. Calling function should copy
 		// ** the reference state stored in the Game object.
 		// **
-		
+
 		if (state != null)
 			state.resetStateTo(game.stateReference(), game);
 

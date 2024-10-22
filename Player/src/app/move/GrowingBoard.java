@@ -17,11 +17,14 @@ import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
+import game.rules.play.moves.BaseMoves;
+import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
 import game.util.equipment.Region;
 import gnu.trove.list.array.TIntArrayList;
 import main.Constants;
 import main.collections.ChunkSet;
+import main.collections.FastArrayList;
 import other.action.Action;
 import other.context.Context;
 import other.location.FullLocation;
@@ -319,8 +322,10 @@ public class GrowingBoard
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
+		System.out.println("GrowingBoard.java remakeTrial() legalMoves after14: "+context.trial().cachedLegalMoves());
 		
 		GameUtil.resetGame(app, true);
+		System.out.println("GrowingBoard.java remakeTrial() legalMoves after15: "+context.trial().cachedLegalMoves());
 		// also reset initial placement moves
 		app.manager().ref().context().trial().setMoves(new MoveSequence(null), 0);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
@@ -340,6 +345,36 @@ public class GrowingBoard
 		GameUtil.resetUIVariables(app);
 	}
 	
+	/**
+	 * Generates the new move based on a move, which means with the new indexes of the board
+	 * (which means updating to() and from().
+	 * 
+	 * @param prevMove previous move to copy, except for the indexes.
+	 * @return the new move.
+	 */
+	private static Move generateNewMove(Move prevMove)
+	{
+		List<Action> actions = prevMove.actions();
+		List<Action> newActions = new ArrayList<Action>();
+		for (int j=0; j<actions.size(); j++) 
+		{
+			Action action = actions.get(j);
+			//System.out.println("GrowingBoard.java generateNewMove() newAction BEFORE : "+action+" - from : "+action.from()+" - to : "+action.to()+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
+			int to = action.to();
+			int from = action.from();
+			if (to != Constants.UNDEFINED)
+				action.setTo(mappedPrevToNewIndexes.get(to));
+			if (from != Constants.UNDEFINED)
+				action.setFrom(mappedPrevToNewIndexes.get(from));
+			
+			newActions.add(action);
+			//System.out.println("GrowingBoard.java generateNewMove() newAction AFTER : "+action+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
+		}
+		
+		Move newMove = new Move(newActions);
+		return newMove;
+	}
+	
 	/** 
 	 * Replays the moves mapped to the proper new component (like tile or hand) index.
 	 * 
@@ -349,34 +384,35 @@ public class GrowingBoard
 	private static void replayMoves(Context context, List<Move> movesDone)
 	{
 		Move move = null;
-		System.out.println("MoveHandler.java remakeTrial() nmappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
+		System.out.println("GrowingBoard.java replayMoves() nmappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
 		for (int i = 0; i < movesDone.size(); i++)
 		{
 			move = movesDone.get(i);
-			
-			List<Action> actions = move.actions();
-			List<Action> newActions = new ArrayList<Action>();
-			for (int j=0; j<actions.size(); j++) 
-			{
-				Action action = actions.get(j);
-				System.out.println("MoveHandler.java remakeTrial() newAction BEFORE : "+action+" - from : "+action.from()+" - to : "+action.to()+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
-				int to = action.to();
-				int from = action.from();
-				if (to != Constants.UNDEFINED)
-					action.setTo(mappedPrevToNewIndexes.get(to));
-				if (from != Constants.UNDEFINED)
-					action.setFrom(mappedPrevToNewIndexes.get(from));
-				
-				newActions.add(action);
-				System.out.println("MoveHandler.java remakeTrial() newAction AFTER : "+action+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
-			}
-			
-			Move newMove = new Move(newActions);
-			System.out.println("MoveHandler.java remakeTrial() newMove : "+newMove + " - actions : "+newMove.actions());
+			Move newMove = generateNewMove(move);
+			System.out.println("GrowingBoard.java replayMoves() newMove : "+newMove + " - actions : "+newMove.actions());
 			context.game().apply(context, newMove);
 		}
-		System.out.println("MoveHandler.java remakeTrial() generateCompleteMovesList movesDones after changing : "+context.trial().generateCompleteMovesList());
-
+		System.out.println("GrowingBoard.java replayMoves() generateCompleteMovesList movesDones after changing : "+context.trial().generateCompleteMovesList());
+	}
+	
+	/**
+	 * Generates the new legal moves based on the new indexes.
+	 * 
+	 * @param context
+	 * @param legaleMoves previous list of legal moves, before the board changed size.
+	 */
+	private static void generateLegalMoves(Context context, Moves legaleMoves)
+	{
+		Moves newLegaleMoves = new BaseMoves(null);
+		for (Move prevLegalMove : legaleMoves.moves())
+		{
+			Move newMove = generateNewMove(prevLegalMove);
+			newLegaleMoves.moves().add(newMove);
+		}
+		System.out.println("GrowingBoard.java aa() - prevlegaleMoves : "+legaleMoves.moves());
+		System.out.println("GrowingBoard.java aa() - newLegaleMoves : "+newLegaleMoves);
+		
+		context.trial().setLegalMoves(newLegaleMoves, context);
 	}
 	
 	/** 
@@ -386,15 +422,21 @@ public class GrowingBoard
 	 */
 	private static void remakeTrial(final PlayerApp app) 
 	{
-		final Context context = app.manager().ref().context();
+		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
+		System.out.println("GrowingBoard.java remakeTrial() legalMoves before: "+trial.cachedLegalMoves());
 		List<Move> movesDone = trial.generateCompleteMovesList();
-		System.out.println("MoveHandler.java remakeTrial() generateCompleteMovesList movesDoneBeforRefresh : "+movesDone);
+		Moves legalMoves = trial.cachedLegalMoves();
+		System.out.println("GrowingBoard.java remakeTrial() generateCompleteMovesList movesDoneBeforRefresh : "+movesDone);
 		
 		resetMoves(app, context);
 		initMappingIndexes();
 		updateChunks(context);
 		replayMoves(context, movesDone);
+		generateLegalMoves(context, legalMoves);
+		
+		context = app.manager().ref().context();
+		trial = context.trial();
 	}
 
 	/** 
@@ -488,10 +530,10 @@ public class GrowingBoard
 		if (game.isBoardless()) 
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("\nMoveHandler.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
-			//System.out.println("MoveHandler.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("MoveHandler.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("MoveHandler.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
+			System.out.println("\nGrowingBoard.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
@@ -499,7 +541,7 @@ public class GrowingBoard
 				initMainConstants(context, board.getDimension());
 				
 				// TODO check that the move is applied on a board type container
-				System.out.println("Movehandler.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
+				System.out.println("GrowingBoard.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
 				updateBoardDimensions(app, board);
 				updateIndexes(context, game);
 				remakeTrial(app);
