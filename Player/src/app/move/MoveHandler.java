@@ -129,7 +129,7 @@ public class MoveHandler
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
-				GrowingBoard.checkMoveImpactOnBoard(app, possibleMoves.get(0));
+				GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0));
 				return true; // move found
 			}
 		}
