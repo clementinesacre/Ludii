@@ -1043,7 +1043,7 @@ public final class Equipment extends BaseLudeme implements Serializable
 	}
 	
 	/**
-	 * @param newContainerId
+	 * @param newSitesFrom
 	 */
 	public void setSitesFrom(int[] newSitesFrom) 
 	{

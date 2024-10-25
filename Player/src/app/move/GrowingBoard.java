@@ -1,6 +1,5 @@
 package app.move;
 
-import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -8,9 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import app.PlayerApp;
-import app.utils.GameUtil;
-import app.utils.MVCSetup;
 import game.Game;
 import game.equipment.container.Container;
 import game.equipment.container.board.Boardless;
@@ -24,19 +20,15 @@ import game.util.equipment.Region;
 import gnu.trove.list.array.TIntArrayList;
 import main.Constants;
 import main.collections.ChunkSet;
-import main.collections.FastArrayList;
 import other.action.Action;
 import other.context.Context;
-import other.location.FullLocation;
 import other.move.Move;
-import other.move.MoveSequence;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
 import other.state.zhash.ZobristHashGenerator;
 import other.topology.TopologyElement;
-import other.trial.Trial;
 
 /**
  * Functions for handling the board growing regarding boardless game.
@@ -58,6 +50,62 @@ public class GrowingBoard
 	private static int newTotalIndexes;
 	private static int diff;
 	
+
+	
+	//--------------------------------Getters----------------------------------
+	
+	public static HashMap<Integer, Integer> mappedPrevToNewIndexes()
+	{
+		return mappedPrevToNewIndexes;
+	}
+	
+	public static HashMap<Integer, Integer> mappedNewToPrevIndexes()
+	{
+		return mappedNewToPrevIndexes;
+	}
+	
+	public static HashSet<Integer> newAddedIndexes()
+	{
+		return newAddedIndexes;
+	}
+	
+	public static int prevDimensionBoard()
+	{
+		return prevDimensionBoard;
+	}
+	
+	public static int prevAreaBoard()
+	{
+		return prevAreaBoard;
+	}
+	
+	public static int prevTotalIndexes()
+	{
+		return prevTotalIndexes;
+	}
+	
+	public static int newDimensionBoard()
+	{
+		return newDimensionBoard;
+	}
+	
+	public static int newAreaBoard()
+	{
+		return newAreaBoard;
+	}
+	
+	public static int newTotalIndexes()
+	{
+		return newTotalIndexes;
+	}
+	
+	public static int diff()
+	{
+		return diff;
+	}
+	
+	//----------------------------Initialization-------------------------------
+	
 	/** 
 	 * Initializes data structures to map the previous indexes to the new indexes, 
 	 * due to the change in board size, such as :
@@ -65,32 +113,32 @@ public class GrowingBoard
 	 * mappedNewToPrevIndexes : mapping giving the new index as key and the previous index as value.
 	 * newAddedIndexes : new indexes that don't have a mapping to the previous plate as they are new existing sites.
 	 */
-	private static void initMappingIndexes()
+	public static void initMappingIndexes()
 	{
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		newAddedIndexes = new HashSet<Integer>();
 		int inter;
 		int newIndex;
-		for (int prevIndex = 0; prevIndex < prevTotalIndexes; prevIndex++)
+		for (int prevIndex = 0; prevIndex < prevTotalIndexes(); prevIndex++)
 		{
-			inter = prevIndex / prevDimensionBoard;
-			if (prevIndex < prevAreaBoard)
+			inter = prevIndex / prevDimensionBoard();
+			if (prevIndex < prevAreaBoard())
 			{
-				newIndex = prevIndex + prevDimensionBoard + Constants.GROWING_STEP + 1 + (2 * (inter));
+				newIndex = prevIndex + prevDimensionBoard() + Constants.GROWING_STEP + 1 + (2 * (inter));
 			}
 			else
 			{
 				newIndex = prevIndex + diff;
 			}
-			mappedPrevToNewIndexes.put(prevIndex, newIndex);
-			mappedNewToPrevIndexes.put(newIndex, prevIndex);
+			mappedPrevToNewIndexes().put(prevIndex, newIndex);
+			mappedNewToPrevIndexes().put(newIndex, prevIndex);
 		}
-		for (int i = 0; i < newTotalIndexes; i++)
+		for (int i = 0; i < newTotalIndexes(); i++)
 		{
-			if (!mappedNewToPrevIndexes.containsKey(i))
+			if (!mappedNewToPrevIndexes().containsKey(i))
 			{
-				newAddedIndexes.add(i);
+				newAddedIndexes().add(i);
 			}
 		}
 	}
@@ -107,16 +155,33 @@ public class GrowingBoard
 	 * @param context
 	 * @param currDimensionBoard dimension of the current board (size of one side of the board), that has not changed size yet.
 	 */
-	private static void initMainConstants(Context context, int currDimensionBoard) {
+	public static void initMainConstants(Context context, int currDimensionBoard) {
 		prevDimensionBoard = currDimensionBoard;
-		prevAreaBoard = (int) Math.pow(prevDimensionBoard, 2);
-		prevTotalIndexes = (int) Math.pow(prevDimensionBoard, 2)+context.sitesFrom().length-1;
+		prevAreaBoard = (int) Math.pow(prevDimensionBoard(), 2);
+		prevTotalIndexes = (int) Math.pow(prevDimensionBoard(), 2)+context.sitesFrom().length-1;
 		
-		newDimensionBoard = prevDimensionBoard+Constants.GROWING_STEP;
-		newAreaBoard = (int) Math.pow(newDimensionBoard, 2);
-		newTotalIndexes = newAreaBoard+context.sitesFrom().length-1;
+		newDimensionBoard = prevDimensionBoard() + Constants.GROWING_STEP;
+		newAreaBoard = (int) Math.pow(newDimensionBoard(), 2);
+		newTotalIndexes = newAreaBoard()+context.sitesFrom().length-1;
 		
-		diff = newAreaBoard - prevAreaBoard;
+		diff = newAreaBoard() - prevAreaBoard();
+	}
+	
+	//-------------------------------------------------------------------------
+	
+	/** 
+	 * Updates the board dimensions.
+	 * 
+	 * @param board
+	 */
+	public static void updateBoardDimensions(Boardless board) 
+	{		
+		System.out.println("GrowingBoarc.java updateBoardDimensions() curr size : "+board.getDimension()+ " - new size : "+(board.getDimension() + Constants.GROWING_STEP));
+		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(board.getDimension() + Constants.GROWING_STEP), null, null, null);
+		board.setGraphFunction(newGraphFunction);
+		
+		board.setDimension(board.getDimension() + Constants.GROWING_STEP);
+		//board.topology().pregenerate ... TODO
 	}
 	
 	/** 
@@ -149,32 +214,6 @@ public class GrowingBoard
     }
 	
 	/** 
-	 * Updates the board dimensions and update the visual to reflect the new size.
-	 * 
-	 * @param app
-	 * @param board
-	 */
-	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
-	{		
-		System.out.println("GrowingBoarc.java updateBoardDimensions() curr size : "+board.getDimension()+ " - new size : "+(board.getDimension() + Constants.GROWING_STEP));
-		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(board.getDimension() + Constants.GROWING_STEP), null, null, null);
-		board.setGraphFunction(newGraphFunction);
-		
-		board.setDimension(board.getDimension() + Constants.GROWING_STEP);
-		//board.topology().pregenerate ... TODO
-		
-		// Update the visual 
-		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
-		MVCSetup.setMVC(app);
-		
-		// TODO Check this line is useful (inspired from GameUtil.resetUIVariables())
-		EventQueue.invokeLater(() -> 
-		{
-			app.repaint();
-		});
-	}
-	
-	/** 
 	 * Copy a HashedChunkSet by mapping the index to the index of the new board, 
 	 * whose sized has changed compared to the previous one.
 	 * 
@@ -184,7 +223,7 @@ public class GrowingBoard
 	 * @param maxChunkVal
 	 * @param mappedPrevToNewIndexes
 	 */
-	private static HashedChunkSet copyChunkWithNewBoardSize(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
+	public static HashedChunkSet copyChunkWithNewBoardSize(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
 	{
 		HashedChunkSet newHCS = new HashedChunkSet(generator, maxChunkVal, numChunks);
 		if (previousHCS != null)
@@ -193,7 +232,7 @@ public class GrowingBoard
 			ChunkSet newCS = (ChunkSet) newHCS.internalState();
 			TIntArrayList nonzeroChunks = previousCS.getNonzeroChunks();
 			for (int prevVal : nonzeroChunks.toArray()) 
-				newCS.setChunk(mappedPrevToNewIndexes.get(prevVal), previousCS.getChunk(prevVal));
+				newCS.setChunk(mappedPrevToNewIndexes().get(prevVal), previousCS.getChunk(prevVal));
 		}
 		else
 			newHCS = null;
@@ -205,14 +244,22 @@ public class GrowingBoard
 	 * to include the new added sites, following the growth of the board.
 	 * To precise the new playable sites, and the sites that should be empty.
 	 * 
+	 * what : index of a component at a specific location - 0 if no component
+	 * who : index of the owner of a component at a specific location - 0 if no component
+	 * count : number of the same component at a specific location
+	 * state : value of the state at a specific location
+	 * rotation : value for the rotation direction at a specific location (0 for to the first supported direction)
+	 * playable : For boardless games, returning if a location is playable (1) or not (0)
+	 * 
 	 * @param context
 	 */
-	private static void updateChunks(Context context)
+	public static void updateChunks(Context context)
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
-		int numSites = mappedNewToPrevIndexes.size()+newAddedIndexes.size();
+		int numSites = mappedNewToPrevIndexes().size()+newAddedIndexes().size();
 		ContainerState[] containerStates = context.state().containerStates();
+		System.out.println("GrowingBoard.java updateChunks() containerStates before : "+Arrays.toString(containerStates));
 		
 		// update each container state (container state 0 is the board state)
 		for (int i=0; i<containerStates.length; i++)
@@ -223,6 +270,7 @@ public class GrowingBoard
 				ContainerFlatState containerFlatState = (ContainerFlatState) containerState;
 				ZobristHashGenerator generator = containerFlatState.getGenerator();
 				
+				// TODO maybe there is another way to copy a HashedChunkSet
 				HashedChunkSet who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites);
 				HashedChunkSet what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites);
 				HashedChunkSet count = copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
@@ -237,14 +285,14 @@ public class GrowingBoard
 				int[] newEmptySites;
 				if (emptySites.length > 0)
 				{
-					newEmptySites = new int[emptySites.length + newAddedIndexes.size()];
+					newEmptySites = new int[emptySites.length + newAddedIndexes().size()];
 					int index = 0;
 					for (int j=0; j<emptySites.length; j++)
 					{
-						newEmptySites[index] = mappedPrevToNewIndexes.get(emptySites[index]);
+						newEmptySites[index] = mappedPrevToNewIndexes().get(emptySites[index]);
 						index++;
 					}
-					for (Integer prevVal : newAddedIndexes) 
+					for (Integer prevVal : newAddedIndexes()) 
 					{
 			            newEmptySites[index] = prevVal;
 			            index++;
@@ -262,7 +310,7 @@ public class GrowingBoard
 				ArrayList<Integer> prevPlayableSites = new ArrayList<Integer>();
 				int j = playableSites.nextSetBit(0);
 		        if (j != -1) {
-		        	prevPlayableSites.add(i);
+		        	prevPlayableSites.add(j);
 		            while (true) {
 		                if (++j < 0) break;
 		                if ((j = playableSites.nextSetBit(j)) < 0) break;
@@ -275,7 +323,9 @@ public class GrowingBoard
 		            }
 		        }
 				for (Integer prevVal : prevPlayableSites)
-					playableBS.flip(mappedPrevToNewIndexes.get(prevVal));
+					playableBS.flip(mappedPrevToNewIndexes().get(prevVal));
+				
+				System.out.println("GrowingBoard.java updateChunks() playableBS : "+playableBS);
 		        
 				
 				ContainerFlatState newContainerFlatState = new ContainerFlatState
@@ -304,45 +354,8 @@ public class GrowingBoard
 			else 
 				throw new UnsupportedOperationException("Type " +containerStates[i].getClass().getName() + " not implement regarding growing state of the board.");
 		}
-	}
-	
-	/** 
-	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
-	 * Is equivalent to restore to initial state.
-	 * Code taken from ToolView.jumpToMove().
-	 * 
-	 * @param app
-	 * @param context
-	 */
-	private static void resetMoves(final PlayerApp app, final Context context)
-	{
-		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		app.settingsPlayer().setWebGameResultValid(false);
-		
-		// Store the previous saved trial, and reload it after resetting the game.
-		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
-		allMoves.addAll(app.manager().undoneMoves());
-		System.out.println("GrowingBoard.java remakeTrial() legalMoves after14: "+context.trial().cachedLegalMoves());
-		
-		GameUtil.resetGame(app, true);
-		System.out.println("GrowingBoard.java remakeTrial() legalMoves after15: "+context.trial().cachedLegalMoves());
-		// also reset initial placement moves
-		app.manager().ref().context().trial().setMoves(new MoveSequence(null), 0);
-		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		
-		//final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
-		final int moveToJumpToWithSetup = 0;
-		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
-		
-		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);
-		
-		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
-		context.game().incrementGameStartCount();
 
-		app.bridge().settingsVC().setSelectedFromLocation(new FullLocation(Constants.UNDEFINED));
-		GameUtil.resetUIVariables(app);
+		System.out.println("GrowingBoard.java updateChunks() containerStates after : "+Arrays.toString(context.state().containerStates()));
 	}
 	
 	/**
@@ -352,7 +365,7 @@ public class GrowingBoard
 	 * @param prevMove previous move to copy, except for the indexes.
 	 * @return the new move.
 	 */
-	private static Move generateNewMove(Move prevMove)
+	public static Move generateNewMove(Move prevMove)
 	{
 		List<Action> actions = prevMove.actions();
 		List<Action> newActions = new ArrayList<Action>();
@@ -363,9 +376,9 @@ public class GrowingBoard
 			int to = action.to();
 			int from = action.from();
 			if (to != Constants.UNDEFINED)
-				action.setTo(mappedPrevToNewIndexes.get(to));
+				action.setTo(mappedPrevToNewIndexes().get(to));
 			if (from != Constants.UNDEFINED)
-				action.setFrom(mappedPrevToNewIndexes.get(from));
+				action.setFrom(mappedPrevToNewIndexes().get(from));
 			
 			newActions.add(action);
 			//System.out.println("GrowingBoard.java generateNewMove() newAction AFTER : "+action+ " - type : "+action.getClass().getName() + " - action type : "+action.actionType());
@@ -381,10 +394,10 @@ public class GrowingBoard
 	 * @param context
 	 * @param movesDone
 	 */
-	private static void replayMoves(Context context, List<Move> movesDone)
+	public static void replayMoves(Context context, List<Move> movesDone)
 	{
 		Move move = null;
-		System.out.println("GrowingBoard.java replayMoves() nmappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
+		System.out.println("GrowingBoard.java replayMoves() nmappedPrevToNewIndexes : "+mappedPrevToNewIndexes());
 		for (int i = 0; i < movesDone.size(); i++)
 		{
 			move = movesDone.get(i);
@@ -401,18 +414,19 @@ public class GrowingBoard
 	 * @param context
 	 * @param legaleMoves previous list of legal moves, before the board changed size.
 	 */
-	private static void generateLegalMoves(Context context, Moves legaleMoves)
+	public static void generateLegalMoves(Context context, Moves legaleMoves)
 	{
+		System.out.println("GrowingBoard.java generateLegalMoves() - prevlegaleMoves : "+legaleMoves.moves());
 		Moves newLegaleMoves = new BaseMoves(null);
 		for (Move prevLegalMove : legaleMoves.moves())
 		{
 			Move newMove = generateNewMove(prevLegalMove);
 			newLegaleMoves.moves().add(newMove);
 		}
-		System.out.println("GrowingBoard.java aa() - prevlegaleMoves : "+legaleMoves.moves());
-		System.out.println("GrowingBoard.java aa() - newLegaleMoves : "+newLegaleMoves);
+		System.out.println("GrowingBoard.java generateLegalMoves() - newLegaleMoves : "+newLegaleMoves);
 		
 		context.trial().setLegalMoves(newLegaleMoves, context);
+		System.out.println("GrowingBoard.java generateLegalMoves() - after setLegalMoves : "+context.trial().cachedLegalMoves());
 	}
 	
 	/** 
@@ -420,23 +434,12 @@ public class GrowingBoard
 	 * 
 	 * @param app
 	 */
-	private static void remakeTrial(final PlayerApp app) 
+	public static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves) 
 	{
-		Context context = app.manager().ref().context();
-		Trial trial = context.trial();
-		System.out.println("GrowingBoard.java remakeTrial() legalMoves before: "+trial.cachedLegalMoves());
-		List<Move> movesDone = trial.generateCompleteMovesList();
-		Moves legalMoves = trial.cachedLegalMoves();
-		System.out.println("GrowingBoard.java remakeTrial() generateCompleteMovesList movesDoneBeforRefresh : "+movesDone);
-		
-		resetMoves(app, context);
-		initMappingIndexes();
-		updateChunks(context);
-		replayMoves(context, movesDone);
-		generateLegalMoves(context, legalMoves);
-		
-		context = app.manager().ref().context();
-		trial = context.trial();
+		GrowingBoard.initMappingIndexes();
+		GrowingBoard.updateChunks(context);
+		GrowingBoard.replayMoves(context, movesDone);
+		GrowingBoard.generateLegalMoves(context, legalMoves);
 	}
 
 	/** 
@@ -446,25 +449,25 @@ public class GrowingBoard
 	 * @param context
 	 * @param game
 	 */
-	private static void updateIndexes(Context context, final Game game) 
+	public static void updateIndexesInsideComponents(Context context, final Game game) 
 	{	
 		// Updating context.containerId to contains the id of the new added tiles of the bigger board
 		int[] prevContainerId = context.containerId();
-		int[] newContainerId = new int[prevContainerId.length + diff];
+		int[] newContainerId = new int[prevContainerId.length + diff()];
 		int indexNewContainerId = 0;
 		int indePrevContainerId = 0;
-		for (int i=0; i<newAreaBoard+context.sitesFrom().length-1; i++) 
+		for (int i=0; i<newAreaBoard()+context.sitesFrom().length-1; i++) 
 		{
-			if (i < newDimensionBoard)
+			if (i < newDimensionBoard())
 			{
 			// new bottom line of tiles
 				newContainerId[indexNewContainerId] = 0;
 				indexNewContainerId++;
 			}
-			else if (i >= newDimensionBoard && i < newDimensionBoard*(newDimensionBoard-1))
+			else if (i >= newDimensionBoard() && i < newDimensionBoard()*(newDimensionBoard()-1))
 			{
 			// middle lines of tiles
-				if (i%newDimensionBoard == 0 || i%newDimensionBoard == newDimensionBoard-1)
+				if (i%newDimensionBoard() == 0 || i%newDimensionBoard() == newDimensionBoard()-1)
 			    {
 				// tiles on one of the edges (left or right, which are new id
 			        newContainerId[indexNewContainerId] = 0;
@@ -478,7 +481,7 @@ public class GrowingBoard
 			        indexNewContainerId++;
 			    }
 			}
-			else if (i >= newDimensionBoard*(newDimensionBoard-1) && i < newAreaBoard)
+			else if (i >= newDimensionBoard()*(newDimensionBoard()-1) && i < newAreaBoard())
 			{
 			// new top line of tiles
 				newContainerId[indexNewContainerId] = 0;
@@ -495,57 +498,29 @@ public class GrowingBoard
 		game.equipment().setContainerId(newContainerId); // TODO quid if context use the containerId of its subcontext and not equipment
 
 		// Updating context.sitesFrom to contains the values of the new added tiles of the bigger board
+		// (which represents the accumulated site index a given container starts at)
 		int[] prevSitesFrom = game.equipment().sitesFrom();
 		int[] newSitesFrom = new int[prevSitesFrom.length];
-		newSitesFrom[0] = newSitesFrom[0];
+		newSitesFrom[0] = prevSitesFrom[0];
 		for (int i=1; i<prevSitesFrom.length; i++) 
 		{
 			newSitesFrom[i] = prevSitesFrom[i]+diff;
 		}
 		game.equipment().setSitesFrom(newSitesFrom); // TODO quid if context use the containerId of its subcontext and not equipment
 		
-		// Update index of the containers outside of the board (such as players's hand)
+		// Update index of the containers outside of the board (such as players's hand) (first container - board's container - does not changed its index)
 		Container[] containers = game.equipment().containers();
 		for (int i=0; i<containers.length; i++)
 		{
-			TopologyElement topologyElement = game.equipment().containers()[i].topology().getGraphElements(SiteType.Cell).get(0);
+			TopologyElement topologyElement = containers[i].topology().getGraphElements(SiteType.Cell).get(0);
 			int index = topologyElement.index();
-			topologyElement.setIndex(index+diff);
+			if (i != 0) 
+			{
+				topologyElement.setIndex(index+diff);
+			}
+			
+			System.out.println("GrowingBoard.java updateIndexesInsideComponents() index : "+index+" - newINdex : "+topologyElement.index());
 		}
 
-	}
-	
-	/** 
-	 * Check if the move was made on a boardless board and on one edge of the board. 
-	 * If so, update the size of the  board.
-	 * 
-	 * @param app
-	 * @param move
-	 */
-	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
-	{
-		final Context context = app.manager().ref().context();
-		Game game = context.game();
-		
-		if (game.isBoardless()) 
-		{
-			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("\nGrowingBoard.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
-			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
-			
-			if (isTouchingEdge(perimeter, move.to())) 
-			{
-				Boardless board = (Boardless) game.board();
-				initMainConstants(context, board.getDimension());
-				
-				// TODO check that the move is applied on a board type container
-				System.out.println("GrowingBoard.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
-				updateBoardDimensions(app, board);
-				updateIndexes(context, game);
-				remakeTrial(app);
-			}
-		}
 	}
 }
