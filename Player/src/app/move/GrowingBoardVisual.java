@@ -27,7 +27,7 @@ public class GrowingBoardVisual {
 	 */
 	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
 	{		
-		GrowingBoard.updateBoardDimensions(board);
+		GrowingBoard.updateBoardDimensions(app.manager().ref().context(), board);
 		
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -58,10 +58,8 @@ public class GrowingBoardVisual {
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = context.trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
-		System.out.println("GrowingBoardVisual.java resetMoves() legalMoves after14: "+context.trial().cachedLegalMoves());
 		
 		GameUtil.resetGame(app, true);
-		System.out.println("GrowingBoardVisual.java resetMoves() legalMoves after15: "+context.trial().cachedLegalMoves());
 		// also reset initial placement moves
 		context.trial().setMoves(new MoveSequence(null), 0);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
@@ -91,11 +89,8 @@ public class GrowingBoardVisual {
 	{
 		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
-		System.out.println("GrowingBoardVisual.java remakeTrial() legalMoves before: "+trial.cachedLegalMoves());
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		System.out.println("GrowingBoardVisual.java remakeTrial() generateCompleteMovesList movesDoneBeforRefresh : "+movesDone);
-		
 		resetMoves(app);
 		GrowingBoard.remakeTrial(context, movesDone, legalMoves);
 	}
@@ -123,13 +118,14 @@ public class GrowingBoardVisual {
 			
 			if (GrowingBoard.isTouchingEdge(perimeter, move.to())) 
 			{
+				game.setLastMoveOnEdge(true);
 				Boardless board = (Boardless) game.board();
-				GrowingBoard.initMainConstants(context, board.getDimension());
+				GrowingBoard.initMainConstants(context, board.dimension());
 				
 				// TODO check that the move is applied on a board type container
 				System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
 				updateBoardDimensions(app, board);
-				GrowingBoard.updateIndexesInsideComponents(context, game);
+				//GrowingBoard.updateIndexesInsideComponents(context, game);
 				remakeTrial(app);
 			}
 		}
