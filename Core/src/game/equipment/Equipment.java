@@ -6,13 +6,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import annotations.Name;
+import annotations.Opt;
 import game.Game;
 import game.equipment.component.Component;
 import game.equipment.component.Die;
 import game.equipment.component.Piece;
 import game.equipment.component.tile.Domino;
+import game.equipment.component.tile.Tile;
 import game.equipment.container.Container;
 import game.equipment.container.board.Board;
+import game.equipment.container.board.Boardless;
 import game.equipment.container.board.Track;
 import game.equipment.container.other.Deck;
 import game.equipment.container.other.Dice;
@@ -21,9 +25,14 @@ import game.equipment.other.Dominoes;
 import game.equipment.other.Hints;
 import game.equipment.other.Map;
 import game.equipment.other.Regions;
+import game.functions.dim.DimConstant;
+import game.functions.dim.DimFunction;
+import game.functions.graph.GraphFunction;
+import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.functions.region.RegionFunction;
 import game.types.board.RelationType;
 import game.types.board.SiteType;
+import game.types.board.TilingBoardlessType;
 import game.types.play.RoleType;
 import game.types.state.GameType;
 import main.Constants;
@@ -290,15 +299,62 @@ public final class Equipment extends BaseLudeme implements Serializable
 		final List<Container> containersWIP = new ArrayList<Container>();
 		final List<Regions> regionsWIP = new ArrayList<Regions>();
 		final List<Map> mapsWIP = new ArrayList<Map>();
-		
+				
 		// The empty component 
 		// componentsWIP.add(null);
 		final Piece emptyPiece = new Piece("Disc", RoleType.Neutral, null, null, null, null, null, null);
 		emptyPiece.setIndex(0);
 		componentsWIP.add(emptyPiece);
 
+		Item[] itemsToCreate2 = new Item[itemsToCreate.length];
 		if (itemsToCreate != null)
 		{
+			if (itemsToCreate[0] instanceof game.equipment.container.board.Boardless)
+			{
+				for (int i=0; i<itemsToCreate.length; i++) {
+					if (itemsToCreate[i] instanceof game.equipment.container.board.Boardless)
+					{
+						Boardless prevBoard = (Boardless) itemsToCreate[i];
+						
+						if (game.lastMoveOnEdge()) 
+						{
+							DimConstant newDimConstant = new DimConstant(prevBoard.dimension() + Constants.GROWING_STEP);
+							Boardless newBoard = new Boardless(prevBoard.tiling(), newDimConstant, prevBoard.largeStack());
+							newBoard.createTopology(0, 0);
+							itemsToCreate2[i] = newBoard;
+							
+							DimConstant newDimConstant1 = new DimConstant(prevBoard.dimension() + Constants.GROWING_STEP);
+							Boardless newBoard1 = new Boardless(prevBoard.tiling(), newDimConstant1, prevBoard.largeStack());
+							//newBoard1.createTopology(0, 0);
+							itemsToCreate[i] = newBoard1;
+						}
+						else 
+						{
+							itemsToCreate2[i] = ((Boardless) itemsToCreate[i]).clone();
+						}
+					}
+					else if (itemsToCreate[i] instanceof game.equipment.container.other.Hand)
+					{
+						itemsToCreate2[i] = ((Hand) itemsToCreate[i]).clone();
+					}
+					else if (itemsToCreate[i] instanceof game.equipment.component.Piece)
+					{
+						itemsToCreate2[i] = ((Piece) itemsToCreate[i]).clone();
+					}
+					else if (itemsToCreate[i] instanceof game.equipment.component.tile.Tile)
+					{
+						itemsToCreate2[i] = ((Tile) itemsToCreate[i]).clone();
+					}
+					else 
+					{
+						throw new UnsupportedOperationException("Type " +itemsToCreate[i].getClass().getName() + " not implement regarding copy of component in equipment.");
+					}
+
+					//System.out.println("Equipment.java createItems() itemsToCreate2 : "+Arrays.toString(itemsToCreate2));
+				}
+			}
+			
+			
 			// To sort the list of items.
 			final Item[] sortItems = sort(itemsToCreate);
 	
@@ -384,6 +440,10 @@ public final class Equipment extends BaseLudeme implements Serializable
 					}
 					else
 					{
+						/*System.out.println("i : "+item);
+						if (c.isBoardless()) {
+							System.out.println("i1 : "+item);
+						}*/
 						containersWIP.add(c);
 					}
 	
@@ -567,8 +627,14 @@ public final class Equipment extends BaseLudeme implements Serializable
 			map.create(game);
 		}
 		
-		// We're done, so can clean up this memory
-		itemsToCreate = null;
+		if (game.isBoardless()) {
+			itemsToCreate = itemsToCreate2;
+		}
+		else 
+		{
+			// We're done, so can clean up this memory
+			itemsToCreate = null;
+		}
 
 		if (game.hasTrack())
 		{
@@ -594,6 +660,8 @@ public final class Equipment extends BaseLudeme implements Serializable
 			}
 			game.board().setOwnedTrack(ownedTracks);
 		}
+		
+		game.setLastMoveOnEdge(false);
 		
 	}
 
@@ -1034,6 +1102,26 @@ public final class Equipment extends BaseLudeme implements Serializable
 		return new Integer[0][0];
 	}
 	
+	public void resetEquipment(Game game) 
+	{
+		containers = null;
+		components = null;
+		regions = null;
+		maps = null;
+		totalDefaultSites = 0;
+		//private int[] containerId;
+		//private int[] offset;
+		//private int[] sitesFrom;
+		vertexWithHints = new Integer[0][0];
+		cellWithHints = new Integer[0][0];
+		edgeWithHints = new Integer[0][0];
+		vertexHints = new Integer[0];
+		cellHints = new Integer[0];
+		edgeHints = new Integer[0];
+		//private Item[] itemsToCreate;
+		createItems(game);
+	}
+	
 	/**
 	 * @param newContainerId
 	 */
@@ -1048,5 +1136,13 @@ public final class Equipment extends BaseLudeme implements Serializable
 	public void setSitesFrom(int[] newSitesFrom) 
 	{
 		this.sitesFrom = newSitesFrom;
+	}
+
+	/**
+	 * @return The items to create.
+	 */
+	public Item[] itemsToCreate()
+	{
+		return itemsToCreate;
 	}
 }

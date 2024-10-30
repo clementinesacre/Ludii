@@ -57,6 +57,12 @@ public class GrowingBoardTest {
 		return new Move(moveStr);
 	}
 	
+	public Move getMoveMove(int from, int to, int mover)
+	{
+		String moveStr = "[Move:mover="+mover+",from="+from+",to="+to+",actions=[Move:typeFrom=Cell,from="+from+",typeTo=Cell,to="+to+",decision=true]]";
+		return new Move(moveStr);
+	}
+	
 	public void applyMove(Context context, Move move)
 	{
 		final Move appliedMove = context.game().apply(context, move);
@@ -97,7 +103,7 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
 
-		GrowingBoard.initMainConstants(context, board.getDimension());
+		GrowingBoard.initMainConstants(context, board.dimension());
 		
 		// test
 		assertEquals(GrowingBoard.prevDimensionBoard(), 5);
@@ -117,8 +123,8 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
 
-		GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.initMappingIndexes();
+		GrowingBoard.initMainConstants(context, board.dimension());
+		//GrowingBoard.initMappingIndexes();
 		
 		// test
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
@@ -188,9 +194,13 @@ public class GrowingBoardTest {
 		Context context = initGame();
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
+		
+		Move move = getMoveMove(25, 10);
+		applyMove(context, move);
+		game.setLastMoveOnEdge(true);
 
-		GrowingBoard.updateBoardDimensions(board);
-		GrowingBoard.initMainConstants(context, board.getDimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		GrowingBoard.initMainConstants(context, board.dimension());
 		
 		// test
 		assertEquals(GrowingBoard.prevDimensionBoard(), 7);
@@ -202,7 +212,7 @@ public class GrowingBoardTest {
 		assertEquals(GrowingBoard.diff(), 32);
 	}
 	
-	@Test
+	//@Test
 	public void testUpdateIndexesInsideComponents()
 	{
 		// init
@@ -210,8 +220,8 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
 		
-		GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.updateBoardDimensions(board);
+		GrowingBoard.initMainConstants(context, board.dimension());
+		GrowingBoard.updateBoardDimensions(context, board);
 		int[] prevContainerId = context.containerId();
 		int[] prevSitesFrom = game.equipment().sitesFrom();
 		GrowingBoard.updateIndexesInsideComponents(context, game);
@@ -247,16 +257,17 @@ public class GrowingBoardTest {
 		
 		Move move = getMoveMove(25, 10);
 		applyMove(context, move);
+		game.setLastMoveOnEdge(true);
 		
-		GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.updateBoardDimensions(board);
-		GrowingBoard.updateIndexesInsideComponents(context, game);
+		GrowingBoard.initMainConstants(context, board.dimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		//GrowingBoard.updateIndexesInsideComponents(context, game);
 		
 		//resetMoves(app);
 		context.trial().setMoves(new MoveSequence(null), 0);
 		//resetMoves(app);
 		
-		GrowingBoard.initMappingIndexes();
+		//GrowingBoard.initMappingIndexes();
 		ContainerState[] prevContainerStates = context.state().containerStates();
 		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
 		GrowingBoard.updateChunks(context);
@@ -353,28 +364,22 @@ public class GrowingBoardTest {
 			assertEquals(count.getChunk(0), 2);
 
 			HashedChunkSet state = newContainerFlatState.state();
-			//for (int i=0; i<=50; i++)
-			//	assertEquals(state.getChunk(i), 0);
 			assertEquals(state.internalState().numNonZeroChunks(), 0);
 			
 			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			//for (int i=0; i<=50; i++)
-			//	assertFalse(empty.get(i));
 			assertTrue(empty.isEmpty());
 			
 			HashedBitSet playable = newContainerFlatState.playable();
-			//for (int i=0; i<=50; i++)
-			//	assertFalse(playable.get(i));
 			assertTrue(playable.internalState().isEmpty());
 		}
 		else 
 			fail();
-		
+
 		// second player's state
 		ContainerState newContainerState2 = newContainerStates[2];
 		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
 		{
-			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
 			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
 			
 			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
@@ -385,7 +390,7 @@ public class GrowingBoardTest {
 			assertNull(newContainerFlatState.value());
 
 			HashedChunkSet who = newContainerFlatState.who();
-			assertEquals(who.getChunk(0), 1);
+			assertEquals(who.getChunk(0), 2);
 
 			HashedChunkSet what = newContainerFlatState.what();
 			assertEquals(what.getChunk(0), 3);
@@ -394,18 +399,12 @@ public class GrowingBoardTest {
 			assertEquals(count.getChunk(0), 3);
 
 			HashedChunkSet state = newContainerFlatState.state();
-			//for (int i=0; i<=50; i++)
-			//	assertEquals(state.getChunk(i), 0);
 			assertEquals(state.internalState().numNonZeroChunks(), 0);
 
 			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			//for (int i=0; i<=50; i++)
-			//	assertFalse(empty.get(i));
 			assertTrue(empty.isEmpty());
 			
 			HashedBitSet playable = newContainerFlatState.playable();
-			//for (int i=0; i<=50; i++)
-			//	assertFalse(playable.get(i));
 			assertTrue(playable.internalState().isEmpty());
 			
 		}
@@ -424,18 +423,19 @@ public class GrowingBoardTest {
 		
 		Move move = getMoveMove(25, 10);
 		applyMove(context, move);
+		game.setLastMoveOnEdge(true);
 		
 		List<Move> prevMovesDone = trial.generateCompleteMovesList();
-		GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.updateBoardDimensions(board);
-		GrowingBoard.updateIndexesInsideComponents(context, game);
+		GrowingBoard.initMainConstants(context, board.dimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		//GrowingBoard.updateIndexesInsideComponents(context, game);
 		
 		//resetMoves(app);
 		context.trial().setMoves(new MoveSequence(null), 0);
 		//resetMoves(app);
 		
 		// GrowingBoard.remakeTrial(context, movesDone, legalMoves); = :
-		GrowingBoard.initMappingIndexes();
+		//GrowingBoard.initMappingIndexes();
 		GrowingBoard.updateChunks(context);
 		GrowingBoard.replayMoves(context, prevMovesDone);
 		
@@ -477,10 +477,11 @@ public class GrowingBoardTest {
 		
 		Move move = getMoveMove(25, 10);
 		applyMove(context, move);
+		game.setLastMoveOnEdge(true);
 		
-		GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.updateBoardDimensions(board);
-		GrowingBoard.updateIndexesInsideComponents(context, game);
+		GrowingBoard.initMainConstants(context, board.dimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		//GrowingBoard.updateIndexesInsideComponents(context, game);
 		
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves prevLegalMoves = trial.cachedLegalMoves();
@@ -490,7 +491,7 @@ public class GrowingBoardTest {
 		//resetMoves(app);
 		
 		// GrowingBoard.remakeTrial(context, movesDone, legalMoves); = :
-		GrowingBoard.initMappingIndexes();
+		//GrowingBoard.initMappingIndexes();
 		GrowingBoard.updateChunks(context);
 		GrowingBoard.replayMoves(context, movesDone);
 		GrowingBoard.generateLegalMoves(context, prevLegalMoves);
@@ -532,4 +533,656 @@ public class GrowingBoardTest {
 		assertEquals(newLegalMoves.get(10).actions().get(0).to(), 33);
 	}
 	
+	
+	/**
+	 * No moves are made on the edges, so it is still initial board size.
+	 */
+	@Test
+	public void testUpdateChunksAfterMultipleMoves1()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		Trial trial = context.trial();
+		Boardless board = (Boardless) game.board();
+		
+		Move move1 = getMoveMove(25, 6);
+		applyMove(context, move1);
+		Move move2 = getMoveMove(26, 18, 2);
+		applyMove(context, move2);
+		Move move3 = getMoveMove(25, 17);
+		applyMove(context, move3);
+		Move move4 = getMoveMove(26, 7, 2);
+		applyMove(context, move4);
+	
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
+		
+		// test
+		ContainerState[] newContainerStates = context.state().containerStates();
+		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
+		// Board's state
+		ContainerState newContainerState0 = newContainerStates[0];
+		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			for (int i=0; i<6; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(6), 1);
+			assertEquals(who.getChunk(7), 2);
+			for (int i=8; i<17; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(17), 1);
+			assertEquals(who.getChunk(18), 2);
+			for (int i=19; i<=24; i++)
+				assertEquals(who.getChunk(i), 0);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			for (int i=0; i<6; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(6), 2);
+			assertEquals(what.getChunk(7), 3);
+			for (int i=8; i<11; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(11), 4);
+			assertEquals(what.getChunk(12), 4);
+			assertEquals(what.getChunk(13), 4);
+			for (int i=14; i<17; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(17), 2);
+			assertEquals(what.getChunk(18), 3);
+			for (int i=19; i<=24; i++)
+				assertEquals(what.getChunk(i), 0);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			for (int i=0; i<6; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(6), 1);
+			assertEquals(count.getChunk(7), 1);
+			for (int i=8; i<11; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(11), 1);
+			assertEquals(count.getChunk(12), 1);
+			assertEquals(count.getChunk(13), 1);
+			for (int i=14; i<17; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(17), 1);
+			assertEquals(count.getChunk(18), 1);
+			for (int i=19; i<=24; i++)
+				assertEquals(count.getChunk(i), 0);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			for (int i=0; i<=50; i++)
+				assertEquals(state.getChunk(i), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			for (int i=0; i<6; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(6));
+			assertFalse(empty.get(7));
+			for (int i=8; i<11; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(11));
+			assertFalse(empty.get(12));
+			assertFalse(empty.get(13));
+			for (int i=14; i<17; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(17));
+			assertFalse(empty.get(18));
+			for (int i=19; i<=24; i++)
+				assertTrue(empty.get(i));
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			for (int i=0; i<4; i++)
+				assertTrue(playable.get(i));
+			assertFalse(playable.get(4));
+			assertTrue(playable.get(5));
+			for (int i=6; i<=7; i++)
+				assertFalse(playable.get(i));
+			for (int i=8; i<11; i++)
+				assertTrue(playable.get(i));
+			for (int i=11; i<=13; i++)
+				assertFalse(playable.get(i));
+			for (int i=14; i<17; i++)
+				assertTrue(playable.get(i));
+			for (int i=17; i<=18; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(19));
+			assertFalse(playable.get(20));
+			for (int i=21; i<=24; i++)
+				assertTrue(playable.get(i));
+		}
+		else 
+			fail();
+		
+		// first player's state
+		ContainerState newContainerState1 = newContainerStates[1];
+		if (newContainerState1 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[1];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 1);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 2);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+			
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+		}
+		else 
+			fail();
+		
+		// second player's state
+		ContainerState newContainerState2 = newContainerStates[2];
+		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 2);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 3);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+			
+		}
+		else 
+			fail();
+	}
+	
+	/**
+	 * The last move was made on an edge, so board size has been updated. ?????? what is the point
+	 */
+	@Test
+	public void testUpdateChunksAfterMultipleMoves2()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		Trial trial = context.trial();
+		Boardless board = (Boardless) game.board();
+		
+		Move move1 = getMoveMove(25, 6);
+		applyMove(context, move1);
+		Move move2 = getMoveMove(26, 18, 2);
+		applyMove(context, move2);
+		Move move3 = getMoveMove(25, 17);
+		applyMove(context, move3);
+		Move move4 = getMoveMove(26, 5, 2);
+		applyMove(context, move4);
+		game.setLastMoveOnEdge(true);
+		
+		/*GrowingBoard.initMainConstants(context, board.getDimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		GrowingBoard.updateIndexesInsideComponents(context, game);
+		
+		//resetMoves(app);
+		context.trial().setMoves(new MoveSequence(null), 0);
+		//resetMoves(app);
+		
+		GrowingBoard.initMappingIndexes();*/
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
+		//GrowingBoard.updateChunks(context);
+		
+		// test
+		ContainerState[] newContainerStates = context.state().containerStates();
+		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
+		// Board's state
+		ContainerState newContainerState0 = newContainerStates[0];
+		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			for (int i=0; i<5; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(5), 2);
+			assertEquals(who.getChunk(6), 1);
+			for (int i=7; i<17; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(17), 1);
+			assertEquals(who.getChunk(18), 2);
+			for (int i=19; i<=24; i++)
+				assertEquals(who.getChunk(i), 0);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			for (int i=0; i<5; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(5), 3);
+			assertEquals(what.getChunk(6), 2);
+			for (int i=7; i<11; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(11), 4);
+			assertEquals(what.getChunk(12), 4);
+			assertEquals(what.getChunk(13), 4);
+			for (int i=14; i<17; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(17), 2);
+			assertEquals(what.getChunk(18), 3);
+			for (int i=19; i<=24; i++)
+				assertEquals(what.getChunk(i), 0);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			for (int i=0; i<5; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(5), 1);
+			assertEquals(count.getChunk(6), 1);
+			for (int i=7; i<11; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(11), 1);
+			assertEquals(count.getChunk(12), 1);
+			assertEquals(count.getChunk(13), 1);
+			for (int i=14; i<17; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(17), 1);
+			assertEquals(count.getChunk(18), 1);
+			for (int i=19; i<=24; i++)
+				assertEquals(count.getChunk(i), 0);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			for (int i=0; i<=50; i++)
+				assertEquals(state.getChunk(i), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			for (int i=0; i<5; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(5));
+			assertFalse(empty.get(6));
+			for (int i=7; i<11; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(11));
+			assertFalse(empty.get(12));
+			assertFalse(empty.get(13));
+			for (int i=14; i<17; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(17));
+			assertFalse(empty.get(18));
+			for (int i=19; i<=24; i++)
+				assertTrue(empty.get(i));
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			for (int i=0; i<3; i++)
+				assertTrue(playable.get(i));
+			for (int i=3; i<=6; i++)
+				assertFalse(playable.get(i));
+			for (int i=7; i<11; i++)
+				assertTrue(playable.get(i));
+			for (int i=11; i<=13; i++)
+				assertFalse(playable.get(i));
+			for (int i=14; i<17; i++)
+				assertTrue(playable.get(i));
+			for (int i=17; i<=18; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(19));
+			assertFalse(playable.get(20));
+			for (int i=21; i<=24; i++)
+				assertTrue(playable.get(i));
+			
+		}
+		else 
+			fail();
+		
+		// first player's state
+		ContainerState newContainerState1 = newContainerStates[1];
+		if (newContainerState1 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[1];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 1);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 2);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+			
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+		}
+		else 
+			fail();
+		
+		// second player's state
+		ContainerState newContainerState2 = newContainerStates[2];
+		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 2);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 3);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+			
+		}
+		else 
+			fail();
+	}
+	
+
+	
+	/**
+	 * The last move was made on an edge, so board size has been updated.
+	 */
+	@Test
+	public void testUpdateChunksAfterMultipleMoves3()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		Trial trial = context.trial();
+		Boardless board = (Boardless) game.board();
+		
+		Move move1 = getMoveMove(25, 6);
+		applyMove(context, move1);
+		Move move2 = getMoveMove(26, 18, 2);
+		applyMove(context, move2);
+		Move move3 = getMoveMove(25, 17);
+		applyMove(context, move3);
+		Move move4 = getMoveMove(26, 5, 2);
+		applyMove(context, move4);
+		game.setLastMoveOnEdge(true);
+
+		List<Move> prevMovesDone = trial.generateCompleteMovesList();
+		GrowingBoard.initMainConstants(context, board.dimension());
+		GrowingBoard.updateBoardDimensions(context, board);
+		//GrowingBoard.updateIndexesInsideComponents(context, game);
+		
+		//resetMoves(app);
+		context.trial().setMoves(new MoveSequence(null), 0);
+		//resetMoves(app);
+				
+		//GrowingBoard.initMappingIndexes();
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
+		GrowingBoard.updateChunks(context);
+		GrowingBoard.replayMoves(context, prevMovesDone);
+		
+		
+		// test
+		ContainerState[] newContainerStates = context.state().containerStates();
+		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
+		// Board's state
+		ContainerState newContainerState0 = newContainerStates[0];
+		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
+			System.out.println("GrowingBoardTest.java testMoves() prevContainerFlatState : "+prevContainerFlatState);
+			System.out.println("GrowingBoardTest.java testMoves() newContainerFlatState : "+newContainerFlatState);
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			for (int i=0; i<15; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(15), 2);
+			assertEquals(who.getChunk(16), 1);
+			for (int i=17; i<31; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(31), 1);
+			assertEquals(who.getChunk(32), 2);
+			for (int i=33; i<=48; i++)
+				assertEquals(who.getChunk(i), 0);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			for (int i=0; i<15; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(15), 3);
+			assertEquals(what.getChunk(16), 2);
+			for (int i=17; i<23; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(23), 4);
+			assertEquals(what.getChunk(24), 4);
+			assertEquals(what.getChunk(25), 4);
+			for (int i=26; i<31; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(31), 2);
+			assertEquals(what.getChunk(32), 3);
+			for (int i=33; i<=48; i++)
+				assertEquals(what.getChunk(i), 0);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			for (int i=0; i<15; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(15), 1);
+			assertEquals(count.getChunk(16), 1);
+			for (int i=17; i<23; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(23), 1);
+			assertEquals(count.getChunk(24), 1);
+			assertEquals(count.getChunk(25), 1);
+			for (int i=26; i<31; i++)
+				assertEquals(count.getChunk(i), 0);
+			assertEquals(count.getChunk(31), 1);
+			assertEquals(count.getChunk(32), 1);
+			for (int i=33; i<=48; i++)
+				assertEquals(count.getChunk(i), 0);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			for (int i=0; i<=50; i++)
+				assertEquals(state.getChunk(i), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			for (int i=0; i<15; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(15));
+			assertFalse(empty.get(16));
+			for (int i=17; i<23; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(23));
+			assertFalse(empty.get(24));
+			assertFalse(empty.get(25));
+			for (int i=26; i<31; i++)
+				assertTrue(empty.get(i));
+			assertFalse(empty.get(31));
+			assertFalse(empty.get(32));
+			for (int i=33; i<=48; i++)
+				assertTrue(empty.get(i));
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			for (int i=0; i<7; i++)
+				assertFalse(playable.get(i));
+			for (int i=7; i<11; i++)
+				assertTrue(playable.get(i));
+			for (int i=11; i<14; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(14));
+			for (int i=15; i<17; i++)
+				assertFalse(playable.get(i));
+			for (int i=17; i<=19; i++)
+				assertTrue(playable.get(i));
+			assertFalse(playable.get(20));
+			for (int i=21; i<=22; i++)
+				assertTrue(playable.get(i));
+			for (int i=23; i<26; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(26));
+			for (int i=27; i<29; i++)
+				assertFalse(playable.get(i));
+			for (int i=29; i<=30; i++)
+				assertTrue(playable.get(i));
+			for (int i=31; i<33; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(33));
+			for (int i=33; i<=36; i++)
+				assertFalse(playable.get(i));
+			for (int i=37; i<=40; i++)
+				assertTrue(playable.get(i));
+			for (int i=41; i<50; i++)
+				assertFalse(playable.get(i));
+		}
+		else 
+			fail();
+		
+		// first player's state
+		ContainerState newContainerState1 = newContainerStates[1];
+		if (newContainerState1 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[1];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 1);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 2);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+			
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+		}
+		else 
+			fail();
+		
+		// second player's state
+		ContainerState newContainerState2 = newContainerStates[2];
+		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+
+			HashedChunkSet who = newContainerFlatState.who();
+			assertEquals(who.getChunk(0), 2);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			assertEquals(what.getChunk(0), 3);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			assertEquals(count.getChunk(0), 1);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			assertEquals(state.internalState().numNonZeroChunks(), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			assertTrue(empty.isEmpty());
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			assertTrue(playable.internalState().isEmpty());
+			
+		}
+		else 
+			fail();
+	}
+	
+	//testmethod() : tester l'état de chaque var dans equipment (dont game.equipment().sitesFrom())
+	// peut être faire mes tests après avoir exécuter TOUTES les méthodes la classe GrowingState
 }

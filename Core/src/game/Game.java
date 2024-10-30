@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -161,6 +162,9 @@ public class Game extends BaseLudeme implements API, Serializable
 	
 	/** Maximum number of moves for this game */
 	protected int maxMovesLimit = Constants.DEFAULT_MOVES_LIMIT;
+	
+	/** Keep track of whether the last move was made on an edge - only used in the case of Boardless game */
+	private boolean lastMoveOnEdge = false;
 
 	//-----------------------------State/Context-------------------------------
 
@@ -663,6 +667,24 @@ public class Game extends BaseLudeme implements API, Serializable
 	public int numVoteStrings()
 	{
 		return voteStringsTable.size();
+	}
+	
+	/**
+	 * @return true if the last move have been made on an edge 
+	 */
+	public boolean lastMoveOnEdge()
+	{
+		return lastMoveOnEdge;
+	}
+	
+	/**
+	 * @param newLastMoveOnEdge update the sate of lastMoveOnEdge, true if the last move 
+	 * have been made on an edge, false if not or if the boardless board has been indeed 
+	 * updated following the move.
+	 */
+	public void setLastMoveOnEdge(boolean newLastMoveOnEdge)
+	{
+		lastMoveOnEdge = newLastMoveOnEdge;
 	}
 	
 	//---------------------Properties of the game------------------------------
@@ -2453,101 +2475,13 @@ public class Game extends BaseLudeme implements API, Serializable
 		passMove.setMovesLudeme(new Pass(null));
 		return passMove;
 	}
-
+	
 	/**
-	 * Initialise the game graph and other variables.
+	 * Apply all precomputations needed at the beginning of the game.
+	 * Is also used when the plate is changing size (in boardless cases). 
 	 */
-	@Override
-	public void create()
+	public void precomputations() 
 	{
-		if (finishedPreprocessing)
-			System.err.println("Warning! Game.create() has already previously been called on " + name());
-
-		if (equipment == null) // If no equipment defined we use the default one.
-			equipment = new Equipment
-			(
-				new Item[]
-						{ 
-							new Board
-							(
-								new RectangleOnSquare
-									(
-										new DimConstant(3), 
-										null, 
-										null, 
-										null
-									), 
-								null,
-								null,
-								null, 
-								null, 
-								null,
-								Boolean.FALSE
-							) 
-						}
-			);
-
-		if (rules == null) // If no rules defined we use the default ones.
-		{
-			rules = new Rules
-					(
-						null, // no metarules
-						null, // empty board
-					new Play
-						(
-							game.rules.play.moves.decision.Move.construct
-							(
-								MoveSiteType.Add, 
-								null,
-								new To
-								(
-									null, 
-									SitesEmpty.construct(null, null), 
-									null, 
-									null, 
-									null,
-									null, 
-									null
-								), 
-							null, 
-							null,
-							null
-							)
-						),
-					new End
-					(
-						new game.rules.end.If
-						(
-							Is.construct
-							(
-								IsLineType.Line, null, new IntConstant(3), 
-								null, 
-								null,
-								null, 
-								null, 
-								null, 
-								null, 
-								null, 
-								null, 
-								null,
-								null,
-								null,
-								null,
-								null,
-								null
-							),
-							null,
-							null,
-							new Result(RoleType.Mover, ResultType.Win)
-						), 
-						null
-					)
-				);
-		}
-
-		// Create the times of the equipment.
-		equipment.createItems(this);
-
 		// We add the index of the owner at the end of the name of each component.
 		for (int i = 1; i < equipment.components().length; i++)
 		{
@@ -2658,9 +2592,9 @@ public class Game extends BaseLudeme implements API, Serializable
 		// + ", active=" + stateReference.active());
 
 		// Create mappings between ints and moves
-//		for (final Phase phase : rules.phases())
-//			phase.play().moves().updateMoveIntMapper(this, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE,
-//					Integer.MIN_VALUE);
+//				for (final Phase phase : rules.phases())
+//					phase.play().moves().updateMoveIntMapper(this, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE,
+//							Integer.MIN_VALUE);
 
 		// Precompute distance tables which rely on preprocessing done above
 		// (e.g. regions)
@@ -2675,6 +2609,103 @@ public class Game extends BaseLudeme implements API, Serializable
 		addCustomPlayouts();
 		
 		finishedPreprocessing = true;
+	}
+	
+	/**
+	 * Initialise the game graph and other variables.
+	 */
+	@Override
+	public void create()
+	{
+		if (finishedPreprocessing)
+			System.err.println("Warning! Game.create() has already previously been called on " + name());
+
+		if (equipment == null) // If no equipment defined we use the default one.
+			equipment = new Equipment
+			(
+				new Item[]
+						{ 
+							new Board
+							(
+								new RectangleOnSquare
+									(
+										new DimConstant(3), 
+										null, 
+										null, 
+										null
+									), 
+								null,
+								null,
+								null, 
+								null, 
+								null,
+								Boolean.FALSE
+							) 
+						}
+			);
+
+		if (rules == null) // If no rules defined we use the default ones.
+		{
+			rules = new Rules
+					(
+						null, // no metarules
+						null, // empty board
+					new Play
+						(
+							game.rules.play.moves.decision.Move.construct
+							(
+								MoveSiteType.Add, 
+								null,
+								new To
+								(
+									null, 
+									SitesEmpty.construct(null, null), 
+									null, 
+									null, 
+									null,
+									null, 
+									null
+								), 
+							null, 
+							null,
+							null
+							)
+						),
+					new End
+					(
+						new game.rules.end.If
+						(
+							Is.construct
+							(
+								IsLineType.Line, null, new IntConstant(3), 
+								null, 
+								null,
+								null, 
+								null, 
+								null, 
+								null, 
+								null, 
+								null, 
+								null,
+								null,
+								null,
+								null,
+								null,
+								null
+							),
+							null,
+							null,
+							new Result(RoleType.Mover, ResultType.Win)
+						), 
+						null
+					)
+				);
+		}
+	
+		// Create the times of the equipment.
+		equipment.createItems(this);
+
+		precomputations();
 	}
 	
 	/**
@@ -3047,29 +3078,6 @@ public class Game extends BaseLudeme implements API, Serializable
 		finally
 		{
 			context.getLock().unlock();
-
-			/*List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("Game.java apply() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
-			if (isBoardless() && isTouchingEdge(perimeter, move.to())) 
-			{
-				//todo check that the move is applied on a board type container
-				System.out.println("Game.java apply() : touching an edge in a boardless game --> need to increase board size");
-				
-				
-				// Test 2
-				//board().init(board().defaultSite(), true);
-				Boardless currBoard = (Boardless) board();
-				GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(currBoard.getDimension()+1), null, null, null);
-				//Boolean.valueOf(false)
-				board().setGraphFunction(newGraphFunction);
-				//board().createTopology(0, 0);
-				
-				//graphicsCache().boardImage() = null; //voir ligne 292 PlayerApp.java
-				//bridge.graphicsRenderer().drawBoard(context, g2d, containerPlacement.unscaledPlacement());
-				
-				
-				System.out.println("Game.java apply() OUIIIIIIIIIIIIIII ------------------------------------------------------------------------------------------------------------------------------");
-			}*/
 		}
 	}
 	
@@ -3965,6 +3973,14 @@ public class Game extends BaseLudeme implements API, Serializable
 	}
 	
 	/**
+	 * @param newFinishedPreprocessing 
+	 */
+	public void setFinishedPreprocessing(boolean newFinishedPreprocessing)
+	{
+		finishedPreprocessing = newFinishedPreprocessing;
+	}
+	
+	/**
 	 * @return True if the game contains a component owned by a shared player.
 	 */
 	public boolean hasSharedPlayer()
@@ -4088,10 +4104,13 @@ public class Game extends BaseLudeme implements API, Serializable
 	}
 	
 	/**
-	 * @param app
+	 * Update the equipment and reapply the pre-calculation after updating 
+	 * the board size (in the case of a game without a board).
 	 */
-	/*public void setPlayerApp(PlayerApp app) {
-		this.app = app;
-	}*/
+	public void update()
+	{
+		equipment.resetEquipment(this);
+		precomputations();
+	}
 
 }
