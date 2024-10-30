@@ -160,6 +160,25 @@ public class Board extends Container
 		this.largeStack = largeStack == null ? false : largeStack.booleanValue();
 	}
 	
+	/**
+	 * Copy constructor.
+	 *
+	 * Protected because we do not want the compiler to detect it, this is called
+	 * only in Clone method.
+	 * 
+	 * @param other
+	 */
+	protected Board(final Board other)
+	{
+		super(other);
+		this.graph = other.graph;
+		this.graphFunction = other.graphFunction;
+		this.edgeRange = other.edgeRange;
+		this.cellRange = other.cellRange;
+		this.vertexRange = other.vertexRange;
+		this.largeStack = other.largeStack;
+	}
+	
 	//-------------------------------------------------------------------------
 
 	/**
@@ -444,8 +463,6 @@ public class Board extends Container
 
 		topology.clearTopology();
 		createTopology(0, 0);
-		
-		
 	}
 	
 	
@@ -459,6 +476,12 @@ public class Board extends Container
 
 		if (cellRange == null)
 			cellRange = new Range(new IntConstant(0), new IntConstant(0));
+	}
+	
+	@Override
+	public Board clone()
+	{
+		return new Board(this);
 	}
 
 }

@@ -5,6 +5,8 @@ import java.util.BitSet;
 import annotations.Name;
 import annotations.Opt;
 import game.Game;
+import game.equipment.component.tile.Tile;
+import game.equipment.container.other.Hand;
 import game.functions.dim.DimConstant;
 import game.functions.dim.DimFunction;
 import game.functions.graph.generators.basis.hex.HexagonOnHex;
@@ -30,6 +32,7 @@ public class Boardless extends Board
 {
 	private static final long serialVersionUID = 1L;
 	private int dimension;
+	private TilingBoardlessType tiling;
 
 	//-------------------------------------------------------------------------
 
@@ -64,6 +67,22 @@ public class Boardless extends Board
 
 		this.style = ContainerStyleType.Boardless;
 		this.dimension = dimension.eval();
+		this.tiling = tiling;
+	}
+	
+	/**
+	 * Copy constructor.
+	 *
+	 * Protected because we do not want the compiler to detect it, this is called
+	 * only in Clone method.
+	 * 
+	 * @param other
+	 */
+	protected Boardless(final Boardless other)
+	{
+		super(other);
+		this.dimension = other.dimension;
+		this.tiling = other.tiling;
 	}
 
 	@Override
@@ -114,7 +133,7 @@ public class Boardless extends Board
 	 * 
 	 * @return dimension of the board.
 	 */
-	public int getDimension()
+	public int dimension()
 	{
 		return this.dimension;
 	}
@@ -126,6 +145,20 @@ public class Boardless extends Board
 	 */
 	public void setDimension(int newDimension) {
 		this.dimension = newDimension;
+	}
+	
+	@Override
+	public Boardless clone()
+	{
+		return new Boardless(this);
+	}
+	
+	/**
+	 * @return tiling of the board.
+	 */
+	public TilingBoardlessType tiling()
+	{
+		return this.tiling;
 	}
 	
 }
