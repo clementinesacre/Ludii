@@ -17,7 +17,8 @@ import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 
-public class GrowingBoardVisual {
+public class GrowingBoardVisual extends GrowingBoard
+{
 	
 	/** 
 	 * Updates the board dimensions and update the visual to reflect the new size.
@@ -27,7 +28,7 @@ public class GrowingBoardVisual {
 	 */
 	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
 	{		
-		GrowingBoard.updateBoardDimensions(app.manager().ref().context(), board);
+		updateBoardDimensions(app.manager().ref().context(), board);
 		
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -46,9 +47,8 @@ public class GrowingBoardVisual {
 	 * Code taken from ToolView.jumpToMove().
 	 * 
 	 * @param app
-	 * @param context
 	 */
-	public static void resetMoves(final PlayerApp app)
+	private static void resetMoves(final PlayerApp app)
 	{
 		Context context = app.manager().ref().context();
 		
@@ -92,13 +92,23 @@ public class GrowingBoardVisual {
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
 		resetMoves(app);
-		GrowingBoard.remakeTrial(context, movesDone, legalMoves);
+		remakeTrial(context, movesDone, legalMoves);
 	}
-
 	
+	public static void impactBoard(final PlayerApp app, Context context)
+	{
+		Game game = context.game();
+		Boardless board = (Boardless) game.board();
+		initMainConstants(context, board.dimension());
+		
+		// TODO check that the move is applied on a board type container
+		System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
+		updateBoardDimensions(app, board);
+		remakeTrial(app);
+	}
 	/** 
 	 * Check if the move was made on a boardless board and on one edge of the board. 
-	 * If so, update the size of the  board.
+	 * If so, update the size of the  board and update the visual.
 	 * 
 	 * @param app
 	 * @param move
@@ -106,27 +116,18 @@ public class GrowingBoardVisual {
 	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
 	{
 		final Context context = app.manager().ref().context();
-		Game game = context.game();
 		
-		if (game.isBoardless()) 
+		if (context.game().isBoardless()) 
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+GrowingBoard.isTouchingEdge(perimeter, move.to()));
+			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			
-			if (GrowingBoard.isTouchingEdge(perimeter, move.to())) 
+			if (isTouchingEdge(perimeter, move.to())) 
 			{
-				game.setLastMoveOnEdge(true);
-				Boardless board = (Boardless) game.board();
-				GrowingBoard.initMainConstants(context, board.dimension());
-				
-				// TODO check that the move is applied on a board type container
-				System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
-				updateBoardDimensions(app, board);
-				//GrowingBoard.updateIndexesInsideComponents(context, game);
-				remakeTrial(app);
+				impactBoard(app, context);
 			}
 		}
 	}

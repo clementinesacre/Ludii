@@ -1,36 +1,32 @@
 package games;
 
+import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-
-import org.junit.Test;
-
 import app.move.GrowingBoard;
 import game.Game;
+import game.equipment.Equipment;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
-import game.util.equipment.Region;
 import main.collections.ChunkSet;
 import other.GameLoader;
 import other.trial.Trial;
 import other.context.Context;
-import other.model.Model;
 import other.move.Move;
-import other.move.MoveSequence;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
+import other.topology.Cell;
 import other.topology.TopologyElement;
 
 /**
@@ -42,70 +38,117 @@ import other.topology.TopologyElement;
 //@SuppressWarnings("static-method")
 public class GrowingBoardTest {
 	
+	/**
+	 * Initializes the game and creates the context.
+	 * 
+	 * @return the context
+	 */
 	public Context initGame()
 	{
-		
 		final Game game = GameLoader.loadGameFromName("TestClementine.lud");
 		final Context context = new Context(game, new Trial(game));
 		game.start(context);
 		return context;	
 	}
 	
+	/**
+	 * Creates a move Move that needs a from and a to.
+	 * 
+	 * @param from index of the from position.
+	 * @param to index of the to position.
+	 * @return the create Move.
+	 */
 	public Move getMoveMove(int from, int to)
 	{
 		String moveStr = "[Move:mover=1,from="+from+",to="+to+",actions=[Move:typeFrom=Cell,from="+from+",typeTo=Cell,to="+to+",decision=true]]";
 		return new Move(moveStr);
 	}
 	
+	/**
+	 * Creates a move Move that needs a from and a to.
+	 * 
+	 * @param from index of the from position.
+	 * @param to index of the to position.
+	 * @param mover id of the mover. Starts at 1.
+	 * @return the create Move.
+	 */
 	public Move getMoveMove(int from, int to, int mover)
 	{
 		String moveStr = "[Move:mover="+mover+",from="+from+",to="+to+",actions=[Move:typeFrom=Cell,from="+from+",typeTo=Cell,to="+to+",decision=true]]";
 		return new Move(moveStr);
 	}
 	
-	public void applyMove(Context context, Move move)
+	/**
+	 * Apply a move.
+	 * @param context context on which apply the move.
+	 * @param move move to apply.
+	 */
+	public void applyMove(Context context, int from, int to, int mover)
 	{
-		final Move appliedMove = context.game().apply(context, move);
+		Move move = getMoveMove(from, to, mover);
+		context.game().apply(context, move);
 		context.trial().setNumSubmovesPlayed(context.trial().numSubmovesPlayed() + 1);
 	}
 	
-	@Test
-	public void testTouchingEdgeTrue()
+	/**
+	 * Call all needed methods to update the board.
+	 * 
+	 * @param context context on which to update the board.
+	 * @return list of the containers (like board and hand's players) before updating the board.
+	 */
+	public ContainerState[] updateBoard(Context context)
 	{
-		// init
-		Context context = initGame();
-		
-		Move move = getMoveMove(25, 10);
-		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-		
-		// test		
-		assertTrue(GrowingBoard.isTouchingEdge(perimeter, move.to()));
-	}
-	
-	@Test
-	public void testTouchingEdgeFalse()
-	{
-		// init
-		Context context = initGame();
-		
-		Move move = getMoveMove(25, 7);
-		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-		
-		// test		
-		assertFalse(GrowingBoard.isTouchingEdge(perimeter, move.to()));
-	}
-	
-	@Test
-	public void testInitMainConstants()
-	{
-		// init
-		Context context = initGame();
 		Game game = context.game();
+		Trial trial = context.trial();
 		Boardless board = (Boardless) game.board();
-
-		GrowingBoard.initMainConstants(context, board.dimension());
+		
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		GrowingBoard.impactBoard(context);
+		
+		return prevContainerStates;
+	}
+	
+	/**
+	 * Tests the method that check if a move made is done on an edge (= the perimeter 
+	 * of the board).
+	 */
+	@Test
+	public void testTouchingEdge()
+	{
+		// init
+		Context context = initGame();
+		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		
 		// test
+		for (int i=0; i<6; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=6; i<8; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=9; i<11; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=11; i<14; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=14; i<16; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=16; i<19; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+		for (int i=19; i<=24; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+	}
+	
+	/**
+	 * Tests the method that initializes main constants and data structures, when the 
+	 * board size has been changed 1 time (one edge has been touched).
+	 */
+	@Test
+	public void testInitConstants1TouchedEdge()
+	{
+		// init
+		Context context = initGame();
+
+		updateBoard(context);
+		
+		// test main constants
 		assertEquals(GrowingBoard.prevDimensionBoard(), 5);
 		assertEquals(GrowingBoard.prevAreaBoard(), 25);
 		assertEquals(GrowingBoard.prevTotalIndexes(), 27);
@@ -113,20 +156,8 @@ public class GrowingBoardTest {
 		assertEquals(GrowingBoard.newAreaBoard(), 49);
 		assertEquals(GrowingBoard.newTotalIndexes(), 51);
 		assertEquals(GrowingBoard.diff(), 24);
-	}
-	
-	@Test
-	public void testInitMappingIndexes()
-	{
-		// init
-		Context context = initGame();
-		Game game = context.game();
-		Boardless board = (Boardless) game.board();
-
-		GrowingBoard.initMainConstants(context, board.dimension());
-		//GrowingBoard.initMappingIndexes();
 		
-		// test
+		// test main data structures
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
 		HashMap<Integer, Integer> mappedNewToPrevIndexes = GrowingBoard.mappedNewToPrevIndexes();
 		HashSet<Integer> newAddedIndexes = GrowingBoard.newAddedIndexes();
@@ -187,22 +218,21 @@ public class GrowingBoardTest {
 		assertFalse(newAddedIndexes.contains(50));
 	}
 
+	/**
+	 * Tests the method that initializes main constants and data structures, when the 
+	 * board size has been changed 2 times (two edges have been touched one after the 
+	 * other).
+	 */
 	@Test
-	public void testUpdateBoardDimensions()
+	public void testInitConstants2TouchedEdge()
 	{
 		// init
 		Context context = initGame();
-		Game game = context.game();
-		Boardless board = (Boardless) game.board();
-		
-		Move move = getMoveMove(25, 10);
-		applyMove(context, move);
-		game.setLastMoveOnEdge(true);
 
-		GrowingBoard.updateBoardDimensions(context, board);
-		GrowingBoard.initMainConstants(context, board.dimension());
+		updateBoard(context);
+		updateBoard(context);
 		
-		// test
+		// test main constants
 		assertEquals(GrowingBoard.prevDimensionBoard(), 7);
 		assertEquals(GrowingBoard.prevAreaBoard(), 49);
 		assertEquals(GrowingBoard.prevTotalIndexes(), 51);
@@ -210,30 +240,42 @@ public class GrowingBoardTest {
 		assertEquals(GrowingBoard.newAreaBoard(), 81);
 		assertEquals(GrowingBoard.newTotalIndexes(), 83);
 		assertEquals(GrowingBoard.diff(), 32);
+		
+		// test main data structures
+		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
+		HashMap<Integer, Integer> mappedNewToPrevIndexes = GrowingBoard.mappedNewToPrevIndexes();
+		HashSet<Integer> newAddedIndexes = GrowingBoard.newAddedIndexes();
+		//TODO
 	}
 	
-	//@Test
-	public void testUpdateIndexesInsideComponents()
+	/**
+	 * Tests the indexes used inside the equipment.
+	 */
+	@Test
+	public void testUpdateIndexesInsideEquipment()
 	{
 		// init
 		Context context = initGame();
 		Game game = context.game();
-		Boardless board = (Boardless) game.board();
+		Equipment equipment = game.equipment();
 		
-		GrowingBoard.initMainConstants(context, board.dimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		int[] prevContainerId = context.containerId();
-		int[] prevSitesFrom = game.equipment().sitesFrom();
-		GrowingBoard.updateIndexesInsideComponents(context, game);
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
 		
 		// test
-		int[] newContainerId = game.equipment().containerId();
+		int[] newOffset = equipment.offset();
+		for (int i=0; i<=48; i++)
+			assertEquals(newOffset[i], i);
+		assertEquals(newOffset[49], 0);
+		assertEquals(newOffset[50], 0);
+		
+		int[] newContainerId = equipment.containerId();
 		for (int i=0; i<=48; i++)
 			assertEquals(newContainerId[i], 0);
 		assertEquals(newContainerId[49], 1);
 		assertEquals(newContainerId[50], 2);
 				
-		int[] newSitesFrom = game.equipment().sitesFrom();
+		int[] newSitesFrom = equipment.sitesFrom();
 		assertEquals(newSitesFrom[0], 0);
 		assertEquals(newSitesFrom[1], 49);
 		assertEquals(newSitesFrom[2], 50);
@@ -246,31 +288,105 @@ public class GrowingBoardTest {
 		assertEquals(topologyElement2.index(), 50);
 	}
 	
+	/**
+	 * Tests the method that re-applys the moves previously done on the new board.
+	 */
 	@Test
-	public void testUpdateChunks()
+	public void testReplayMoves()
 	{
 		// init
 		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
 		
-		Move move = getMoveMove(25, 10);
-		applyMove(context, move);
-		game.setLastMoveOnEdge(true);
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+
+		// test
+		List<Move> newMovesDone = context.trial().generateCompleteMovesList();
+		assertEquals(newMovesDone.get(0).actions().get(0).to(), 49);
+		assertEquals(newMovesDone.get(0).actions().get(0).what(), 2);
+		assertEquals(newMovesDone.get(0).actions().get(0).count(), 3);
 		
-		GrowingBoard.initMainConstants(context, board.dimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		//GrowingBoard.updateIndexesInsideComponents(context, game);
+		assertEquals(newMovesDone.get(1).actions().get(0).to(), 50);
+		assertEquals(newMovesDone.get(1).actions().get(0).what(), 3);
+		assertEquals(newMovesDone.get(1).actions().get(0).count(), 3);
 		
-		//resetMoves(app);
-		context.trial().setMoves(new MoveSequence(null), 0);
-		//resetMoves(app);
+		assertEquals(newMovesDone.get(2).actions().get(0).to(), 24);
+		assertEquals(newMovesDone.get(2).actions().get(0).what(), 4);
 		
-		//GrowingBoard.initMappingIndexes();
-		ContainerState[] prevContainerStates = context.state().containerStates();
-		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
-		GrowingBoard.updateChunks(context);
+		assertEquals(newMovesDone.get(3).actions().get(0).to(), 25);
+		assertEquals(newMovesDone.get(3).actions().get(0).what(), 4);
+		
+		assertEquals(newMovesDone.get(4).actions().get(0).to(), 23);
+		assertEquals(newMovesDone.get(4).actions().get(0).what(), 4);
+		
+		assertEquals(newMovesDone.get(5).actions().get(0).from(), 49);
+		assertEquals(newMovesDone.get(5).actions().get(0).to(), 22);
+	}
+	
+	/**
+	 * Tests the method that re-generate the legal moves after applying the moves on the new board.
+	 */
+	@Test
+	public void testGenerateLegalMoves()
+	{
+		// TODO BUG : I DONT KNOW HOW TO APPLY A MOVE PROPERLY  - HERE THERE ARE NO LEGAL MOVES AFTER 
+		// I APPLIED THE MOVE - UNLIKE WHEN DOING IT WITH THE VISUAL INTERFACE
+		
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);		
+		updateBoard(context);
+		
+		// test
+		Moves newLegalMoves = context.trial().cachedLegalMoves();
+
+		assertEquals(newLegalMoves.get(0).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(0).actions().get(0).to(), 15);
+
+		assertEquals(newLegalMoves.get(1).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(1).actions().get(0).to(), 16);
+
+		assertEquals(newLegalMoves.get(2).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(2).actions().get(0).to(), 17);
+
+		assertEquals(newLegalMoves.get(3).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(3).actions().get(0).to(), 18);
+
+		assertEquals(newLegalMoves.get(4).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(4).actions().get(0).to(), 19);
+
+		assertEquals(newLegalMoves.get(5).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(5).actions().get(0).to(), 26);
+
+		assertEquals(newLegalMoves.get(6).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(6).actions().get(0).to(), 29);
+
+		assertEquals(newLegalMoves.get(7).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(7).actions().get(0).to(), 30);
+
+		assertEquals(newLegalMoves.get(8).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(8).actions().get(0).to(), 31);
+
+		assertEquals(newLegalMoves.get(9).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(9).actions().get(0).to(), 32);
+
+		assertEquals(newLegalMoves.get(10).actions().get(0).from(), 50);
+		assertEquals(newLegalMoves.get(10).actions().get(0).to(), 33);
+	}
+	
+	/**
+	 * Tests the intern state of the Container, which are the chunks, after 
+	 * doing a move on an edge.
+	 */
+	@Test
+	public void testUpdateChunksAfterOneMove()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		ContainerState[] prevContainerStates = updateBoard(context);
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -280,7 +396,7 @@ public class GrowingBoardTest {
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
 			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
-			
+						
 			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
 			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
 			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
@@ -326,13 +442,17 @@ public class GrowingBoardTest {
 				assertTrue(empty.get(i));
 			
 			HashedBitSet playable = newContainerFlatState.playable();
-			for (int i=0; i<15; i++)
+			for (int i=0; i<14; i++)
 				assertFalse(playable.get(i));
-			for (int i=15; i<=19; i++)
+			for (int i=14; i<=19; i++)
 				assertTrue(playable.get(i));
-			assertFalse(playable.get(22));
+			assertFalse(playable.get(20));
+			assertTrue(playable.get(21));
+			for (int i=22; i<26; i++)
+				assertFalse(playable.get(i));
 			assertTrue(playable.get(26));
-			for (int i=29; i<=33; i++)
+			assertFalse(playable.get(27));
+			for (int i=28; i<=33; i++)
 				assertTrue(playable.get(i));
 			for (int i=34; i<=48; i++)
 				assertFalse(playable.get(i));
@@ -412,166 +532,29 @@ public class GrowingBoardTest {
 			fail();
 	}
 	
-	@Test
-	public void testReplayMoves()
-	{
-		// init
-		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
-		
-		Move move = getMoveMove(25, 10);
-		applyMove(context, move);
-		game.setLastMoveOnEdge(true);
-		
-		List<Move> prevMovesDone = trial.generateCompleteMovesList();
-		GrowingBoard.initMainConstants(context, board.dimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		//GrowingBoard.updateIndexesInsideComponents(context, game);
-		
-		//resetMoves(app);
-		context.trial().setMoves(new MoveSequence(null), 0);
-		//resetMoves(app);
-		
-		// GrowingBoard.remakeTrial(context, movesDone, legalMoves); = :
-		//GrowingBoard.initMappingIndexes();
-		GrowingBoard.updateChunks(context);
-		GrowingBoard.replayMoves(context, prevMovesDone);
-		
-
-		// test
-		List<Move> newMovesDone = trial.generateCompleteMovesList();
-		assertEquals(newMovesDone.get(0).actions().get(0).to(), 49);
-		assertEquals(newMovesDone.get(0).actions().get(0).what(), 2);
-		assertEquals(newMovesDone.get(0).actions().get(0).count(), 3);
-		
-		assertEquals(newMovesDone.get(1).actions().get(0).to(), 50);
-		assertEquals(newMovesDone.get(1).actions().get(0).what(), 3);
-		assertEquals(newMovesDone.get(1).actions().get(0).count(), 3);
-		
-		assertEquals(newMovesDone.get(2).actions().get(0).to(), 24);
-		assertEquals(newMovesDone.get(2).actions().get(0).what(), 4);
-		
-		assertEquals(newMovesDone.get(3).actions().get(0).to(), 25);
-		assertEquals(newMovesDone.get(3).actions().get(0).what(), 4);
-		
-		assertEquals(newMovesDone.get(4).actions().get(0).to(), 23);
-		assertEquals(newMovesDone.get(4).actions().get(0).what(), 4);
-		
-		assertEquals(newMovesDone.get(5).actions().get(0).from(), 49);
-		assertEquals(newMovesDone.get(5).actions().get(0).to(), 22);
-	}
-	
-	@Test
-	public void testGenerateLegalMoves()
-	{
-		// TODO BUG : I DONT KNOW HOW TO APPLY A MOVE PROPERLY  - HERE THERE ARE NO LEGAL MOVES AFTER 
-		// I APPLIED THE MOVE - UNLIKE WHEN DOING IT WITH THE VISUAL INTERFACE
-		
-		// init
-		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
-		
-		Move move = getMoveMove(25, 10);
-		applyMove(context, move);
-		game.setLastMoveOnEdge(true);
-		
-		GrowingBoard.initMainConstants(context, board.dimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		//GrowingBoard.updateIndexesInsideComponents(context, game);
-		
-		List<Move> movesDone = trial.generateCompleteMovesList();
-		Moves prevLegalMoves = trial.cachedLegalMoves();
-		
-		//resetMoves(app);
-		trial.setMoves(new MoveSequence(null), 0);
-		//resetMoves(app);
-		
-		// GrowingBoard.remakeTrial(context, movesDone, legalMoves); = :
-		//GrowingBoard.initMappingIndexes();
-		GrowingBoard.updateChunks(context);
-		GrowingBoard.replayMoves(context, movesDone);
-		GrowingBoard.generateLegalMoves(context, prevLegalMoves);
-		
-		// test
-		Moves newLegalMoves = context.trial().cachedLegalMoves();
-
-		assertEquals(newLegalMoves.get(0).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(0).actions().get(0).to(), 15);
-
-		assertEquals(newLegalMoves.get(1).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(1).actions().get(0).to(), 16);
-
-		assertEquals(newLegalMoves.get(2).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(2).actions().get(0).to(), 17);
-
-		assertEquals(newLegalMoves.get(3).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(3).actions().get(0).to(), 18);
-
-		assertEquals(newLegalMoves.get(4).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(4).actions().get(0).to(), 19);
-
-		assertEquals(newLegalMoves.get(5).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(5).actions().get(0).to(), 26);
-
-		assertEquals(newLegalMoves.get(6).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(6).actions().get(0).to(), 29);
-
-		assertEquals(newLegalMoves.get(7).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(7).actions().get(0).to(), 30);
-
-		assertEquals(newLegalMoves.get(8).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(8).actions().get(0).to(), 31);
-
-		assertEquals(newLegalMoves.get(9).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(9).actions().get(0).to(), 32);
-
-		assertEquals(newLegalMoves.get(10).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(10).actions().get(0).to(), 33);
-	}
-	
-	
 	/**
-	 * No moves are made on the edges, so it is still initial board size.
+	 * Tests the intern state of the containers (board and hand's players), 
+	 * which are the chunks, after multiple moves, none on any edge.
 	 */
 	@Test
-	public void testUpdateChunksAfterMultipleMoves1()
+	public void testUpdateChunksAfterMultipleMovesNoEdge()
 	{
 		// init
 		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
 		
-		Move move1 = getMoveMove(25, 6);
-		applyMove(context, move1);
-		Move move2 = getMoveMove(26, 18, 2);
-		applyMove(context, move2);
-		Move move3 = getMoveMove(25, 17);
-		applyMove(context, move3);
-		Move move4 = getMoveMove(26, 7, 2);
-		applyMove(context, move4);
-	
-		ContainerState[] prevContainerStates = context.state().containerStates();
-		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
-		
+		applyMove(context, 25, 6, 1);
+		applyMove(context, 26, 18, 2);
+		applyMove(context, 25, 17, 1);
+		applyMove(context, 26, 7, 2);
+			
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
-		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
 		// Board's state
 		ContainerState newContainerState0 = newContainerStates[0];
 		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
 
@@ -594,9 +577,8 @@ public class GrowingBoardTest {
 			assertEquals(what.getChunk(7), 3);
 			for (int i=8; i<11; i++)
 				assertEquals(what.getChunk(i), 0);
-			assertEquals(what.getChunk(11), 4);
-			assertEquals(what.getChunk(12), 4);
-			assertEquals(what.getChunk(13), 4);
+			for (int i=11; i<14; i++)
+				assertEquals(what.getChunk(i), 4);
 			for (int i=14; i<17; i++)
 				assertEquals(what.getChunk(i), 0);
 			assertEquals(what.getChunk(17), 2);
@@ -670,12 +652,7 @@ public class GrowingBoardTest {
 		if (newContainerState1 instanceof other.state.container.ContainerFlatState) 
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[1];
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
 
@@ -705,12 +682,7 @@ public class GrowingBoardTest {
 		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
 
@@ -738,49 +710,34 @@ public class GrowingBoardTest {
 	}
 	
 	/**
-	 * The last move was made on an edge, so board size has been updated. ?????? what is the point
+	 * Tests the intern state of the containers (board and hand's players), 
+	 * which are the chunks, after multiple moves, last one on an edge.
 	 */
 	@Test
-	public void testUpdateChunksAfterMultipleMoves2()
+	public void testUpdateChunksAfterMultipleMovesWithEdge()
 	{
 		// init
 		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
 		
-		Move move1 = getMoveMove(25, 6);
-		applyMove(context, move1);
-		Move move2 = getMoveMove(26, 18, 2);
-		applyMove(context, move2);
-		Move move3 = getMoveMove(25, 17);
-		applyMove(context, move3);
-		Move move4 = getMoveMove(26, 5, 2);
-		applyMove(context, move4);
-		game.setLastMoveOnEdge(true);
-		
-		/*GrowingBoard.initMainConstants(context, board.getDimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		GrowingBoard.updateIndexesInsideComponents(context, game);
-		
-		//resetMoves(app);
-		context.trial().setMoves(new MoveSequence(null), 0);
-		//resetMoves(app);
-		
-		GrowingBoard.initMappingIndexes();*/
-		ContainerState[] prevContainerStates = context.state().containerStates();
-		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
-		//GrowingBoard.updateChunks(context);
+		applyMove(context, 25, 6, 1);
+		applyMove(context, 26, 18, 2);
+		applyMove(context, 25, 17, 1);
+		applyMove(context, 26, 5, 2);
+
+		ContainerState[] prevContainerStates = updateBoard(context);
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
-		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
 		// Board's state
 		ContainerState newContainerState0 = newContainerStates[0];
 		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];			
+
+			List<Cell> adj1 = context.topology().cells().get(15).adjacent();
+			List<Cell> adj2 = context.state().containerStates()[0].container().topology().cells().get(15).adjacent();
+			assertEquals(adj1, adj2);
 			
 			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
 			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
@@ -788,227 +745,7 @@ public class GrowingBoardTest {
 			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
-
-			HashedChunkSet who = newContainerFlatState.who();
-			for (int i=0; i<5; i++)
-				assertEquals(who.getChunk(i), 0);
-			assertEquals(who.getChunk(5), 2);
-			assertEquals(who.getChunk(6), 1);
-			for (int i=7; i<17; i++)
-				assertEquals(who.getChunk(i), 0);
-			assertEquals(who.getChunk(17), 1);
-			assertEquals(who.getChunk(18), 2);
-			for (int i=19; i<=24; i++)
-				assertEquals(who.getChunk(i), 0);
-
-			HashedChunkSet what = newContainerFlatState.what();
-			for (int i=0; i<5; i++)
-				assertEquals(what.getChunk(i), 0);
-			assertEquals(what.getChunk(5), 3);
-			assertEquals(what.getChunk(6), 2);
-			for (int i=7; i<11; i++)
-				assertEquals(what.getChunk(i), 0);
-			assertEquals(what.getChunk(11), 4);
-			assertEquals(what.getChunk(12), 4);
-			assertEquals(what.getChunk(13), 4);
-			for (int i=14; i<17; i++)
-				assertEquals(what.getChunk(i), 0);
-			assertEquals(what.getChunk(17), 2);
-			assertEquals(what.getChunk(18), 3);
-			for (int i=19; i<=24; i++)
-				assertEquals(what.getChunk(i), 0);
-
-			HashedChunkSet count = newContainerFlatState.count();
-			for (int i=0; i<5; i++)
-				assertEquals(count.getChunk(i), 0);
-			assertEquals(count.getChunk(5), 1);
-			assertEquals(count.getChunk(6), 1);
-			for (int i=7; i<11; i++)
-				assertEquals(count.getChunk(i), 0);
-			assertEquals(count.getChunk(11), 1);
-			assertEquals(count.getChunk(12), 1);
-			assertEquals(count.getChunk(13), 1);
-			for (int i=14; i<17; i++)
-				assertEquals(count.getChunk(i), 0);
-			assertEquals(count.getChunk(17), 1);
-			assertEquals(count.getChunk(18), 1);
-			for (int i=19; i<=24; i++)
-				assertEquals(count.getChunk(i), 0);
-
-			HashedChunkSet state = newContainerFlatState.state();
-			for (int i=0; i<=50; i++)
-				assertEquals(state.getChunk(i), 0);
-
-			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			for (int i=0; i<5; i++)
-				assertTrue(empty.get(i));
-			assertFalse(empty.get(5));
-			assertFalse(empty.get(6));
-			for (int i=7; i<11; i++)
-				assertTrue(empty.get(i));
-			assertFalse(empty.get(11));
-			assertFalse(empty.get(12));
-			assertFalse(empty.get(13));
-			for (int i=14; i<17; i++)
-				assertTrue(empty.get(i));
-			assertFalse(empty.get(17));
-			assertFalse(empty.get(18));
-			for (int i=19; i<=24; i++)
-				assertTrue(empty.get(i));
 			
-			HashedBitSet playable = newContainerFlatState.playable();
-			for (int i=0; i<3; i++)
-				assertTrue(playable.get(i));
-			for (int i=3; i<=6; i++)
-				assertFalse(playable.get(i));
-			for (int i=7; i<11; i++)
-				assertTrue(playable.get(i));
-			for (int i=11; i<=13; i++)
-				assertFalse(playable.get(i));
-			for (int i=14; i<17; i++)
-				assertTrue(playable.get(i));
-			for (int i=17; i<=18; i++)
-				assertFalse(playable.get(i));
-			assertTrue(playable.get(19));
-			assertFalse(playable.get(20));
-			for (int i=21; i<=24; i++)
-				assertTrue(playable.get(i));
-			
-		}
-		else 
-			fail();
-		
-		// first player's state
-		ContainerState newContainerState1 = newContainerStates[1];
-		if (newContainerState1 instanceof other.state.container.ContainerFlatState) 
-		{
-			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState1;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[1];
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
-			assertNull(newContainerFlatState.rotation());
-			assertNull(newContainerFlatState.value());
-
-			HashedChunkSet who = newContainerFlatState.who();
-			assertEquals(who.getChunk(0), 1);
-
-			HashedChunkSet what = newContainerFlatState.what();
-			assertEquals(what.getChunk(0), 2);
-
-			HashedChunkSet count = newContainerFlatState.count();
-			assertEquals(count.getChunk(0), 1);
-
-			HashedChunkSet state = newContainerFlatState.state();
-			assertEquals(state.internalState().numNonZeroChunks(), 0);
-			
-			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			assertTrue(empty.isEmpty());
-			
-			HashedBitSet playable = newContainerFlatState.playable();
-			assertTrue(playable.internalState().isEmpty());
-		}
-		else 
-			fail();
-		
-		// second player's state
-		ContainerState newContainerState2 = newContainerStates[2];
-		if (newContainerState2 instanceof other.state.container.ContainerFlatState) 
-		{
-			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState2;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[2];
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
-			assertNull(newContainerFlatState.rotation());
-			assertNull(newContainerFlatState.value());
-
-			HashedChunkSet who = newContainerFlatState.who();
-			assertEquals(who.getChunk(0), 2);
-
-			HashedChunkSet what = newContainerFlatState.what();
-			assertEquals(what.getChunk(0), 3);
-
-			HashedChunkSet count = newContainerFlatState.count();
-			assertEquals(count.getChunk(0), 1);
-
-			HashedChunkSet state = newContainerFlatState.state();
-			assertEquals(state.internalState().numNonZeroChunks(), 0);
-
-			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			assertTrue(empty.isEmpty());
-			
-			HashedBitSet playable = newContainerFlatState.playable();
-			assertTrue(playable.internalState().isEmpty());
-			
-		}
-		else 
-			fail();
-	}
-	
-
-	
-	/**
-	 * The last move was made on an edge, so board size has been updated.
-	 */
-	@Test
-	public void testUpdateChunksAfterMultipleMoves3()
-	{
-		// init
-		Context context = initGame();
-		Game game = context.game();
-		Trial trial = context.trial();
-		Boardless board = (Boardless) game.board();
-		
-		Move move1 = getMoveMove(25, 6);
-		applyMove(context, move1);
-		Move move2 = getMoveMove(26, 18, 2);
-		applyMove(context, move2);
-		Move move3 = getMoveMove(25, 17);
-		applyMove(context, move3);
-		Move move4 = getMoveMove(26, 5, 2);
-		applyMove(context, move4);
-		game.setLastMoveOnEdge(true);
-
-		List<Move> prevMovesDone = trial.generateCompleteMovesList();
-		GrowingBoard.initMainConstants(context, board.dimension());
-		GrowingBoard.updateBoardDimensions(context, board);
-		//GrowingBoard.updateIndexesInsideComponents(context, game);
-		
-		//resetMoves(app);
-		context.trial().setMoves(new MoveSequence(null), 0);
-		//resetMoves(app);
-				
-		//GrowingBoard.initMappingIndexes();
-		ContainerState[] prevContainerStates = context.state().containerStates();
-		System.out.println("prevContainerStates : "+Arrays.toString(prevContainerStates));
-		GrowingBoard.updateChunks(context);
-		GrowingBoard.replayMoves(context, prevMovesDone);
-		
-		
-		// test
-		ContainerState[] newContainerStates = context.state().containerStates();
-		System.out.println("GrowingBoardTest.java testMoves() newContainerStates : "+Arrays.toString(newContainerStates));
-		// Board's state
-		ContainerState newContainerState0 = newContainerStates[0];
-		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
-		{
-			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
-			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
-			System.out.println("GrowingBoardTest.java testMoves() prevContainerFlatState : "+prevContainerFlatState);
-			System.out.println("GrowingBoardTest.java testMoves() newContainerFlatState : "+newContainerFlatState);
-			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
-			assertNull(newContainerFlatState.rotation());
-			assertNull(newContainerFlatState.value());
-
 			HashedChunkSet who = newContainerFlatState.who();
 			for (int i=0; i<15; i++)
 				assertEquals(who.getChunk(i), 0);
@@ -1028,9 +765,8 @@ public class GrowingBoardTest {
 			assertEquals(what.getChunk(16), 2);
 			for (int i=17; i<23; i++)
 				assertEquals(what.getChunk(i), 0);
-			assertEquals(what.getChunk(23), 4);
-			assertEquals(what.getChunk(24), 4);
-			assertEquals(what.getChunk(25), 4);
+			for (int i=23; i<26; i++)
+				assertEquals(what.getChunk(i), 4);
 			for (int i=26; i<31; i++)
 				assertEquals(what.getChunk(i), 0);
 			assertEquals(what.getChunk(31), 2);
@@ -1045,9 +781,8 @@ public class GrowingBoardTest {
 			assertEquals(count.getChunk(16), 1);
 			for (int i=17; i<23; i++)
 				assertEquals(count.getChunk(i), 0);
-			assertEquals(count.getChunk(23), 1);
-			assertEquals(count.getChunk(24), 1);
-			assertEquals(count.getChunk(25), 1);
+			for (int i=23; i<26; i++)
+				assertEquals(count.getChunk(i), 1);
 			for (int i=26; i<31; i++)
 				assertEquals(count.getChunk(i), 0);
 			assertEquals(count.getChunk(31), 1);
@@ -1101,7 +836,7 @@ public class GrowingBoardTest {
 			for (int i=31; i<33; i++)
 				assertFalse(playable.get(i));
 			assertTrue(playable.get(33));
-			for (int i=33; i<=36; i++)
+			for (int i=34; i<=36; i++)
 				assertFalse(playable.get(i));
 			for (int i=37; i<=40; i++)
 				assertTrue(playable.get(i));
@@ -1177,12 +912,103 @@ public class GrowingBoardTest {
 			
 			HashedBitSet playable = newContainerFlatState.playable();
 			assertTrue(playable.internalState().isEmpty());
-			
 		}
 		else 
 			fail();
 	}
 	
-	//testmethod() : tester l'état de chaque var dans equipment (dont game.equipment().sitesFrom())
-	// peut être faire mes tests après avoir exécuter TOUTES les méthodes la classe GrowingState
+	/**
+	 * Tests the intern state of the containers (board and hand's players), 
+	 * which are the chunks, after two moves, both on edges.
+	 */
+	@Test
+	public void testUpdateChunksAfterMultipleMovesWithEdges()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 2);
+		ContainerState[] prevContainerStates = updateBoard(context);
+		
+		// test
+		ContainerState[] newContainerStates = context.state().containerStates();
+		// Board's state
+		ContainerState newContainerState0 = newContainerStates[0];
+		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
+			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];			
+
+			List<Cell> adj1 = context.topology().cells().get(15).adjacent();
+			List<Cell> adj2 = context.state().containerStates()[0].container().topology().cells().get(15).adjacent();
+			assertEquals(adj1, adj2);
+			
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
+			assertNull(newContainerFlatState.rotation());
+			assertNull(newContainerFlatState.value());
+						
+			HashedChunkSet who = newContainerFlatState.who();
+			for (int i=0; i<37; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(37), 2);
+			assertEquals(who.getChunk(38), 1);
+			for (int i=39; i<=80; i++)
+				assertEquals(who.getChunk(i), 0);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			for (int i=0; i<37; i++)
+				assertEquals(what.getChunk(i), 0);
+			assertEquals(what.getChunk(37), 3);
+			assertEquals(what.getChunk(38), 2);
+			for (int i=39; i<=41; i++)
+				assertEquals(what.getChunk(i), 4);
+			for (int i=42; i<=80; i++)
+				assertEquals(what.getChunk(i), 0);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			for (int i=0; i<37; i++)
+				assertEquals(count.getChunk(i), 0);
+			for (int i=37; i<=41; i++)
+				assertEquals(count.getChunk(i), 1);
+			for (int i=42; i<=80; i++)
+				assertEquals(count.getChunk(i), 0);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			for (int i=0; i<=82; i++)
+				assertEquals(state.getChunk(i), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			for (int i=0; i<37; i++)
+				assertTrue(empty.get(i));
+			for (int i=37; i<42; i++)
+				assertFalse(empty.get(i));
+			for (int i=42; i<=80; i++)
+				assertTrue(empty.get(i));
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			for (int i=0; i<27; i++)
+				assertFalse(playable.get(i));
+			for (int i=27; i<34; i++)
+				assertTrue(playable.get(i));
+			for (int i=34; i<36; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(36));
+			for (int i=37; i<42; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(42));
+			for (int i=43; i<45; i++)
+				assertFalse(playable.get(i));
+			for (int i=45; i<52; i++)
+				assertTrue(playable.get(i));
+			for (int i=52; i<=80; i++)
+				assertFalse(playable.get(i));
+		}
+		else 
+			fail();
+	}
 }

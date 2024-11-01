@@ -669,24 +669,6 @@ public class Game extends BaseLudeme implements API, Serializable
 		return voteStringsTable.size();
 	}
 	
-	/**
-	 * @return true if the last move have been made on an edge 
-	 */
-	public boolean lastMoveOnEdge()
-	{
-		return lastMoveOnEdge;
-	}
-	
-	/**
-	 * @param newLastMoveOnEdge update the sate of lastMoveOnEdge, true if the last move 
-	 * have been made on an edge, false if not or if the boardless board has been indeed 
-	 * updated following the move.
-	 */
-	public void setLastMoveOnEdge(boolean newLastMoveOnEdge)
-	{
-		lastMoveOnEdge = newLastMoveOnEdge;
-	}
-	
 	//---------------------Properties of the game------------------------------
 
 	/**
