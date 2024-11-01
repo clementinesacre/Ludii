@@ -594,7 +594,7 @@ public class ActionMoveTopPiece extends BaseAction
 		
 		final int sizeStackFrom = csFrom.sizeStack(from, typeFrom);
 		final int sizeStackTo = csTo.sizeStack(to, typeTo);
-		
+
 		if(requiresStack) // Stacking undo.
 		{
 			// We restore the from site

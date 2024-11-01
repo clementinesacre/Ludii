@@ -462,7 +462,8 @@ public class Board extends Container
 		//updateRanges();
 
 		topology.clearTopology();
-		createTopology(0, 0);
+		//createTopology(0, 0);
+		//System.out.println("Topology.java clearTopology() cells before clearing : "+topology().cells().get(5).adjacent());
 	}
 	
 	

@@ -28,7 +28,9 @@ import game.equipment.other.Regions;
 import game.functions.dim.DimConstant;
 import game.functions.dim.DimFunction;
 import game.functions.graph.GraphFunction;
+import game.functions.graph.generators.basis.hex.HexagonOnHex;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
+import game.functions.graph.generators.basis.tri.TriangleOnTri;
 import game.functions.region.RegionFunction;
 import game.types.board.RelationType;
 import game.types.board.SiteType;
@@ -306,55 +308,8 @@ public final class Equipment extends BaseLudeme implements Serializable
 		emptyPiece.setIndex(0);
 		componentsWIP.add(emptyPiece);
 
-		Item[] itemsToCreate2 = new Item[itemsToCreate.length];
 		if (itemsToCreate != null)
-		{
-			if (itemsToCreate[0] instanceof game.equipment.container.board.Boardless)
-			{
-				for (int i=0; i<itemsToCreate.length; i++) {
-					if (itemsToCreate[i] instanceof game.equipment.container.board.Boardless)
-					{
-						Boardless prevBoard = (Boardless) itemsToCreate[i];
-						
-						if (game.lastMoveOnEdge()) 
-						{
-							DimConstant newDimConstant = new DimConstant(prevBoard.dimension() + Constants.GROWING_STEP);
-							Boardless newBoard = new Boardless(prevBoard.tiling(), newDimConstant, prevBoard.largeStack());
-							newBoard.createTopology(0, 0);
-							itemsToCreate2[i] = newBoard;
-							
-							DimConstant newDimConstant1 = new DimConstant(prevBoard.dimension() + Constants.GROWING_STEP);
-							Boardless newBoard1 = new Boardless(prevBoard.tiling(), newDimConstant1, prevBoard.largeStack());
-							//newBoard1.createTopology(0, 0);
-							itemsToCreate[i] = newBoard1;
-						}
-						else 
-						{
-							itemsToCreate2[i] = ((Boardless) itemsToCreate[i]).clone();
-						}
-					}
-					else if (itemsToCreate[i] instanceof game.equipment.container.other.Hand)
-					{
-						itemsToCreate2[i] = ((Hand) itemsToCreate[i]).clone();
-					}
-					else if (itemsToCreate[i] instanceof game.equipment.component.Piece)
-					{
-						itemsToCreate2[i] = ((Piece) itemsToCreate[i]).clone();
-					}
-					else if (itemsToCreate[i] instanceof game.equipment.component.tile.Tile)
-					{
-						itemsToCreate2[i] = ((Tile) itemsToCreate[i]).clone();
-					}
-					else 
-					{
-						throw new UnsupportedOperationException("Type " +itemsToCreate[i].getClass().getName() + " not implement regarding copy of component in equipment.");
-					}
-
-					//System.out.println("Equipment.java createItems() itemsToCreate2 : "+Arrays.toString(itemsToCreate2));
-				}
-			}
-			
-			
+		{	
 			// To sort the list of items.
 			final Item[] sortItems = sort(itemsToCreate);
 	
@@ -627,14 +582,8 @@ public final class Equipment extends BaseLudeme implements Serializable
 			map.create(game);
 		}
 		
-		if (game.isBoardless()) {
-			itemsToCreate = itemsToCreate2;
-		}
-		else 
-		{
-			// We're done, so can clean up this memory
-			itemsToCreate = null;
-		}
+		if (!game.isBoardless())
+			itemsToCreate = null; // We're done, so can clean up this memory
 
 		if (game.hasTrack())
 		{
@@ -659,10 +608,7 @@ public final class Equipment extends BaseLudeme implements Serializable
 				ownedTracks[i] = ownedTrackArray;
 			}
 			game.board().setOwnedTrack(ownedTracks);
-		}
-		
-		game.setLastMoveOnEdge(false);
-		
+		}		
 	}
 
 	/**
