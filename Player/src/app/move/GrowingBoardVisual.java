@@ -1,6 +1,7 @@
 package app.move;
 
 import java.awt.EventQueue;
+import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
@@ -16,6 +17,7 @@ import other.move.Move;
 import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
+import other.state.container.ContainerFlatState;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -27,13 +29,13 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * @param board
 	 */
 	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
-	{		
+	{
 		updateBoardDimensions(app.manager().ref().context(), board);
-		
+
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
 		MVCSetup.setMVC(app);
-		
+
 		// TODO Check this line is useful (inspired from GameUtil.resetUIVariables())
 		EventQueue.invokeLater(() -> 
 		{
@@ -59,7 +61,10 @@ public class GrowingBoardVisual extends GrowingBoard
 		final List<Move> allMoves = context.trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
 		
-		GameUtil.resetGame(app, true);
+		//----------
+		GameUtil.resetGameWithoutResetContext(app);
+		//----------
+		
 		// also reset initial placement moves
 		context.trial().setMoves(new MoveSequence(null), 0);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
@@ -91,21 +96,42 @@ public class GrowingBoardVisual extends GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
+		int mover = context.state().mover();
 		resetMoves(app);
 		remakeTrial(context, movesDone, legalMoves);
+		context.state().setMover(mover);
 	}
 	
-	public static void impactBoard(final PlayerApp app, Context context)
+	/**
+	 * Updates board by making it grow logically and visually.
+	 * 
+	 * @param app
+	 * @param context
+	 */
+	public static void updateBoard(final PlayerApp app, Context context)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
 		initMainConstants(context, board.dimension());
 		
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() : touching an edge in a boardless game --> need to increase board size");
+		System.out.println("GrowingBoardVisual.java impactBoard() : touching an edge in a boardless game --> need to increase board size");
 		updateBoardDimensions(app, board);
 		remakeTrial(app);
 	}
+	
+	public static void displayInfo(Context context)
+	{
+		System.out.println("\n\n");
+		System.out.println("GrowingBoardVisual.java displayInfo() containerStates 0 : "+(ContainerFlatState) context.state().containerStates()[0]);
+		System.out.println("GrowingBoardVisual.java displayInfo() offset : "+Arrays.toString(context.game().equipment().offset()));
+		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.game().equipment().containerId()));
+		System.out.println("GrowingBoardVisual.java displayInfo() sitesFrom : "+Arrays.toString(context.game().equipment().sitesFrom()));
+		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
+		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
+		System.out.println("\n\n");
+	}
+	
 	/** 
 	 * Check if the move was made on a boardless board and on one edge of the board. 
 	 * If so, update the size of the  board and update the visual.
@@ -127,7 +153,9 @@ public class GrowingBoardVisual extends GrowingBoard
 			
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
-				impactBoard(app, context);
+				updateBoard(app, context);
+				
+				//displayInfo(context); //TODO : to remove once code is ready
 			}
 		}
 	}

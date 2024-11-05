@@ -2,6 +2,7 @@ package app.utils;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
@@ -34,8 +35,10 @@ public class GameUtil
 	
 	/**
 	 * All function calls needed to restart the game.
+	 * 
+	 * @param resetToContext if game but be start based on a specified context.
 	 */
-	public static void resetGame(final PlayerApp app, final boolean keepSameTrial)
+	public static void resetGame(final PlayerApp app, final boolean keepSameTrial, boolean resetToContext)
 	{
 		final Referee ref = app.manager().ref();
 		final Context context = ref.context();
@@ -43,7 +46,7 @@ public class GameUtil
 		app.manager().undoneMoves().clear();
 		ref.interruptAI(app.manager());
 		AIUtil.checkAISupported(app.manager(), context);
-		
+
 		// Web Player settings
 		app.settingsPlayer().setWebGameResultValid(true);
 		for (int i = 0; i <= game.players().count(); i++)
@@ -53,7 +56,7 @@ public class GameUtil
 			else
 				app.settingsPlayer().setAgentArray(i, false);
 		}
-		
+
 		// If game has stochastic equipment, need to recompile the whole game from scratch.
 		if (game.equipmentWithStochastic())
 		{
@@ -66,26 +69,58 @@ public class GameUtil
 					);		
 			app.manager().ref().setGame(app.manager(), game);
 		}
-		
-		if (keepSameTrial)
+
+		if (resetToContext)
 		{
-			// Reset all necessary information about the context.
-			context.rng().restoreState(app.manager().currGameStartRngState());
-			context.reset();
-			context.state().initialise(context.currentInstanceContext().game());
-			context.trial().setStatus(null);
+			if (keepSameTrial)
+			{
+				// Reset all necessary information about the context.
+				context.rng().restoreState(app.manager().currGameStartRngState());
+				context.reset();
+				context.state().initialise(context.currentInstanceContext().game());
+				context.trial().setStatus(null);
+			}
+			else
+			{
+				app.manager().ref().setGame(app.manager(), game);
+				UpdateTabMessages.postMoveUpdateStatusTab(app);
+			}
+			
+			// Start the game
+			GameUtil.startGame(app, true);
 		}
 		else
 		{
-			app.manager().ref().setGame(app.manager(), game);
-			UpdateTabMessages.postMoveUpdateStatusTab(app);
-		}
+			// Reset all necessary information about the context.
+			context.rng().restoreState(app.manager().currGameStartRngState());
+			context.trial().setStatus(null);
 		
-		// Start the game
-		GameUtil.startGame(app);
+			// Start the game
+			GameUtil.startGame(app, false); // we don't want the game to start based on a specific context
+		}
 
 		updateRecentGames(app, app.manager().ref().context().game().name());
 		resetUIVariables(app);
+	}
+	
+	/**
+	 * All function calls needed to restart the game.
+	 */
+	public static void resetGame(final PlayerApp app, final boolean keepSameTrial)
+	{
+		resetGame(app, keepSameTrial, true);
+	}
+	
+
+	/**
+	 * All function calls needed to restart the game, but without reset the context 
+	 * and the state as well. This is used in the case of boardless games, where each 
+	 * time we expand the board, we simulate a return to the start, but we do not want 
+	 * the context and the state to be impacted, in order to keep track of what happened.
+	 */
+	public static void resetGameWithoutResetContext(final PlayerApp app)
+	{
+		resetGame(app, false, false);
 	}
 	
 	//-------------------------------------------------------------------------
@@ -180,10 +215,10 @@ public class GameUtil
 	
 	//-------------------------------------------------------------------------
 	
-	public static void startGame(final PlayerApp app)
+	public static void startGame(final PlayerApp app, boolean resetToContext)
 	{
 		final Context context = app.manager().ref().context();
-		context.game().start(context);
+		context.game().start(context, resetToContext);
 		context.game().incrementGameStartCount();
 		
 		final int numPlayers = context.game().players().count();

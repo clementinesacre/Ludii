@@ -15,6 +15,7 @@ import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.rules.play.moves.BaseMoves;
 import game.rules.play.moves.Moves;
 import game.util.equipment.Region;
+import game.util.graph.Perimeter;
 import gnu.trove.list.array.TIntArrayList;
 import main.Constants;
 import main.collections.ChunkSet;
@@ -186,6 +187,7 @@ public class GrowingBoard
 		System.out.println("GrowingBoard.java updateTopology() cellHints : "+Arrays.toString(game.equipment().cellHints()));
 		System.out.println("GrowingBoard.java updateTopology() edgeHints : "+Arrays.toString(game.equipment().edgeHints()));
 		System.out.println("GrowingBoard.java updateTopology() itemsToCreate : "+Arrays.toString(game.equipment().itemsToCreate()));*/
+		
 		context.game().update();
 	}
 	
@@ -195,7 +197,7 @@ public class GrowingBoard
 	 * @param board
 	 */
 	protected static void updateBoardDimensions(Context context, Boardless board) 
-	{		
+	{
 		System.out.println("GrowingBoard.java updateBoardDimensions() curr size : "+board.dimension()+ " - new size : "+(board.dimension() + Constants.GROWING_STEP));
 		GraphFunction newGraphFunction = new RectangleOnSquare(new DimConstant(board.dimension() + Constants.GROWING_STEP), null, null, null);
 		board.setGraphFunction(newGraphFunction);
@@ -312,6 +314,7 @@ public class GrowingBoard
 		//System.out.println("GrowingBoard.java updateChunks() adjacent 15 : "+context.topology().cells().get(15).adjacent());
 		//System.out.println("GrowingBoard.java updateChunks() adjacent 15 n2 : "+((BaseContainerState) newContainerState0).container().topology().cells().get(15).adjacent());
 		
+
 		// update each container state (container state 0 is the board state)
 		for (int i=0; i<1; i++)
 		{	
@@ -506,21 +509,38 @@ public class GrowingBoard
 	protected static Move generateNewMove(Move prevMove)
 	{
 		List<Action> actions = prevMove.actions();
-		List<Action> newActions = new ArrayList<Action>();
-		for (int j=0; j<actions.size(); j++) 
+		
+		Move newMove;
+		if (actions.size() == 1)
 		{
-			Action action = actions.get(j);
-			int to = action.to();
-			int from = action.from();
+			Action newAction = actions.get(0);
+			int to = newAction.to();
+			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
-				action.setTo(mappedPrevToNewIndexes().get(to));
+				newAction.setTo(mappedPrevToNewIndexes().get(to));
 			if (from != Constants.UNDEFINED)
-				action.setFrom(mappedPrevToNewIndexes().get(from));
-			
-			newActions.add(action);
+				newAction.setFrom(mappedPrevToNewIndexes().get(from));
+			newMove = new Move(newAction);
+		}
+		else 
+		{
+			List<Action> newActions = new ArrayList<Action>();
+			for (int j=0; j<actions.size(); j++) 
+			{
+				Action action = actions.get(j);
+				int to = action.to();
+				int from = action.from();
+				if (to != Constants.UNDEFINED)
+					action.setTo(mappedPrevToNewIndexes().get(to));
+				if (from != Constants.UNDEFINED)
+					action.setFrom(mappedPrevToNewIndexes().get(from));
+				
+				newActions.add(action);
+			}
+			// problem : this constructor does init the 'form' and 'to' of the Move, which are used to generate legal moves
+			newMove = new Move(newActions); 
 		}
 		
-		Move newMove = new Move(newActions);
 		return newMove;
 	}
 	
@@ -551,14 +571,14 @@ public class GrowingBoard
 	 */
 	protected static void generateLegalMoves(Context context, Moves legaleMoves)
 	{
-		Moves newLegaleMoves = new BaseMoves(null);
+		/*Moves newLegaleMoves = new BaseMoves(null);
 		for (Move prevLegalMove : legaleMoves.moves())
 		{
 			Move newMove = generateNewMove(prevLegalMove);
 			newLegaleMoves.moves().add(newMove);
 		}
 		
-		context.trial().setLegalMoves(newLegaleMoves, context);
+		context.trial().setLegalMoves(newLegaleMoves, context);*/
 	}
 	
 	/** 
@@ -568,9 +588,9 @@ public class GrowingBoard
 	 */
 	protected static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves) 
 	{
-		GrowingBoard.updateChunks(context);
-		GrowingBoard.replayMoves(context, movesDone);
-		GrowingBoard.generateLegalMoves(context, legalMoves);
+		updateChunks(context);
+		replayMoves(context, movesDone);
+		generateLegalMoves(context, legalMoves);
 	}
 	
 	/** 
@@ -594,8 +614,10 @@ public class GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
+		int mover = context.state().mover();
 		resetMoves(context);
 		remakeTrial(context, movesDone, legalMoves);
+		context.state().setMover(mover);
 	}
 
 	/** 
@@ -680,7 +702,12 @@ public class GrowingBoard
 		}
 	}*/
 	
-	public static void impactBoard(Context context)
+	/**
+	 * Updates board by making it grow logically.
+	 * 
+	 * @param context
+	 */
+	public static void updateBoard(Context context)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
@@ -704,7 +731,7 @@ public class GrowingBoard
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());			
 			if (isTouchingEdge(perimeter, move.to())) 
-				impactBoard(context);
+				updateBoard(context);
 		}
 	}
 }

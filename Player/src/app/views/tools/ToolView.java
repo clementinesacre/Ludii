@@ -217,7 +217,7 @@ public class ToolView extends View
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
 		
-		GameUtil.resetGame(app, true, true);
+		GameUtil.resetGame(app, true);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
 		final int moveToJumpToWithSetup;
