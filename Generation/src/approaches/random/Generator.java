@@ -1067,7 +1067,7 @@ public class Generator
 	public static boolean isFunctionalAndWithOnlyDecision(final Game game)
 	{
 		final Context context = new Context(game, new Trial(game));
-		game.start(context);
+		game.start(context, true);
 		Trial trial = null;
 		try
 		{
@@ -1100,7 +1100,7 @@ public class Generator
 	public static boolean isFunctional(final Game game)
 	{
 		final Context context = new Context(game, new Trial(game));
-		game.start(context);
+		game.start(context, true);
 		Trial trial = null;
 		try
 		{
@@ -1134,7 +1134,7 @@ public class Generator
 		
 		for (int t = 0; t < NUM_TRIALS; t++)
 		{		
-			game.start(context);
+			game.start(context, true);
 			Trial trial = null;
 			try
 			{

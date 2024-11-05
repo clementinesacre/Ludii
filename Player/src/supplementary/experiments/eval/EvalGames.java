@@ -271,7 +271,7 @@ public class EvalGames
 				allStoredRNG.add(rngState);
 				
 				// Play a game
-				game.start(context);
+				game.start(context, true);
 				for (int p = 1; p <= game.players().count(); ++p)
 					aiPlayers.get(p).initAI(game, p);
 				

@@ -139,7 +139,7 @@ public class ComputePlayoutConcepts
 			final Context context = new Context(game, new Trial(game));
 			allStoredRNG.add(context.rng().saveState());
 			final Trial trial = context.trial();
-			game.start(context);
+			game.start(context, true);
 
 			// Init the ais (here random).
 			for (int p = 1; p <= game.players().count(); ++p)
@@ -663,7 +663,7 @@ public class ComputePlayoutConcepts
 		double abortAt = start + warmingUpSecs * 1000000000.0;
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, ThreadLocalRandom.current());
 			stopAt = System.nanoTime();
 		}
@@ -680,7 +680,7 @@ public class ComputePlayoutConcepts
 		int moveDone = 0;
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, rng);
 			moveDone += context.trial().numMoves();
 			stopAt = System.nanoTime();

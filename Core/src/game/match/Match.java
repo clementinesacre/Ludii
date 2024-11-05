@@ -346,8 +346,12 @@ public class Match extends Game
 		willCrash = computeCrashReport();
 	}
 
+	/**
+	 * @param context
+	 * @param resetToContext if game but be start based on a specified context.
+	 */
 	@Override
-	public void start(final Context context)
+	public void start(final Context context, boolean resetToContext)
 	{
 		context.getLock().lock();
 
@@ -358,7 +362,7 @@ public class Match extends Game
 			final int numMovesBeforeStart = subtrial.numMoves();
 				
 			// Start the first instance
-			instances()[0].getGame().start(subcontext);
+			instances()[0].getGame().start(subcontext, resetToContext);
 			
 			// Will maybe have to append some extra moves to the match-wide trial
 			final List<Move> subtrialMoves = subtrial.generateCompleteMovesList();

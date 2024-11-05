@@ -232,7 +232,7 @@ public class FindSuperLongTrial
 						}
 						
 						runnable.gameStartRngState = Arrays.copyOf(gameStartRngState, gameStartRngState.length);
-						game.start(context);
+						game.start(context, true);
 						runnable.trial = trial;
 						runnable.currentTrialStartTime = System.currentTimeMillis();
 	

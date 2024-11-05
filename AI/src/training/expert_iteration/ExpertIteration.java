@@ -655,7 +655,7 @@ public class ExpertIteration
 					logLine(logWriter, "starting game " + (gameCounter + 1));
 					
 					// play a game
-					game.start(context);
+					game.start(context, true);
 					
 					// here we'll collect all tuples of experience during this game
 					final List<List<ExItExperience>> gameExperienceSamples = new ArrayList<List<ExItExperience>>(numPlayers + 1);

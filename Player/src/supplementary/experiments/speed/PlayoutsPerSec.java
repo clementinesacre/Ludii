@@ -237,7 +237,7 @@ public final class PlayoutsPerSec
 			double abortAt = start + warmingUpSecs * 1000000000.0;
 			while (stopAt < abortAt)
 			{
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 1.0, playoutMoveSelector, -1, playoutActionCap, ThreadLocalRandom.current());
 				stopAt = System.nanoTime();
 			}
@@ -258,7 +258,7 @@ public final class PlayoutsPerSec
 			int moveDone = 0;
 			while (stopAt < abortAt)
 			{
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 1.0, playoutMoveSelector, -1, playoutActionCap, rng);
 				moveDone += context.trial().numMoves();
 				stopAt = System.nanoTime();

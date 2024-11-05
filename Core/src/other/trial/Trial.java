@@ -485,7 +485,7 @@ public class Trial implements Serializable
 	public int numLogicalDecisions(final Game game)
 	{
 		final Context context = new Context(game,new Trial(game));
-		context.game().start(context);
+		context.game().start(context, true);
 		int count = 0;
 		for(int index = context.trial().numInitialPlacementMoves(); index < moves.size(); index++)
 		{
@@ -505,7 +505,7 @@ public class Trial implements Serializable
 	public int numPlausibleDecisions(final Game game)
 	{
 		final Context context = new Context(game,new Trial(game));
-		context.game().start(context);
+		context.game().start(context, true);
 		int count = 0;
 		for(int index = context.trial().numInitialPlacementMoves(); index < moves.size(); index++)
 		{

@@ -92,7 +92,7 @@ public class SkillTrace extends Metric
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		final int bf = game.moves(context).count();
 		
 		System.out.println(numTrialsPerMatch + " trials per level, time limit " + hardTimeLimit + "s, BF=" + bf + ".");
@@ -106,7 +106,7 @@ public class SkillTrace extends Metric
 			int strongAgentIdx = 1;
 			for (int i = 0; i < numTrialsPerMatch; ++i)
 			{
-				game.start(context);
+				game.start(context, true);
 				
 				for (int p = 1; p <= game.players().count(); ++p)
 					ais.get(p).initAI(game, p);

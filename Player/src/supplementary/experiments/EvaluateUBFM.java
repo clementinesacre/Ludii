@@ -183,7 +183,7 @@ public class EvaluateUBFM
 		agents.add(AI1);
 		agents.add(AI2);
 
-		game.start(context);
+		game.start(context, true);
 
 		AI1.initAI(game, 1);
 		AI2.initAI(game, 2);

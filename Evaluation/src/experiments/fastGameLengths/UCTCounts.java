@@ -42,7 +42,7 @@ public class UCTCounts
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 	
-		game.start(context);
+		game.start(context, true);
 
 		final Model model = context.model();
 		

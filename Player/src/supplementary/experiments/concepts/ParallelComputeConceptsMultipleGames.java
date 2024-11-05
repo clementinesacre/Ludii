@@ -372,7 +372,7 @@ public class ParallelComputeConceptsMultipleGames
 								final Trial trial = new Trial(game);
 								final Context context = new Context(game, trial);
 								final RandomProviderDefaultState gameStartRngState = (RandomProviderDefaultState) context.rng().saveState();
-								game.start(context);
+								game.start(context, true);
 								game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 								
 								String trialFilepath = trialsDir.getAbsolutePath();
@@ -830,7 +830,7 @@ public class ParallelComputeConceptsMultipleGames
 			double abortAt = start + warmingUpSecs * 1000000000.0;
 			while (stopAt < abortAt)
 			{
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, ThreadLocalRandom.current());
 				stopAt = System.nanoTime();
 			}
@@ -847,7 +847,7 @@ public class ParallelComputeConceptsMultipleGames
 			int moveDone = 0;
 			while (stopAt < abortAt)
 			{
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, rng);
 				moveDone += context.trial().numMoves();
 				stopAt = System.nanoTime();

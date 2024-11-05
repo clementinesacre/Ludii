@@ -313,7 +313,7 @@ public class EvaluateAllUBFMs
 				agents.add(AI1);
 			}
 	
-			game.start(context);
+			game.start(context, true);
 	
 			AI1.initAI(game, i%2+1);
 			AI2.initAI(game, (i+1)%2+1);

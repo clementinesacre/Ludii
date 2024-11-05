@@ -110,7 +110,7 @@ public class Complexity
 		
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			final Trial endTrial = game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 			final int numDecisions = endTrial.numMoves() - endTrial.numInitialPlacementMoves();
 			
@@ -168,7 +168,7 @@ public class Complexity
 		
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			final Trial endTrial = game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 			numDecisions += endTrial.numMoves() - endTrial.numInitialPlacementMoves();
 			numPlayerSwitches += (context.state().numTurn() - 1);
@@ -274,7 +274,7 @@ public class Complexity
 		
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			final Trial endTrial = game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 			final int numDecisions = endTrial.numMoves() - endTrial.numInitialPlacementMoves();
 			

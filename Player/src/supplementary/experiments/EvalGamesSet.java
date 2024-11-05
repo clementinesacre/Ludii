@@ -247,7 +247,7 @@ public class EvalGamesSet
 				final double abortAt = start + warmingUpSecs * 1000000000.0;
 				while (stopAt < abortAt)
 				{
-					game.start(context);
+					game.start(context, true);
 					game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 					stopAt = System.nanoTime();
 				}
@@ -291,7 +291,7 @@ public class EvalGamesSet
 					}
 
 					// Play a game
-					game.start(context);
+					game.start(context, true);
 
 					for (int p = 1; p < currentAIList.size(); ++p)
 					{

@@ -38,7 +38,7 @@ public class Utils
 		context.rng().restoreState(rngState);
 		context.reset();
 		context.state().initialise(context.currentInstanceContext().game());
-		game.start(context);
+		game.start(context, true);
 		context.trial().setStatus(null);
 		return context;
 	}

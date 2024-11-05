@@ -46,7 +46,7 @@ public class GameSetup
 				app.manager().aiSelected()[i].setAI(null);
 			
 			app.loadGameSpecificPreferences();
-			GameUtil.resetGame(app, false);
+			GameUtil.resetGame(app, false, true);
 		}
 		catch (final Exception e)
 		{
@@ -150,7 +150,7 @@ public class GameSetup
 
 				final RandomProviderDefaultState rngState = new RandomProviderDefaultState(bytes);
 				app.manager().ref().context().rng().restoreState(rngState);
-				GameUtil.startGame(app);
+				GameUtil.startGame(app, true);
 				app.manager().setCurrGameStartRngState(rngState);
 				
 				for (int i = 0; i < app.manager().aiSelected().length; i++)

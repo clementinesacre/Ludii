@@ -207,7 +207,7 @@ public class EvalAIsThread extends Thread
 					}
 					
 					// play a game
-					game.start(context);
+					game.start(context, true);
 					
 					updateGuiTimer.schedule(new TimerTask()
 					{

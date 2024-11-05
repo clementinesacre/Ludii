@@ -44,7 +44,7 @@ public class SkillTraceAnalysis
 			final Game game = GameLoader.loadGameFromName(s);
 			final Trial trial = new Trial(game);
 			final Context context = new Context(game, trial);
-			game.start(context);
+			game.start(context, true);
 			final int bf = game.moves(context).count();
 			System.out.println(game.name() + " BF: " + bf);
 			choicesBranchingFactors.put(s, Integer.valueOf(bf));

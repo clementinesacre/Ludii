@@ -246,7 +246,7 @@ public class MemoryUsage
 						if (needStart)
 						{
 							needStart = false;
-							game.start(context);
+							game.start(context, true);
 							
 							final long startTime = System.currentTimeMillis();
 							for (int p = 1; p <= numPlayers; ++p)

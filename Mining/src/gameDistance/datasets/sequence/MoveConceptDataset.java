@@ -37,7 +37,7 @@ public class MoveConceptDataset implements Dataset
 			final Trial trial = gameTrials.get(i);
 			final Trial newTrial = new Trial(game);
 			final Context context = new Context(game, newTrial);
-			game.start(context);
+			game.start(context, true);
 			
 			final TIntArrayList gameMoveConceptSet = new TIntArrayList();
 			
@@ -74,7 +74,7 @@ public class MoveConceptDataset implements Dataset
 			final Trial trial = gameTrials.get(i);
 			final Trial newTrial = new Trial(game);
 			final Context context = new Context(game, newTrial);
-			game.start(context);
+			game.start(context, true);
 			
 			final ArrayList<TIntArrayList> moveConceptSet = new ArrayList<>();
 			for(int o = newTrial.numInitialPlacementMoves(); o < trial.numMoves(); o++) 

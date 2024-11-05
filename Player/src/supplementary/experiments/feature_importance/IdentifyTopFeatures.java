@@ -327,7 +327,7 @@ public class IdentifyTopFeatures
 					
 					for (int trialIdx = 0; trialIdx < (NUM_TRIALS_PER_FEATURE_EVAL * generation); ++trialIdx)
 					{
-						game.start(context);
+						game.start(context, true);
 						
 						// Pick random feature indices for all other players
 						final int[] featureIndices = new int[numPlayers + 1];
@@ -485,7 +485,7 @@ public class IdentifyTopFeatures
 			
 			for (int t = 0; t < NUM_EVAL_TRIALS_FEATURESET_GROWING; ++t)
 			{
-				game.start(context);
+				game.start(context, true);
 				
 				// Init AIs
 				for (int p = 1; p <= numPlayers; ++p)
@@ -562,7 +562,7 @@ public class IdentifyTopFeatures
 					
 					for (int t = 0; t < NUM_EVAL_TRIALS_FEATURESET_GROWING; ++t)
 					{
-						game.start(context);
+						game.start(context, true);
 						
 						// Init AIs
 						for (int p = 1; p <= numPlayers; ++p)

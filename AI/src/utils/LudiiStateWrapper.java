@@ -50,7 +50,7 @@ public final class LudiiStateWrapper
 		this.game = game;
 		trial = new Trial(game.game);
 		context = new Context(game.game, trial);
-		game.game.start(context);
+		game.game.start(context, true);
 	}
 	
 	/**
@@ -222,7 +222,7 @@ public final class LudiiStateWrapper
 	 */
 	public void reset()
 	{
-		game.game.start(context);
+		game.game.start(context, true);
 	}
 	
 	/**

@@ -219,7 +219,7 @@ public class JITSPatterNetFeatureSet extends BaseFeatureSet
 		// We'll do 3 random (partial, very short) trials
 		for (int i = 0; i < 3; ++i)
 		{
-			game.get().start(jitContext);
+			game.get().start(jitContext, true);
 			
 			// We'll do 5 moves max per trial
 			for (int j = 0; j < 10; ++j)

@@ -92,7 +92,7 @@ public class GenerateTrialsCluster
 		
 		final Game game = GameLoader.loadGameFromName(gamePath);
 		game.setMaxMoveLimit(moveLimit);
-		game.start(new Context(game, new Trial(game)));
+		game.start(new Context(game, new Trial(game)), true);
 			
 		System.out.println("Loading game: " + game.name());
 		
@@ -156,7 +156,7 @@ public class GenerateTrialsCluster
 						final Context context = new Context(rulesetGame, trial);
 	
 						final byte[] startRNGState = ((RandomProviderDefaultState) context.rng().saveState()).getState();
-						rulesetGame.start(context);
+						rulesetGame.start(context, true);
 							
 						// Init the ais.
 						for (int p = 1; p <= rulesetGame.players().count(); ++p)
@@ -202,7 +202,7 @@ public class GenerateTrialsCluster
 				final Context context = new Context(game, trial);
 
 				final byte[] startRNGState = ((RandomProviderDefaultState) context.rng().saveState()).getState();
-				game.start(context);
+				game.start(context, true);
 					
 				// Init the ais.
 				for (int p = 1; p <= game.players().count(); ++p)

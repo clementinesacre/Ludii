@@ -48,7 +48,7 @@ public class FutureTrialAB implements FutureTrial
         	final Trial trial = new Trial(game);
 			final Context context = new Context(game, trial);
 				
-			game.start(context);
+			game.start(context, true);
 			
 			// Set up AIs
 			final List<AI> agents = new ArrayList<AI>();

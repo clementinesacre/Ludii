@@ -520,7 +520,7 @@ public class ExportDbCsvConcepts
 
 				final Game game = GameLoader.loadGameFromName(gameName);
 				game.setMaxMoveLimit(moveLimit);
-				game.start(new Context(game, new Trial(game)));
+				game.start(new Context(game, new Trial(game)), true);
 
 				System.out.println("Loading game: " + game.name());
 
@@ -806,7 +806,7 @@ public class ExportDbCsvConcepts
 				final Context context = new Context(game, new Trial(game));
 				allStoredRNG.add(context.rng().saveState());
 				final Trial trial = context.trial();
-				game.start(context);
+				game.start(context, true);
 
 				// Init the ais.
 				for (int p = 1; p <= game.players().count(); ++p)
@@ -1745,7 +1745,7 @@ public class ExportDbCsvConcepts
 		double abortAt = start + warmingUpSecs * 1000000000.0;
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, ThreadLocalRandom.current());
 			stopAt = System.nanoTime();
 		}
@@ -1762,7 +1762,7 @@ public class ExportDbCsvConcepts
 		int moveDone = 0;
 		while (stopAt < abortAt)
 		{
-			game.start(context);
+			game.start(context, true);
 			game.playout(context, null, 1.0, null, -1, Constants.UNDEFINED, rng);
 			moveDone += context.trial().numMoves();
 			stopAt = System.nanoTime();
