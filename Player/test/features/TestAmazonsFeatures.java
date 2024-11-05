@@ -98,7 +98,7 @@ public class TestAmazonsFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// P1 moves from 39 to 9
 		game.apply(context,
@@ -364,7 +364,7 @@ public class TestAmazonsFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// P1 moves from 39 to 37
 		game.apply(context,

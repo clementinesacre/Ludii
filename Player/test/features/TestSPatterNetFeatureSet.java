@@ -57,7 +57,7 @@ public class TestSPatterNetFeatureSet
 			
 			final Trial trial = new Trial(game);
 			final Context context = new Context(game, trial);
-			game.start(context);
+			game.start(context, true);
 			
 			final int[] playersArray = new int[game.players().count()];
 			for (int i = 0; i < playersArray.length; ++i)

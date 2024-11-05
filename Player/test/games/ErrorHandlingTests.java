@@ -365,7 +365,7 @@ public class ErrorHandlingTests
 
 		try
 		{
-			game.start(context);
+			game.start(context, true);
 			game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());		
 		}
 		catch (final Exception e)

@@ -76,7 +76,7 @@ public class RunGame extends Thread
 							
 					manager.aiSelected()[pid] = new AIDetails(manager, json, pid, "Random");
 				}
-				GameUtil.startGame(app);
+				GameUtil.startGame(app, true);
 				app.manager().settingsManager().setAgentsPaused(app.manager(), false);
 				app.manager().ref().nextMove(app.manager(), false);
 			});

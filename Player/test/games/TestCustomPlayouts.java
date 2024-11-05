@@ -153,7 +153,7 @@ public class TestCustomPlayouts
 		// Play our trial (with custom playouts)
 		final Context playedContext = new Context(game, new Trial(game));
 		final RandomProviderDefaultState gameStartRngState = (RandomProviderDefaultState) playedContext.rng().saveState();
-		game.start(playedContext);
+		game.start(playedContext, true);
 		final Trial playedTrial = game.playout(playedContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 
 		// Ensure that all played moves were legal and outcome is correct
@@ -163,7 +163,7 @@ public class TestCustomPlayouts
 		final Context context = new Context(game, trial);
 		context.rng().restoreState(gameStartRngState);
 
-		game.start(context);
+		game.start(context, true);
 
 		int moveIdx = 0;
 

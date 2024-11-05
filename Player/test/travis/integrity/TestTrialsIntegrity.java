@@ -181,7 +181,7 @@ public class TestTrialsIntegrity
 				final Context context = new Context(game, trial);
 				context.rng().restoreState(loadedRecord.rngState());
 
-				game.start(context);
+				game.start(context, true);
 
 				int moveIdx = 0;
 

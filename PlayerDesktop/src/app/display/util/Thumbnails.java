@@ -160,7 +160,7 @@ public class Thumbnails
 		// Create a context for drawing in the background
 		Trial trial2 = new Trial(app.manager().ref().context().game());
 		Context context2 = new Context(app.manager().ref().context().game(), trial2);
-		app.manager().ref().context().game().start(context2);
+		app.manager().ref().context().game().start(context2, true);
 
 		app.manager().ref().context().game().playout(context2, null, 1.0, null, 0, moveLimit, ThreadLocalRandom.current());
 		
@@ -194,7 +194,7 @@ public class Thumbnails
 				// Create a context for drawing in the background
 				trial2 = new Trial(app.manager().ref().context().game());
 				context2 = new Context(app.manager().ref().context().game(), trial2);
-				app.manager().ref().context().game().start(context2);
+				app.manager().ref().context().game().start(context2, true);
 
 				app.manager().ref().context().game().playout(context2, null, 1.0, null, 0, moveLimit, ThreadLocalRandom.current());
 				
@@ -275,7 +275,7 @@ public class Thumbnails
 		// Create a context for drawing in the background
 		final Trial trial = new Trial(app.manager().ref().context().game());
 		final Context context = new Context(app.manager().ref().context().game(), trial);
-		GameUtil.startGame(app);
+		GameUtil.startGame(app, true);
 		
 		final ContainerStyle boardStyle = app.bridge().getContainerStyle(board.index());
 

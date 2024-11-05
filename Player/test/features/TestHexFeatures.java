@@ -64,7 +64,7 @@ public class TestHexFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// P1 plays above 60
 		game.apply(context, new Move(

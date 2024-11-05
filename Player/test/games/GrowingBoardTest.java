@@ -7,6 +7,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +49,7 @@ public class GrowingBoardTest {
 	{
 		final Game game = GameLoader.loadGameFromName("TestClementine.lud");
 		final Context context = new Context(game, new Trial(game));
-		game.start(context);
+		game.start(context, true);
 		return context;	
 	}
 	
@@ -103,7 +105,7 @@ public class GrowingBoardTest {
 		Boardless board = (Boardless) game.board();
 		
 		ContainerState[] prevContainerStates = context.state().containerStates();
-		GrowingBoard.impactBoard(context);
+		GrowingBoard.updateBoard(context);
 		
 		return prevContainerStates;
 	}
@@ -245,7 +247,77 @@ public class GrowingBoardTest {
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
 		HashMap<Integer, Integer> mappedNewToPrevIndexes = GrowingBoard.mappedNewToPrevIndexes();
 		HashSet<Integer> newAddedIndexes = GrowingBoard.newAddedIndexes();
-		//TODO
+
+		for (int i=0; i<=50; i++)
+			assertTrue(mappedPrevToNewIndexes.containsKey(i));
+		for (int i=51; i<=82; i++)
+			assertFalse(mappedPrevToNewIndexes.containsKey(i));
+		
+		for (int i=0; i<=9; i++)
+			assertFalse(mappedNewToPrevIndexes.containsKey(i));
+		for (int i=10; i<=16; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(17));
+		assertFalse(mappedNewToPrevIndexes.containsKey(18));
+		for (int i=19; i<=25; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(26));
+		assertFalse(mappedNewToPrevIndexes.containsKey(27));
+		for (int i=28; i<=34; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(35));
+		assertFalse(mappedNewToPrevIndexes.containsKey(36));
+		for (int i=37; i<=43; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(44));
+		assertFalse(mappedNewToPrevIndexes.containsKey(45));
+		for (int i=46; i<=52; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(53));
+		assertFalse(mappedNewToPrevIndexes.containsKey(54));
+		for (int i=55; i<=61; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		assertFalse(mappedNewToPrevIndexes.containsKey(62));
+		assertFalse(mappedNewToPrevIndexes.containsKey(63));
+		for (int i=64; i<=70; i++)
+			assertTrue(mappedNewToPrevIndexes.containsKey(i));
+		for (int i=71; i<=80; i++)
+			assertFalse(mappedNewToPrevIndexes.containsKey(i));
+		assertTrue(mappedNewToPrevIndexes.containsKey(81));
+		assertTrue(mappedNewToPrevIndexes.containsKey(82));
+
+		for (int i=0; i<=9; i++)
+			assertTrue(newAddedIndexes.contains(i));
+		for (int i=10; i<=16; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(17));
+		assertTrue(newAddedIndexes.contains(18));
+		for (int i=19; i<=25; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(26));
+		assertTrue(newAddedIndexes.contains(27));
+		for (int i=28; i<=34; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(35));
+		assertTrue(newAddedIndexes.contains(36));
+		for (int i=37; i<=43; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(44));
+		assertTrue(newAddedIndexes.contains(45));
+		for (int i=46; i<=52; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(53));
+		assertTrue(newAddedIndexes.contains(54));
+		for (int i=55; i<=61; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		assertTrue(newAddedIndexes.contains(62));
+		assertTrue(newAddedIndexes.contains(63));
+		for (int i=64; i<=70; i++)
+			assertFalse(newAddedIndexes.contains(i));
+		for (int i=71; i<=80; i++)
+			assertTrue(newAddedIndexes.contains(i));
+		assertFalse(newAddedIndexes.contains(81));
+		assertFalse(newAddedIndexes.contains(82));
 	}
 	
 	/**
@@ -926,6 +998,8 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
+		Game game = context.game();
+		Equipment equipment = game.equipment();
 		
 		applyMove(context, 25, 10, 1);
 		updateBoard(context);
@@ -1010,5 +1084,229 @@ public class GrowingBoardTest {
 		}
 		else 
 			fail();
+		
+		int[] newOffset = equipment.offset();
+		for (int i=0; i<=80; i++)
+			assertEquals(newOffset[i], i);
+		assertEquals(newOffset[81], 0);
+		assertEquals(newOffset[82], 0);
+		
+		int[] newContainerId = equipment.containerId();
+		for (int i=0; i<=80; i++)
+			assertEquals(newContainerId[i], 0);
+		assertEquals(newContainerId[81], 1);
+		assertEquals(newContainerId[82], 2);
+				
+		int[] newSitesFrom = equipment.sitesFrom();
+		assertEquals(newSitesFrom[0], 0);
+		assertEquals(newSitesFrom[1], 81);
+		assertEquals(newSitesFrom[2], 82);
+		
+		TopologyElement topologyElement0 = game.equipment().containers()[0].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement0.index(), 0);
+		TopologyElement topologyElement1 = game.equipment().containers()[1].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement1.index(), 81);
+		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement2.index(), 82);
+	}
+	
+	@Test
+	public void aa()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		
+		// test
+		List<Move> movesDone = context.trial().generateCompleteMovesList();
+		assertEquals(movesDone.get(0).getFromLocation().site(), 49);
+		assertEquals(movesDone.get(0).getToLocation().site(), 49);
+
+		assertEquals(movesDone.get(1).getFromLocation().site(), 50);
+		assertEquals(movesDone.get(1).getToLocation().site(), 50);
+
+		assertEquals(movesDone.get(2).getFromLocation().site(), 24);
+		assertEquals(movesDone.get(2).getToLocation().site(), 24);
+
+		assertEquals(movesDone.get(3).getFromLocation().site(), 25);
+		assertEquals(movesDone.get(3).getToLocation().site(), 25);
+
+		assertEquals(movesDone.get(4).getFromLocation().site(), 23);
+		assertEquals(movesDone.get(4).getToLocation().site(), 23);
+
+		assertEquals(movesDone.get(5).getFromLocation().site(), 49);
+		assertEquals(movesDone.get(5).getToLocation().site(), 22);
+	}
+	
+	/**
+	 * Tests the content of the emptySites of the board after two moves on edges.
+	 */
+	@Test
+	public void testEmptySitesContainer0()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 1);
+		updateBoard(context);
+		
+		// test
+		int [] emptySites = context.state().containerStates()[0].emptySites().sites();
+		List<Integer> emptySitesIndexes = new ArrayList<Integer>();
+		for (int i=0; i<emptySites.length; i++) 
+			emptySitesIndexes.add(emptySites[i]);
+
+		for (int i=0; i<37; i++)
+			assertTrue(emptySitesIndexes.contains(i));
+		for (int i=37; i<42; i++)
+			assertFalse(emptySitesIndexes.contains(i));
+		for (int i=42; i<=80; i++)
+			assertTrue(emptySitesIndexes.contains(i));
+	}
+	
+	/**
+	 * Tests the perimeter of the board after one move on an edge.
+	 */
+	@Test
+	public void testPerimeterAfter1EdgeMove()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);	
+		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+		List<Integer> perimeterIndexes = new ArrayList<Integer>();
+		for (int i=0; i<perimeter.size(); i++)
+			perimeterIndexes.add(perimeter.get(i).index());
+		
+		// test
+		for (int i=0; i<8; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=8; i<13; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=13; i<15; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=15; i<20; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=20; i<22; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=22; i<27; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=27; i<29; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=29; i<34; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=34; i<36; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=36; i<41; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=41; i<=48; i++)
+			assertTrue(perimeterIndexes.contains(i));
+	}
+	
+	/**
+	 * Tests the perimeter of the board after two moves on edges.
+	 */
+	@Test
+	public void testPerimeterAfter2EdgeMoves()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 1);
+		updateBoard(context);		
+		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+		List<Integer> perimeterIndexes = new ArrayList<Integer>();
+		for (int i=0; i<perimeter.size(); i++)
+			perimeterIndexes.add(perimeter.get(i).index());
+		
+		// test
+		for (int i=0; i<10; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=10; i<17; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=17; i<19; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=19; i<26; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=26; i<28; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=28; i<35; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=35; i<37; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=37; i<44; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=44; i<46; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=46; i<53; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=53; i<55; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=55; i<62; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=62; i<64; i++)
+			assertTrue(perimeterIndexes.contains(i));
+		for (int i=64; i<71; i++)
+			assertFalse(perimeterIndexes.contains(i));
+		for (int i=71; i<=80; i++)
+			assertTrue(perimeterIndexes.contains(i));
+	}
+	
+	/**
+	 * Tests the method that check if a move made is done on an edge (= the perimeter 
+	 * of the board), after multiple moves, firsts 2 on edges and last one not on an edge.
+	 */
+	@Test
+	public void testIsTouchingEdgeAfterMultipleMoves()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 1);
+		updateBoard(context);		
+		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+		
+		// test
+		for (int i=0; i<10; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=10; i<17; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=17; i<19; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=19; i<26; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=26; i<28; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=28; i<35; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=35; i<37; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=37; i<44; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=44; i<46; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=46; i<53; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=53; i<55; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=55; i<62; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=62; i<64; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=64; i<71; i++)
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+		for (int i=71; i<=80; i++)
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
 	}
 }

@@ -149,7 +149,7 @@ public class TestParallelPlayoutsWithOptions
 					{
 						final Context context = contexts[i];
 						playedContexts.add(executorService.submit(() -> {
-							gameWithOptions.start(context);
+							gameWithOptions.start(context, true);
 							gameWithOptions.playout(context, null, 1.0, null, 0, 30, ThreadLocalRandom.current());
 							return context;
 						}));
@@ -182,7 +182,7 @@ public class TestParallelPlayoutsWithOptions
 						final Context context = new Context(gameWithOptions, trial);
 						context.rng().restoreState(gameStartRngStates[parallelPlayout]);
 						
-						gameWithOptions.start(context);
+						gameWithOptions.start(context, true);
 						
 						int moveIdx = 0;
 						

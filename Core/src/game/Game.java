@@ -2367,7 +2367,7 @@ public class Game extends BaseLudeme implements API, Serializable
 		// Setup a new instance of the game
 		final BitSet concepts = computeBooleanConcepts();	
 		final Context context = new Context(this,  new Trial(this));
-		this.start(context);
+		this.start(context, true);
 		for (int cid = 0; cid < context.containers().length; cid++)
 		{
 			final Container cont = context.containers()[cid];
@@ -2702,9 +2702,12 @@ public class Game extends BaseLudeme implements API, Serializable
 
 	/**
 	 * Init the state and start the game.
+	 * 
+	 * @param context
+	 * @param resetToContext if game but be start based on a specified context.
 	 */
 	@Override
-	public void start(final Context context)
+	public void start(final Context context, boolean resetToContext)
 	{		
 		context.getLock().lock();
 		
@@ -2712,11 +2715,11 @@ public class Game extends BaseLudeme implements API, Serializable
 		
 		try
 		{
-			if (startContext != null)
+			if (startContext != null && resetToContext)
 			{
 				context.resetToContext(startContext);
 			}
-			else
+			else if (resetToContext)
 			{
 				// Normal case for single-trial games
 				context.reset();
@@ -2734,7 +2737,7 @@ public class Game extends BaseLudeme implements API, Serializable
 								null, null);
 						rule.eval(context);
 					}
-	
+
 				// Place randomly the cards of the deck in the game.
 				for (final Deck d : context.game().handDeck())
 				{
@@ -2763,7 +2766,7 @@ public class Game extends BaseLudeme implements API, Serializable
 				// We store the starting positions of each component.
 				for (int i = 0; i < context.components().length; i++)
 					context.trial().startingPos().add(new Region());
-	
+
 				if (!isDeductionPuzzle())
 				{
 					final ContainerState cs = context.containerState(0);
@@ -2833,7 +2836,7 @@ public class Game extends BaseLudeme implements API, Serializable
 			
 			// Important for AIs
 			//incrementGameStartCount();
-			
+
 			// Make sure our "real" context's RNG actually gets used and progresses
 			if (!context.trial().over() && context.game().isStochasticGame())
 				context.game().moves(context);
@@ -2858,7 +2861,7 @@ public class Game extends BaseLudeme implements API, Serializable
 			if (trial.cachedLegalMoves() == null || trial.cachedLegalMoves().moves().isEmpty())
 			{
 				final Moves legalMoves;
-	
+
 				if (trial.over())
 				{
 					legalMoves = new BaseMoves(null);
@@ -2969,7 +2972,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	 */
 	@Override
 	public Move apply(final Context context, final Move move)
-	{
+	{		
 		return apply(context, move, false);		// By default false --> don't skip computing end rules
 	}
 	

@@ -98,7 +98,7 @@ public class OnePlayoutByGameTest
 				final Trial trial = new Trial(game);
 				final Context context = new Context(game, trial);
 
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 				System.out.println("PLAYOUT COMPLETE FOR " + game.name());
 			}
@@ -119,7 +119,7 @@ public class OnePlayoutByGameTest
 					final Trial trial = new Trial(game);
 					final Context context = new Context(game, trial);
 	
-					game.start(context);
+					game.start(context, true);
 					game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 					System.err.println("PLAYOUT COMPLETE FOR " + game.name());
 					fail("COMPLETED PLAYOUT for file which was supposed to file: " + fileName);

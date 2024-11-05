@@ -145,7 +145,7 @@ public class MancalaCountConsistency
 				System.out.println("Playout start RNG = " + Arrays.toString(playoutStartRngState.getState()));
 				System.out.println("Game start RNG = " + Arrays.toString(gameStartRngState.getState()));
 
-				game.start(context);
+				game.start(context, true);
 				final int startCount = totalCount(context);
 				
 				boolean saved = false;

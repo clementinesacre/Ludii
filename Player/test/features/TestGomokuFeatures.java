@@ -69,7 +69,7 @@ public class TestGomokuFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// In the initial game state:
 		// - Feature 0 is active for ALL moves (15 * 15 = 225)

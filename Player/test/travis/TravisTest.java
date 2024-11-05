@@ -383,7 +383,7 @@ public class TravisTest
 			final Context context = contexts[i];
 			playedContexts.add(executorService.submit(() ->
 			{
-				gameCompiled.start(context);
+				gameCompiled.start(context, true);
 				gameCompiled.playout(context, null, 1.0, null, 0, 30, ThreadLocalRandom.current());
 				return context;
 			}));
@@ -420,7 +420,7 @@ public class TravisTest
 			final Context context = new Context(gameCompiled, trial);
 			context.rng().restoreState(gameStartRngStates[parallelPlayout]);
 
-			gameCompiled.start(context);
+			gameCompiled.start(context, true);
 
 			int moveIdx = 0;
 
@@ -777,7 +777,7 @@ public class TravisTest
 
 				final Trial trial = new Trial(gameWithOptions);
 				final Context context = new Context(gameWithOptions, trial);
-				gameWithOptions.start(context);
+				gameWithOptions.start(context, true);
 				gameWithOptions.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 			}
 			catch (final Exception | Error e)
@@ -836,7 +836,7 @@ public class TravisTest
 			final Context context = new Context(gameCompiled, trial);
 			context.rng().restoreState(loadedRecord.rngState());
 
-			gameCompiled.start(context);
+			gameCompiled.start(context, true);
 
 			int moveIdx = 0;
 

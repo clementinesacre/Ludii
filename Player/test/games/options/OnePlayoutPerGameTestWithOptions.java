@@ -122,7 +122,7 @@ public class OnePlayoutPerGameTestWithOptions
 					final Trial trial = new Trial(gameWithOptions);
 					final Context context = new Context(gameWithOptions, trial);
 					
-					gameWithOptions.start(context);
+					gameWithOptions.start(context, true);
 					gameWithOptions.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 				}
 			}

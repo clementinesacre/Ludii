@@ -49,7 +49,7 @@ public class MoveGeneration
 			final Trial trial = generatedTrials.get(trialIndex);
 			final RandomProviderDefaultState trialRNG = generatedTrialsRNG.get(trialIndex);
 			app.manager().setCurrGameStartRngState(trialRNG);
-			GameUtil.resetGame(app, true);
+			GameUtil.resetGame(app, true, true);
 			
 			for (int i = trial.numInitialPlacementMoves(); i < trial.numMoves(); i++)
 			{
