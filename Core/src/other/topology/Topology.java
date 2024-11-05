@@ -2751,11 +2751,19 @@ public class Topology implements Serializable
 //		return minWalks;
 //	}
 	
+	/**
+	 * Clear the topology.
+	 */
 	public void clearTopology()
 	{
 		vertices.clear();
 		edges.clear();
 		cells.clear();
+		
+		for (final SiteType type : SiteType.values())
+			perimeter.get(type).clear();
+		
+		setPerimeter(new ArrayList<Perimeter>());
 	}
 
 }

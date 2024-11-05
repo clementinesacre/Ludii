@@ -111,7 +111,7 @@ public class ManualGeneration
 	 */
 	private final static void generateSetupImage(final DesktopApp app)
 	{
-		GameUtil.resetGame(app, true, true);
+		GameUtil.resetGame(app, true);
 		app.repaint();
 
 		final Timer setupScreenshotTimer = new Timer();
@@ -294,7 +294,7 @@ public class ManualGeneration
 		final Trial trial = moveInformation.trial();
 		final RandomProviderDefaultState trialRNG = moveInformation.rng();
 		app.manager().setCurrGameStartRngState(trialRNG);
-		GameUtil.resetGame(app, true, true);
+		GameUtil.resetGame(app, true);
 		
 		// Apply all moves up until the one we want to capture.
 		for (int i = trial.numInitialPlacementMoves(); i < moveInformation.moveIndex(); i++)
