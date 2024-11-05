@@ -116,7 +116,7 @@ public class TestHeuristicStateValues
 				final Trial trial = new Trial(game);
 				final Context context = new Context(game, trial);
 
-				game.start(context);
+				game.start(context, true);
 				
 				// collect applicable heuristics
 				final int numPlayers = game.players().count();

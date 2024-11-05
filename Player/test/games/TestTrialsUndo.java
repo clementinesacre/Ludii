@@ -198,7 +198,7 @@ public class TestTrialsUndo
 					context.rng().restoreState(loadedRecord.rngState());
 
 					final Trial trial = context.trial();
-					game.start(context);
+					game.start(context, true);
 
 					int moveIdx = 0;
 					while (moveIdx < trial.numInitialPlacementMoves())
@@ -260,7 +260,7 @@ public class TestTrialsUndo
 							final Trial trialToCompare = contextToCompare.trial();
 							final State stateToCompare = contextToCompare.state();
 							final State state = context.state();
-							game.start(contextToCompare);
+							game.start(contextToCompare, true);
 							
 							int indexTrialToCompare = 0;
 							while (indexTrialToCompare < trialToCompare.numInitialPlacementMoves())

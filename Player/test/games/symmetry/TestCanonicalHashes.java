@@ -31,12 +31,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		// Game 1 has a white piece at cell #0, game 2 has a black piece
 		add(game1, context1, 0, 1);	
@@ -58,12 +58,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		// Game 1 has a white piece at cell #0, game 2 has a black piece
 		add(game1, context1, 0, 1);	
@@ -85,12 +85,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		final List<Cell> cells = context1.containers()[0].topology().cells();
 		final Map<String, Integer> nameToCell = new HashMap<>();
@@ -137,12 +137,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		final List<Cell> cells = context1.containers()[0].topology().cells();
 		final Map<String,Integer> nameToCell = new HashMap<>();
@@ -172,12 +172,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		final List<Cell> cells = context1.containers()[0].topology().cells();
 		final Map<String, Integer> nameToCell = new HashMap<>();
@@ -220,12 +220,12 @@ public class TestCanonicalHashes
 		final Game game3 = GameLoader.loadGameFromName("board/space/blocking/Mu Torere.lud");
 		final Trial trial3 = new Trial(game3);
 		final Context context3 = new Context(game3, trial3);
-		game3.start(context3);
+		game3.start(context3, true);
 
 		final Game game4 = GameLoader.loadGameFromName("board/space/blocking/Mu Torere.lud");
 		final Trial trial4 = new Trial(game4);
 		final Context context4 = new Context(game4, trial4);
-		game4.start(context4);
+		game4.start(context4, true);
 		Assert.assertEquals
 		(
 			context3.state().canonicalHash(new ReflectionsOnly(), whoOnly), 
@@ -242,12 +242,12 @@ public class TestCanonicalHashes
 		final Game game1 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial1 = new Trial(game1);
 		final Context context1 = new Context(game1, trial1);
-		game1.start(context1);
+		game1.start(context1, true);
 
 		final Game game2 = GameLoader.loadGameFromName("board/space/connection/Hex.lud");
 		final Trial trial2 = new Trial(game2);
 		final Context context2 = new Context(game2, trial2);
-		game2.start(context2);
+		game2.start(context2, true);
 
 		final List<Cell> cells = context1.containers()[0].topology().cells();
 		final Map<String, Integer> nameToCell = new HashMap<>();

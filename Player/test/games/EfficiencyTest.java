@@ -142,7 +142,7 @@ public class EfficiencyTest
 
 				while (stopAt < abortAt)
 				{
-					game.start(context);
+					game.start(context, true);
 					game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 					stopAt = System.nanoTime();
 				}
@@ -155,7 +155,7 @@ public class EfficiencyTest
 				int moveDone = 0;
 				while (stopAt < abortAt)
 				{
-					game.start(context);
+					game.start(context, true);
 					game.playout(context, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 					stopAt = System.nanoTime();
 					moveDone += context.trial().numMoves();

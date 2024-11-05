@@ -150,7 +150,7 @@ public class Kilothon
 						game.setMaxMoveLimit(numPlayers*movesLimitPerPlayer); // Limit of moves per player.
 						final Context context = new Context(game, new Trial(game));
 						final Trial trial = context.trial();
-						game.start(context);
+						game.start(context, true);
 						
 						// Init the ais.
 						for (int p = 1; p <= game.players().count(); ++p)

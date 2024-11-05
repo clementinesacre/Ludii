@@ -135,7 +135,7 @@ public class TestDefaultAIs
 			final Trial trial = new Trial(game);
 			final Context context = new Context(game, trial);
 	
-			game.start(context);
+			game.start(context, true);
 	
 			// Create our AI and init it
 			final LudiiAI ai = new LudiiAI();

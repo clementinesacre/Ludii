@@ -90,7 +90,7 @@ public class SanityChecks
 				final Game game = (Game)Compiler.compileTest(new Description(desc), false);
 				final Trial trial = new Trial(game);
 				final Context context = new Context(game, trial);
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 0.01, null, 0, MOVE_LIMIT, ThreadLocalRandom.current());
 
 				if (context.trial().over())
@@ -139,7 +139,7 @@ public class SanityChecks
 				final Game game   = (Game)Compiler.compileTest(new Description(desc), false);
 				final Trial trial = new Trial(game);
 				final Context context = new Context(game, trial);
-				game.start(context);
+				game.start(context, true);
 				game.playout(context, null, 0.01, null, 0, MOVE_LIMIT, ThreadLocalRandom.current());
 
 				if (!context.trial().over())

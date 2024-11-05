@@ -139,7 +139,7 @@ public class TestTrialSerialization
 //		if (context.isAMatch())
 //			context.currentInstanceContext().trial().storeLegalMovesHistory();
 
-		game.start(context);
+		game.start(context, true);
 		final int maxNumMoves = 10 + (int) (Math.random() * 21);
 		game.playout(context, null, 1.0, null, 0, maxNumMoves, ThreadLocalRandom.current());
 
@@ -157,7 +157,7 @@ public class TestTrialSerialization
 			context = new Context(game, trial);
 			context.rng().restoreState(loadedRecord.rngState());
 
-			game.start(context);
+			game.start(context, true);
 
 			int moveIdx = 0;
 

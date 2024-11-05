@@ -74,7 +74,7 @@ public class TestKharbagaFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// In the initial game state:
 		// - Feature 0, 2, 3, and 5 should all be active for ALL moves (= 3)

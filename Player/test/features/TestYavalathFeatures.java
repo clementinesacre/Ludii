@@ -60,7 +60,7 @@ public class TestYavalathFeatures
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
 		
-		game.start(context);
+		game.start(context, true);
 		
 		// P1 plays in 60 (irrelevant)
 		game.apply(context, new Move(

@@ -34,7 +34,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Chaturaji.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().fullHash();
 		
@@ -61,7 +61,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Chaturaji.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		final int temp = context.state().temp();
@@ -84,7 +84,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Chaturaji.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		
@@ -108,7 +108,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Chaturaji.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().fullHash();
 		
@@ -131,7 +131,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Pachisi.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		final int playerTeam = context.state().getTeam(1);
@@ -155,7 +155,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Lasca.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		final int startPhase = context.state().currentPhase(1);
@@ -179,7 +179,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("testBet.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().fullHash();
 		final int startAmount = context.state().amount(1);
@@ -203,7 +203,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Castello.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		
@@ -226,7 +226,7 @@ public class HashTests
 		final Game game = GameLoader.loadGameFromName("Fanorona.lud");
 		final Trial trial = new Trial(game);
 		final Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		final long startHash = context.state().stateHash();
 		
@@ -248,7 +248,7 @@ public class HashTests
 		Game game = GameLoader.loadGameFromName("/Chess.lud");
 		Trial trial = new Trial(game);
 		Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		step(context, game, 2, 12, 28);
 		step(context, game, 1, 52, 36);
@@ -260,7 +260,7 @@ public class HashTests
 		game = GameLoader.loadGameFromName("/Chess.lud");
 		trial = new Trial(game);
 		context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		step(context, game, 2, 11, 27);
 		step(context, game, 1, 51, 35);
@@ -282,7 +282,7 @@ public class HashTests
 		Game game = GameLoader.loadGameFromName("/Chess.lud");
 		Trial trial = new Trial(game);
 		Context context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		step(context, game, 2, 12, 28);
 		step(context, game, 1, 52, 36);
@@ -292,7 +292,7 @@ public class HashTests
 		game = GameLoader.loadGameFromName("/Chess.lud");
 		trial = new Trial(game);
 		context = new Context(game, trial);
-		game.start(context);
+		game.start(context, true);
 
 		step(context, game, 2, 11, 27);
 		step(context, game, 1, 51, 35);

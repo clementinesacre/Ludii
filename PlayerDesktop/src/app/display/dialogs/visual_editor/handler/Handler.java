@@ -1043,7 +1043,7 @@ public class Handler
     public static void loadGame(Game game, PlayerApp app)
     {
         app.manager().ref().setGame(app.manager(), game);
-        GameUtil.startGame(app);
+        GameUtil.startGame(app, true);
         app.restartGame();
         DesktopApp.frame().requestFocus();
     }

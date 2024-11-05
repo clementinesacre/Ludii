@@ -183,7 +183,7 @@ public class TestTrialsIntegrityERIC
 					context.rng().restoreState(loadedRecord.rngState());
 
 					final Trial trial = context.trial();
-					game.start(context);
+					game.start(context, true);
 					
 					int moveIdx = 0;
 					
