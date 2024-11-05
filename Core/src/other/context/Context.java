@@ -1550,7 +1550,7 @@ public class Context
 					nextTrial.storeLegalMovesHistorySizes();
 			}
 			
-			nextGame.start(subcontext);
+			nextGame.start(subcontext, true);
 		}
 		
 	}
@@ -1688,9 +1688,9 @@ public class Context
 		models = new Model[context.models.length];
 		for (int i = 0; i < models.length; ++i)
 			models[i] = context.models[i].copy();
-		
+
 		evalContext = new EvalContext(context.evalContext());
-		
+
 		numLossesDecided = context.numLossesDecided;
 		numWinsDecided = context.numWinsDecided;
 
@@ -1701,7 +1701,7 @@ public class Context
 			scores = Arrays.copyOf(context.scores, context.scores.length);
 		else
 			scores = null;
-		
+
 		if (context.payoffs != null)
 			payoffs = Arrays.copyOf(context.payoffs, context.payoffs.length);
 		else

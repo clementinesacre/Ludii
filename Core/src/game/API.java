@@ -26,8 +26,9 @@ public interface API
 	 * Start new instance of the game.
 	 * 
 	 * @param context
+	 * @param resetToContext if game but be start based on a specified context.
 	 */
-	public void start(final Context context);
+	public void start(final Context context, boolean resetToContext);
 
 	//-------------------------------------------------------------------------
 

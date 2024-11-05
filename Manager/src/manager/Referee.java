@@ -229,7 +229,7 @@ public class Referee
 
 		while (stopAt < abortAt)
 		{
-			game.start(timingContext);
+			game.start(timingContext, true);
 			game.playout(timingContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 			stopAt = System.nanoTime();
 		}
@@ -242,7 +242,7 @@ public class Referee
 		int moveDone = 0;
 		while (stopAt < abortAt)
 		{
-			game.start(timingContext);
+			game.start(timingContext, true);
 			game.playout(timingContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 			stopAt = System.nanoTime();
 			moveDone += timingContext.trial().numMoves();

@@ -221,7 +221,7 @@ public class FindCrashingTrial
 						{
 							gameStartRngState[i] = newRNGState[i];
 						}
-						game.start(context);
+						game.start(context, true);
 	
 						for (int p = 1; p < currentAIList.size(); ++p)
 						{

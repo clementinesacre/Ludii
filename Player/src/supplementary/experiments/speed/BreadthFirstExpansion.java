@@ -148,7 +148,7 @@ public class BreadthFirstExpansion
 			
 			// Warming up
 			final List<Context> allContexts = new ArrayList<Context>();
-			game.start(startContext);
+			game.start(startContext, true);
 			allContexts.add(new Context(startContext));
 			int allContextsIdx = 0;
 			

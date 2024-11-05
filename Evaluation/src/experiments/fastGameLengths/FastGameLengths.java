@@ -292,7 +292,7 @@ public class FastGameLengths
 						final Trial trial = new Trial(game);
 						final Context context = new Context(game, trial);
 				
-						game.start(context);
+						game.start(context, true);
 	
 						for (int p = 1; p <= game.players().count(); ++p)
 							ais.get(p).initAI(game, p);
@@ -378,7 +378,7 @@ public class FastGameLengths
 						final Trial trial = new Trial(game);
 						final Context context = new Context(game, trial);
 				
-						game.start(context);
+						game.start(context, true);
 	
 						for (int p = 1; p <= game.players().count(); ++p)
 							ais.get(p).initAI(game, p);
@@ -473,7 +473,7 @@ public class FastGameLengths
 						final Trial trial = new Trial(game);
 						final Context context = new Context(game, trial);
 				
-						game.start(context);
+						game.start(context, true);
 	
 						for (int p = 1; p <= game.players().count(); ++p)
 							ais.get(p).initAI(game, p);
@@ -558,7 +558,7 @@ public class FastGameLengths
 						final Trial trial = new Trial(game);
 						final Context context = new Context(game, trial);
 				
-						game.start(context);
+						game.start(context, true);
 
 						for (int p = 1; p <= game.players().count(); ++p)
 							ais.get(p).initAI(game, p);
@@ -664,7 +664,7 @@ public class FastGameLengths
 		//int totalLength = 0;
 		for (int t = 0; t < numTrials; t++)
 		{
-			game.start(context);
+			game.start(context, true);
 			final Trial trial = game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 			//totalLength += trial.numLogicalDecisions(game);
 			stats.addSample(gameLength(trial, game));
@@ -700,7 +700,7 @@ public class FastGameLengths
 				(
 					() -> 
 					{
-						game.start(context);
+						game.start(context, true);
 						game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 						latch.countDown();
 						return trial;
@@ -804,7 +804,7 @@ public class FastGameLengths
 				(
 					() -> 
 					{
-						game.start(context);
+						game.start(context, true);
 						game.playout(context, null, 1.0, null, -1, -1, ThreadLocalRandom.current());
 						latch.countDown();
 						return trial;

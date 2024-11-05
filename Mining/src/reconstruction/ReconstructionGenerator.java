@@ -222,7 +222,7 @@ public class ReconstructionGenerator
 						{
 							System.out.print( " and with the expected concepts");
 							final Context context = new Context(game, new Trial(game));
-							game.start(context);
+							game.start(context, true);
 							final Moves legalMoves = context.game().moves(context);
 							
 							// Check if a non pass move is part of the first legal moves (BE CAREFUL WITH DICE GAMES)
@@ -256,7 +256,7 @@ public class ReconstructionGenerator
 											ais.add(new RandomAI());
 											ais.get(p).initAI(game, p);
 										}
-										game.start(contextRandomPlayout);
+										game.start(contextRandomPlayout, true);
 										game.playout(contextRandomPlayout, ais, 1.0, null, 0, -1, null);
 										final Trial trial = contextRandomPlayout.trial();
 //										System.out.println("run playout");
