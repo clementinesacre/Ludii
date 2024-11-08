@@ -14,9 +14,12 @@ import game.functions.graph.GraphFunction;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.rules.play.moves.BaseMoves;
 import game.rules.play.moves.Moves;
+import game.types.play.ModeType;
 import game.util.equipment.Region;
 import game.util.graph.Perimeter;
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import main.Constants;
 import main.collections.ChunkSet;
 import other.action.Action;
@@ -28,6 +31,7 @@ import other.state.container.ContainerState;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
 import other.state.zhash.ZobristHashGenerator;
+import other.state.zhash.ZobristHashUtilities;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 
@@ -552,10 +556,18 @@ public class GrowingBoard
 	 */
 	protected static void replayMoves(Context context, List<Move> movesDone)
 	{
-		Boardless board = (Boardless) context.game().board();
 		Move move = null;
+		int mover = context.state().mover();
+		int next = context.nextTo((context.state().mover()) % context.game().players().count() + 1);
+		
 		for (int i = 0; i < movesDone.size(); i++)
 		{
+			if (i == context.trial().numInitialPlacementMoves())
+			{
+				context.state().setMover(mover);
+				context.state().setNext(next);
+			}
+			
 			move = movesDone.get(i);
 
 			Move newMove = generateNewMove(move);
@@ -593,15 +605,26 @@ public class GrowingBoard
 		generateLegalMoves(context, legalMoves);
 	}
 	
+	/**
+	 * Reset the state, which also reset the mover.
+	 * 
+	 * @param context
+	 */
+	protected static void resetState(final Context context)
+	{	
+		context.state().reset(context.game());
+	}
+	
 	/** 
 	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
 	 */
 	protected static void resetMoves(Context context)
 	{
-		// TODO - how?
+		// TODO - how reset moves properly? problem with legal moves when doing this
 		//resetMoves(app);
-		context.trial().setMoves(new MoveSequence(null), 0);
+		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		//resetMoves(app);
+		resetState(context);
 	}
 	
 	/** 
@@ -614,10 +637,10 @@ public class GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		int mover = context.state().mover();
+		//int mover = context.state().mover();
 		resetMoves(context);
 		remakeTrial(context, movesDone, legalMoves);
-		context.state().setMover(mover);
+		//context.state().setMover(mover);
 	}
 
 	/** 

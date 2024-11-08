@@ -10,6 +10,9 @@ import app.utils.MVCSetup;
 import game.Game;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
+import game.types.play.ModeType;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import main.Constants;
 import other.context.Context;
 import other.location.FullLocation;
@@ -18,6 +21,8 @@ import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 import other.state.container.ContainerFlatState;
+import other.state.container.ContainerState;
+import other.state.zhash.ZobristHashUtilities;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -66,7 +71,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		//----------
 		
 		// also reset initial placement moves
-		context.trial().setMoves(new MoveSequence(null), 0);
+		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
 		//final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
@@ -82,6 +87,9 @@ public class GrowingBoardVisual extends GrowingBoard
 
 		app.bridge().settingsVC().setSelectedFromLocation(new FullLocation(Constants.UNDEFINED));
 		GameUtil.resetUIVariables(app);
+		
+		// Reset 
+		resetState(context);
 	}
 	
 	
@@ -96,10 +104,10 @@ public class GrowingBoardVisual extends GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		int mover = context.state().mover();
+		//int mover = context.state().mover();
 		resetMoves(app);
 		remakeTrial(context, movesDone, legalMoves);
-		context.state().setMover(mover);
+		//context.state().setMover(mover);
 	}
 	
 	/**
@@ -158,5 +166,7 @@ public class GrowingBoardVisual extends GrowingBoard
 				//displayInfo(context); //TODO : to remove once code is ready
 			}
 		}
+		System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() mover after : "+context.state().mover());
+		
 	}
 }
