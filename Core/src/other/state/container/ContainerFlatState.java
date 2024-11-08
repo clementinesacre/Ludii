@@ -849,8 +849,11 @@ public class ContainerFlatState extends BaseContainerState
 	@Override
 	public int countCell(final int site)
 	{
-		if (count != null)
+		if (count != null) {
+			
+			//System.out.println("ContainerFlatState.java countCell() site : "+site+ " - offset : "+offset+" - count : "+count.internalStateCopy().toChunkString());
 			return count.getChunk(site - offset);
+		}
 		
 		if (who.getChunk(site - offset) != 0 || what != null && what.getChunk(site - offset) != 0)
 			return 1;

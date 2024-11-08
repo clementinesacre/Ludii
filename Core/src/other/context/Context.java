@@ -1762,4 +1762,22 @@ public class Context
 		
 		trial.addUndoData(endData);
 	}
+	
+	/**
+	 * Gets next active player to a specific player.
+	 * 
+	 * @param who index of a player.
+	 * @return Next active to who.
+	 */
+	public int nextTo(int who)
+	{
+		int next = who;
+		while (!active(next) && active())
+		{
+			next++;
+			if (next > game().players().count())
+				next = 1;
+		}
+		return next;
+	}
 }

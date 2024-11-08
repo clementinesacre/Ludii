@@ -1574,18 +1574,6 @@ public class Topology implements Serializable
 	}
 
 	/**
-	 * List of perimeters (vertices) for each connected component in the graph. This
-	 * list is used for rough working during graph measurements (for thread safety)
-	 * and is not intended for reuse afterwards.
-	 * 
-	 * @return The list of perimeters.
-	 */
-	public List<Perimeter> perimeters()
-	{
-		return this.perimeters;
-	}
-
-	/**
 	 * Set the perimeters.
 	 * 
 	 * @param perimeters The list of perimeters.
@@ -2328,14 +2316,6 @@ public class Topology implements Serializable
 	}
 
 	/**
-	 * @return the trajectories.
-	 */
-	public Trajectories trajectories()
-	{
-		return trajectories;
-	}
-
-	/**
 	 * Set the trajectories.
 	 * 
 	 * @param trajectories
@@ -2752,6 +2732,210 @@ public class Topology implements Serializable
 //	}
 	
 	/**
+	 * @return the trajectories.
+	 */
+	public Trajectories trajectories() { return trajectories; }
+
+	/**    
+	 * @return the supportedDirections.  
+	 */ 
+	public Map<SiteType, List<DirectionFacing>> supportedDirections() { return supportedDirections; }
+
+	/**  
+	 * @return the supportedOrthogonalDirections.  
+	 */ 
+	public Map<SiteType, List<DirectionFacing>> supportedOrthogonalDirections() { return supportedOrthogonalDirections; }
+
+	/**    
+	 * @return the supportedDiagonalDirections.  
+	 */ 
+	public Map<SiteType, List<DirectionFacing>> supportedDiagonalDirections() { return supportedDiagonalDirections; }
+
+	/**    
+	 * @return the supportedAdjacentDirections.  
+	 */ 
+	public Map<SiteType, List<DirectionFacing>> supportedAdjacentDirections() { return supportedAdjacentDirections; }
+
+	/**    
+	 * @return the supportedOffDirections.  
+	 */ 
+	public Map<SiteType, List<DirectionFacing>> supportedOffDirections() { return supportedOffDirections; }
+
+	/**    
+	 * @return the corners.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> corners() { return corners; }
+
+	/**    
+	 * @return the cornersConvex.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> cornersConvex() { return cornersConvex; }
+
+	/**    
+	 * @return the cornersConcave.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> cornersConcave() { return cornersConcave; }
+
+	/**    
+	 * @return the major.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> major() { return major; }
+
+	/**    
+	 * @return the minor.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> minor() { return minor; }
+
+	/**    
+	 * @return the outer.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> outer() { return outer; }
+
+	/**    
+	 * @return the perimeter.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> perimeter() { return perimeter; }
+
+	/**    
+	 * @return the inner.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> inner() { return inner; }
+
+	/**    
+	 * @return the interlayer.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> interlayer() { return interlayer; }
+
+	/**    
+	 * @return the top.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> top() { return top; }
+
+	/**    
+	 * @return the left.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> left() { return left; }
+
+	/**    
+	 * @return the right.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> right() { return right; }
+
+	/**    
+	 * @return the bottom.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> bottom() { return bottom; }
+
+	/**    
+	 * @return the centre.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> centre() { return centre; }
+
+	/**    
+	 * @return the columns.  
+	 */ 
+	public Map<SiteType, List<List<TopologyElement>>> columns() { return columns; }
+
+	/**    
+	 * @return the rows.  
+	 */ 
+	public Map<SiteType, List<List<TopologyElement>>> rows() { return rows; }
+
+	/**    
+	 * @return the phases.  
+	 */ 
+	public Map<SiteType, List<List<TopologyElement>>> phases() { return phases; }
+
+	/**    
+	 * @return the sides.  
+	 */ 
+	public Map<SiteType, Map<DirectionFacing, List<TopologyElement>>> sides() { return sides; }
+
+	/**    
+	 * @return the distanceToOtherSite.  
+	 */ 
+	public Map<SiteType, int[][]> distanceToOtherSite() { return distanceToOtherSite; }
+
+	/**    
+	 * @return the distanceToCorners.  
+	 */ 
+	public Map<SiteType, int[]> distanceToCorners() { return distanceToCorners; }
+
+	/**    
+	 * @return the distanceToSides.  
+	 */ 
+	public Map<SiteType, int[]> distanceToSides() { return distanceToSides; }
+
+	/**    
+	 * @return the distanceToCentre.  
+	 */ 
+	public Map<SiteType, int[]> distanceToCentre() { return distanceToCentre; }
+
+	/**    
+	 * @return the layers.  
+	 */ 
+	public Map<SiteType, List<List<TopologyElement>>> layers() { return layers; }
+
+	/**    
+	 * @return the diagonals.  
+	 */ 
+	public Map<SiteType, List<List<TopologyElement>>> diagonals() { return diagonals; }
+
+	/**    
+	 * @return the axials.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> axials() { return axials; }
+
+	/**    
+	 * @return the horizontal.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> horizontal() { return horizontal; }
+
+	/**    
+	 * @return the vertical.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> vertical() { return vertical; }
+
+	/**    
+	 * @return the angled.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> angled() { return angled; }
+
+	/**    
+	 * @return the slash.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> slash() { return slash; }
+
+	/**    
+	 * @return the slosh.  
+	 */ 
+	public Map<SiteType, List<TopologyElement>> slosh() { return slosh; }
+
+	/**    
+	 * @return the distanceToRegions.  
+	 */ 
+	public Map<SiteType, int[][]> distanceToRegions() { return distanceToRegions; }
+
+	/**    
+	 * @return the phaseByElementIndex.  
+	 */ 
+	public Map<SiteType, int[]> phaseByElementIndex() { return phaseByElementIndex; }
+
+	/**    
+	 * @return the connectivities.  
+	 */ 
+	public Map<SiteType, TIntArrayList> connectivities() { return connectivities; }
+
+	/**
+	 * List of perimeters (vertices) for each connected component in the graph. This
+	 * list is used for rough working during graph measurements (for thread safety)
+	 * and is not intended for reuse afterwards.
+	 * 
+	 * @return The list of perimeters.
+	 */
+	public List<Perimeter> perimeters() { return this.perimeters; }
+	
+	/**
 	 * Clear the topology.
 	 */
 	public void clearTopology()
@@ -2760,10 +2944,55 @@ public class Topology implements Serializable
 		edges.clear();
 		cells.clear();
 		
-		for (final SiteType type : SiteType.values())
-			perimeter.get(type).clear();
 		
-		setPerimeter(new ArrayList<Perimeter>());
+		for (final SiteType type : SiteType.values()) {
+			supportedDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board		
+			supportedOrthogonalDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedDiagonalDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedAdjacentDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedOffDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board // what is this ? it is already empty
+			corners.get(type).clear();
+			cornersConvex.get(type).clear();
+			cornersConcave.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			major.get(type).clear();
+			minor.get(type).clear();
+			outer.get(type).clear();
+			perimeter.get(type).clear();
+			inner.get(type).clear();
+			interlayer.get(type).clear();
+			top.get(type).clear();
+			left.get(type).clear();
+			right.get(type).clear();
+			bottom.get(type).clear();
+			centre.get(type).clear();
+			columns.get(type).clear();
+			rows.get(type).clear();
+			for (final CompassDirection direction : CompassDirection.values())
+				sides.get(type).get(direction).clear();
+			axials.get(type).clear();
+			horizontal.get(type).clear();
+			vertical.get(type).clear();
+		}
+		
+		this.perimeters = new ArrayList<Perimeter>();
+		
+		/*trajectories.clear(); ??
+		phases.clear(); ?? // The list of each set of sites in the same phase 
+		distanceToOtherSite.clear(); ??
+		distanceToCorners.clear(); ??
+		distanceToSides.clear(); ??
+		distanceToCentre.clear(); ??
+		layers.clear(); ??
+		diagonals.clear(); ??
+		angled.clear(); ??
+		slash.clear(); ??
+		slosh.clear(); ??
+		distanceToRegions.clear(); ??
+		phaseByElementIndex.clear(); ??
+		connectivities.clear(); ??
+		;*/
+		
+		
 	}
 
 }

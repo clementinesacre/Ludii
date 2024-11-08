@@ -1101,8 +1101,9 @@ public class State implements Serializable
 	 * Initialise this state for use.
 	 *
 	 * @param game
+	 * @param resetContainerStates true if container states need to be reset too.
 	 */
-	public void initialise(final Game game)
+	public void initState(final Game game, boolean resetContainerStates)
 	{
 		moverHash = ZobristHashUtilities.INITIAL_VALUE;
 		nextHash = ZobristHashUtilities.INITIAL_VALUE;
@@ -1140,9 +1141,10 @@ public class State implements Serializable
 			setPrev(0);
 		}
 
-		for (final ContainerState is : containerStates)
-			if (is != null)
-				is.reset(this, game);
+		if (resetContainerStates)
+			for (final ContainerState is : containerStates)
+				if (is != null)
+					is.reset(this, game);
 		
 		if (amount != null)
 		{
@@ -1170,6 +1172,26 @@ public class State implements Serializable
 				teams[i] = i;
 
 		diceAllEqual = false;
+	}
+	
+	/**
+	 * Initialise this state for use, and reset container states also.
+	 *
+	 * @param game
+	 */
+	public void initialise(final Game game)
+	{	
+		initState(game, true);
+	}
+	
+	/**
+	 * Reset this state for use.
+	 *
+	 * @param game
+	 */
+	public void reset(final Game game)
+	{
+		initState(game, false);
 	}
 
 	//-------------------------------------------------------------------------
