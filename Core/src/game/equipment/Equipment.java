@@ -551,13 +551,13 @@ public final class Equipment extends BaseLudeme implements Serializable
 				componentsWIP.add(piece);
 			}
 		}
-		
+
 		// Now we can transform our lists to arrays
 		containers = containersWIP.toArray(new Container[containersWIP.size()]);
 		components = componentsWIP.toArray(new Component[componentsWIP.size()]);
 		regions = regionsWIP.toArray(new Regions[regionsWIP.size()]);
 		maps = mapsWIP.toArray(new Map[mapsWIP.size()]);
-		
+				
 		initContainerAndParameters(game);
 		
 		for (final Container cont : containers)
@@ -1048,12 +1048,20 @@ public final class Equipment extends BaseLudeme implements Serializable
 		return new Integer[0][0];
 	}
 	
-	public void resetEquipment(Game game) 
+	/**
+	 * Updates the equipment to be up to date regarding the (new) 
+	 * Topologys. No need to erase 'containers' and 'components' 
+	 * as we need to keep the same object's instance, helps avoid 
+	 * inconsistency.
+	 * 
+	 * @param game
+	 */
+	public void updateEquipment(Game game) 
 	{
-		containers = null;
-		components = null;
-		regions = null;
-		maps = null;
+		//containers = null;
+		//components = null;
+		//regions = null;
+		//maps = null;
 		totalDefaultSites = 0;
 		//private int[] containerId;
 		//private int[] offset;
@@ -1065,7 +1073,9 @@ public final class Equipment extends BaseLudeme implements Serializable
 		cellHints = new Integer[0];
 		edgeHints = new Integer[0];
 		//private Item[] itemsToCreate;
-		createItems(game);
+		
+		//createItems(game);
+		initContainerAndParameters(game);
 	}
 	
 	/**

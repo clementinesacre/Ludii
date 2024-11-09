@@ -3090,10 +3090,7 @@ public class Game extends BaseLudeme implements API, Serializable
 		}
 
 		state.rebootPending();
-
-		//System.out.println("Game.java applyInternal() containerStates 0: "+ state.containerStates()[0]);
-		//System.out.println("Game.java applyInternal() containerStates 1: "+ state.containerStates()[1]);
-		//System.out.println("Game.java applyInternal() containerStates 2: "+ state.containerStates()[2]);
+		
 		final Move returnMove = (Move) move.apply(context, true); // update the game state
 		
 		if (skipEndRules)	// We'll leave the state in a half-finished state and just return directly
@@ -4097,7 +4094,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	 */
 	public void update()
 	{
-		equipment.resetEquipment(this);
+		equipment.updateEquipment(this);
 		precomputations();
 	}
 

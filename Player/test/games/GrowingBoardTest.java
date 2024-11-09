@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import app.move.GrowingBoard;
 import game.Game;
 import game.equipment.Equipment;
+import game.equipment.container.Container;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
@@ -325,10 +326,10 @@ public class GrowingBoardTest {
 	}
 	
 	/**
-	 * Tests the indexes used inside the equipment.
+	 * Tests the indexes used inside the equipment after 1 edge move.
 	 */
 	@Test
-	public void testUpdateIndexesInsideEquipment()
+	public void testUpdateIndexesInsideEquipmentAfter1Move()
 	{
 		// init
 		Context context = initGame();
@@ -362,6 +363,48 @@ public class GrowingBoardTest {
 		assertEquals(topologyElement1.index(), 49);
 		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
 		assertEquals(topologyElement2.index(), 50);
+	}
+	
+	/**
+	 * Tests the indexes used inside the equipment after 2 edge moves.
+	 */
+	@Test
+	public void testUpdateIndexesInsideEquipmentAfter2Move()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		Equipment equipment = game.equipment();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 2);
+		updateBoard(context);
+		
+		// test
+		int[] newOffset = equipment.offset();
+		for (int i=0; i<=80; i++)
+			assertEquals(newOffset[i], i);
+		assertEquals(newOffset[81], 0);
+		assertEquals(newOffset[82], 0);
+		
+		int[] newContainerId = equipment.containerId();
+		for (int i=0; i<=80; i++)
+			assertEquals(newContainerId[i], 0);
+		assertEquals(newContainerId[81], 1);
+		assertEquals(newContainerId[82], 2);
+				
+		int[] newSitesFrom = equipment.sitesFrom();
+		assertEquals(newSitesFrom[0], 0);
+		assertEquals(newSitesFrom[1], 81);
+		assertEquals(newSitesFrom[2], 82);
+		
+		TopologyElement topologyElement0 = game.equipment().containers()[0].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement0.index(), 0);
+		TopologyElement topologyElement1 = game.equipment().containers()[1].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement1.index(), 81);
+		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement2.index(), 82);
 	}
 	
 	/**
@@ -2471,5 +2514,89 @@ public class GrowingBoardTest {
 		
 		// test
 		assertEquals(context.trial().numInitialPlacementMoves(), 5);
+	}
+	
+	/**
+	 * Tests the indexes used inside the equipment after 1 edge move.
+	 */
+	@Test
+	public void testUpdateIndexesInsideContainerIdAfter1Move()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		
+		// test
+		int[] containerId = context.containerId();
+		for (int i=0; i<=48; i++)
+			assertEquals(containerId[i], 0);
+		assertEquals(containerId[49], 1);
+		assertEquals(containerId[50], 2);
+	}
+	
+	/**
+	 * Tests the indexes used inside the equipment after 2 edge moves.
+	 */
+	@Test
+	public void testUpdateIndexesInsideContainerIdAfter2Moves()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 10, 1);
+		updateBoard(context);
+		applyMove(context, 50, 21, 2);
+		updateBoard(context);
+		
+		// test
+		int[] containerId = context.containerId();
+		for (int i=0; i<=80; i++)
+			assertEquals(containerId[i], 0);
+		assertEquals(containerId[81], 1);
+		assertEquals(containerId[82], 2);
+	}
+	
+	/**
+	 * Tests the content of the cells of the topology of each container 
+	 * (board component, but also hand's players components).
+	 */
+	@Test
+	public void testTopologyCellsOfAllContainer()
+	{
+		// init
+		Context context = initGame();
+
+		// test
+		applyMove(context, 25, 14, 1);
+		updateBoard(context);
+		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 49);
+		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 49);
+		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 50);
+
+		applyMove(context, 50, 27, 2);
+		updateBoard(context);
+		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 81);
+		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 81);
+		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 82);
+		
+		applyMove(context, 81, 44, 1);
+		updateBoard(context);
+		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 121);
+		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 121);
+		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 122);
+		
+		applyMove(context, 122, 65, 2);
+		updateBoard(context);
+		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 169);
+		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 169);
+		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 170);
+		
+		applyMove(context, 169, 90, 1);
+		updateBoard(context);
+		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 225);
+		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 225);
+		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 226);
 	}
 }
