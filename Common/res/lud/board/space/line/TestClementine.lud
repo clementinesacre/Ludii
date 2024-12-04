@@ -76,6 +76,7 @@
     (players 2)
         (equipment {
             (boardless <Tiling:type> 5)
+            //(board (square 5))
             (piece "Disc" Neutral (flips 1 2))
             (piece "Ring" Each "RingMovements")
             (tile <Tiling:tile> Neutral)

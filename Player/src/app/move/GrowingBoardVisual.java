@@ -10,9 +10,6 @@ import app.utils.MVCSetup;
 import game.Game;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
-import game.types.play.ModeType;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import main.Constants;
 import other.context.Context;
 import other.location.FullLocation;
@@ -21,8 +18,6 @@ import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 import other.state.container.ContainerFlatState;
-import other.state.container.ContainerState;
-import other.state.zhash.ZobristHashUtilities;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -150,11 +145,11 @@ public class GrowingBoardVisual extends GrowingBoard
 	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
 	{
 		final Context context = app.manager().ref().context();
-		
+
 		if (context.game().isBoardless()) 
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to()));
+			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to())+" - move : "+move);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
@@ -166,7 +161,5 @@ public class GrowingBoardVisual extends GrowingBoard
 				//displayInfo(context); //TODO : to remove once code is ready
 			}
 		}
-		System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() mover after : "+context.state().mover());
-		
 	}
 }
