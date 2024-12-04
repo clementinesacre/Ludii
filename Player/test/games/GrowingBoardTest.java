@@ -8,8 +8,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,22 +17,21 @@ import java.util.stream.Collectors;
 import app.move.GrowingBoard;
 import game.Game;
 import game.equipment.Equipment;
-import game.equipment.container.Container;
-import game.equipment.container.board.Boardless;
+import game.rules.phase.Phase;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
 import game.util.directions.CompassDirection;
 import game.util.directions.DirectionFacing;
-import game.util.graph.Perimeter;
-import game.util.graph.Trajectories;
 import gnu.trove.list.array.TIntArrayList;
 import main.collections.ChunkSet;
+import main.collections.FastArrayList;
 import other.GameLoader;
 import other.trial.Trial;
 import other.context.Context;
 import other.move.Move;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
+import other.state.owned.FlatCellOnlyOwned;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
 import other.topology.Cell;
@@ -67,19 +64,6 @@ public class GrowingBoardTest {
 	 * 
 	 * @param from index of the from position.
 	 * @param to index of the to position.
-	 * @return the create Move.
-	 */
-	public Move getMoveMove(int from, int to)
-	{
-		String moveStr = "[Move:mover=1,from="+from+",to="+to+",actions=[Move:typeFrom=Cell,from="+from+",typeTo=Cell,to="+to+",decision=true]]";
-		return new Move(moveStr);
-	}
-	
-	/**
-	 * Creates a move Move that needs a from and a to.
-	 * 
-	 * @param from index of the from position.
-	 * @param to index of the to position.
 	 * @param mover id of the mover. Starts at 1.
 	 * @return the create Move.
 	 */
@@ -89,16 +73,39 @@ public class GrowingBoardTest {
 		return new Move(moveStr);
 	}
 	
+
+	public Move getMoveAdd(int to, int mover)
+	{
+		String moveStr = "[Move:mover="+mover+",to="+to+",actions=[Add:type=Cell,to="+to+",what=1,decision=true]]";
+		return new Move(moveStr);
+	}
+	
 	/**
 	 * Apply a move.
+	 * 
 	 * @param context context on which apply the move.
-	 * @param move move to apply.
+	 * @param from index of the from position.
+	 * @param to index of the to position.
+	 * @param move mover id of the mover. Starts at 1.
+	 * @param moveType move type (Move, Add, ...).
 	 */
-	public void applyMove(Context context, int from, int to, int mover)
+	public void applyMove(Context context, int from, int to, int mover, int moveType)
 	{
-		Move move = getMoveMove(from, to, mover);
-		context.game().apply(context, move);
-		context.trial().setNumSubmovesPlayed(context.trial().numSubmovesPlayed() + 1); //TODO ??
+		Move move = null;
+		if(moveType == 0)
+			move = getMoveMove(from, to, mover);
+		else if(moveType == 1)
+			move = getMoveAdd(to, mover);
+		
+		if (move != null)
+		{
+			context.game().apply(context, move);
+			context.trial().setNumSubmovesPlayed(context.trial().numSubmovesPlayed() + 1); //TODO ??
+		}
+		else
+		{
+			fail("moveType does not exist");
+		}
 	}
 	
 	/**
@@ -128,19 +135,19 @@ public class GrowingBoardTest {
 		
 		// test
 		for (int i=0; i<6; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=6; i<8; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=9; i<11; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=11; i<14; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=14; i<16; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=16; i<19; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 		for (int i=19; i<=24; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
 	}
 	
 	/**
@@ -336,7 +343,7 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Equipment equipment = game.equipment();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 		
 		// test
@@ -376,9 +383,9 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Equipment equipment = game.equipment();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		updateBoard(context);
 		
 		// test
@@ -416,7 +423,7 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 
 		// test
@@ -454,7 +461,7 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);		
+		applyMove(context, 25, 10, 1, 0);		
 		updateBoard(context);
 		
 		// test
@@ -504,7 +511,7 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		ContainerState[] prevContainerStates = updateBoard(context);
 		
 		// test
@@ -661,10 +668,10 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 6, 1);
-		applyMove(context, 26, 18, 2);
-		applyMove(context, 25, 17, 1);
-		applyMove(context, 26, 7, 2);
+		applyMove(context, 25, 6, 1, 0);
+		applyMove(context, 26, 18, 2, 0);
+		applyMove(context, 25, 17, 1, 0);
+		applyMove(context, 26, 7, 2, 0);
 			
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -838,10 +845,10 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 6, 1);
-		applyMove(context, 26, 18, 2);
-		applyMove(context, 25, 17, 1);
-		applyMove(context, 26, 5, 2);
+		applyMove(context, 25, 6, 1, 0);
+		applyMove(context, 26, 18, 2, 0);
+		applyMove(context, 25, 17, 1, 0);
+		applyMove(context, 26, 5, 2, 0);
 
 		ContainerState[] prevContainerStates = updateBoard(context);
 		
@@ -1048,9 +1055,9 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Equipment equipment = game.equipment();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		ContainerState[] prevContainerStates = updateBoard(context);
 		
 		// test
@@ -1157,14 +1164,16 @@ public class GrowingBoardTest {
 		assertEquals(topologyElement2.index(), 82);
 	}
 	
+	/**
+	 * Tests the content of the list of moves done after one move on an edge.
+	 */
 	@Test
-	public void aa()
+	public void testMovesDoneAfter1EdgeMove()
 	{
 		// init
 		Context context = initGame();
-		Game game = context.game();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 		
 		// test
@@ -1197,9 +1206,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 1);
+		applyMove(context, 50, 21, 1, 0);
 		updateBoard(context);
 		
 		// test
@@ -1225,7 +1234,7 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);	
 		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		List<Integer> perimeterIndexes = perimeter.stream().map(TopologyElement::index).collect(Collectors.toList());
@@ -1264,9 +1273,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 1);
+		applyMove(context, 50, 21, 1, 0);
 		updateBoard(context);		
 		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		List<Integer> perimeterIndexes = new ArrayList<Integer>();
@@ -1316,9 +1325,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 1);
+		applyMove(context, 50, 21, 1, 0);
 		updateBoard(context);		
 		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		
@@ -1366,7 +1375,7 @@ public class GrowingBoardTest {
 
 		System.out.println("GrowingBoardTest.java testTypology() slash : "+context.topology().connectivities());
 	
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 
 		System.out.println("GrowingBoardTest.java testTypology() slash : "+context.topology().distanceToRegions());
@@ -1907,9 +1916,9 @@ public class GrowingBoardTest {
 	{
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		updateBoard(context);
 		
 		// Corners
@@ -2476,19 +2485,19 @@ public class GrowingBoardTest {
 		Context context = initGame();
 
 		// test
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 		assertEquals(context.state().mover(), 2);
 
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		updateBoard(context);
 		assertEquals(context.state().mover(), 1);
 
-		applyMove(context, 81, 36, 1);
+		applyMove(context, 81, 36, 1, 0);
 		updateBoard(context);
 		assertEquals(context.state().mover(), 2);
 
-		applyMove(context, 122, 55, 2);
+		applyMove(context, 122, 55, 2, 0);
 		updateBoard(context);
 		assertEquals(context.state().mover(), 1);
 	}
@@ -2503,13 +2512,13 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		updateBoard(context);
-		applyMove(context, 81, 36, 1);
+		applyMove(context, 81, 36, 1, 0);
 		updateBoard(context);
-		applyMove(context, 122, 55, 2);
+		applyMove(context, 122, 55, 2, 0);
 		updateBoard(context);
 		
 		// test
@@ -2525,7 +2534,7 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
 		
 		// test
@@ -2545,9 +2554,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1);
+		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-		applyMove(context, 50, 21, 2);
+		applyMove(context, 50, 21, 2, 0);
 		updateBoard(context);
 		
 		// test
@@ -2569,34 +2578,272 @@ public class GrowingBoardTest {
 		Context context = initGame();
 
 		// test
-		applyMove(context, 25, 14, 1);
+		applyMove(context, 25, 14, 1, 0);
 		updateBoard(context);
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 49);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 49);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 50);
 
-		applyMove(context, 50, 27, 2);
+		applyMove(context, 50, 27, 2, 0);
 		updateBoard(context);
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 81);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 81);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 82);
 		
-		applyMove(context, 81, 44, 1);
+		applyMove(context, 81, 44, 1, 0);
 		updateBoard(context);
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 121);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 121);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 122);
 		
-		applyMove(context, 122, 65, 2);
+		applyMove(context, 122, 65, 2, 0);
 		updateBoard(context);
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 169);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 169);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 170);
 		
-		applyMove(context, 169, 90, 1);
+		applyMove(context, 169, 90, 1, 0);
 		updateBoard(context);
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 225);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 225);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 226);
+	}
+	
+	/**
+	 * Tests the legal moves after 6 edge moves (= when each player has empty his hand).
+	 * Legal moves use Owned to be generated.
+	 */
+	@Test
+	public void testLegalMovesAfter6Moves()
+	{
+		// init
+		Context context = initGame();
+
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		applyMove(context, 122, 65, 2, 0);
+		updateBoard(context);
+		applyMove(context, 169, 90, 1, 0);
+		updateBoard(context);
+		applyMove(context, 226, 119, 2, 0);
+		updateBoard(context);
+
+		int p = 0;
+		final int indexPhase = context.state().currentPhase(p);
+		final Phase phase = context.game().rules().phases()[indexPhase];
+		final FastArrayList<Move> phaseMoves = phase.play().moves().eval(context).moves();
+		HashMap<Integer, HashSet<Integer>> legalMoves = new HashMap<Integer, HashSet<Integer>>();
+
+		for(int i=0; i<phaseMoves.size(); i++)
+		{
+			int from = phaseMoves.get(i).from();
+			int to = phaseMoves.get(i).to();
+			HashSet<Integer> tos;
+			if (legalMoves.containsKey(from))
+			{
+				tos = legalMoves.get(from);
+			}
+			else
+			{
+				tos = new HashSet<Integer>();
+			}
+			tos.add(to);
+			legalMoves.put(from, tos);
+		}
+
+		// test
+		assertEquals(legalMoves.size(), 3);
+		assertTrue(legalMoves.containsKey(146));
+		assertTrue(legalMoves.get(146).contains(128));
+		assertTrue(legalMoves.get(146).contains(129));
+		assertTrue(legalMoves.get(146).contains(130));
+		assertTrue(legalMoves.get(146).contains(162));
+		assertTrue(legalMoves.get(146).contains(163));
+		assertTrue(legalMoves.get(146).contains(164));
+		assertEquals(legalMoves.get(146).size(), 6);
+		
+		assertTrue(legalMoves.containsKey(148));
+		assertTrue(legalMoves.get(148).contains(130));
+		assertTrue(legalMoves.get(148).contains(131));
+		assertTrue(legalMoves.get(148).contains(132));
+		assertTrue(legalMoves.get(148).contains(164));
+		assertTrue(legalMoves.get(148).contains(165));
+		assertTrue(legalMoves.get(148).contains(166));
+		assertTrue(legalMoves.containsKey(148));
+		assertEquals(legalMoves.get(148).size(), 6);
+
+		assertTrue(legalMoves.containsKey(150));
+		assertTrue(legalMoves.get(150).contains(132));
+		assertTrue(legalMoves.get(150).contains(133));
+		assertTrue(legalMoves.get(150).contains(134));
+		assertTrue(legalMoves.get(150).contains(166));
+		assertTrue(legalMoves.get(150).contains(167));
+		assertTrue(legalMoves.get(150).contains(168));
+		assertEquals(legalMoves.get(150).size(), 6);
+	}
+	
+	/**
+	 * Tests the content of Owned (help see quickly indexes of the places where 
+	 * pieces of a specific player are) after multiple edge moves.
+	 */
+	@Test
+	public void testOwnerAfterMultipleMoves()
+	{
+		// init
+		Context context = initGame();
+
+		// test
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard1 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard1.size(), 3);
+		assertTrue(sitesBoard1.contains(23));
+		assertTrue(sitesBoard1.contains(24));
+		assertTrue(sitesBoard1.contains(25));
+		TIntArrayList sitesPlayer1_1 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_1.size(), 2);
+		assertTrue(sitesPlayer1_1.contains(49));
+		assertTrue(sitesPlayer1_1.contains(26));
+		TIntArrayList sitesPlayer2_1 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_1.size(), 1);
+		assertTrue(sitesPlayer2_1.contains(50));
+		
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard2 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard2.size(), 3);
+		assertTrue(sitesBoard2.contains(39));
+		assertTrue(sitesBoard2.contains(40));
+		assertTrue(sitesBoard2.contains(41));
+		TIntArrayList sitesPlayer1_2 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_2.size(), 2);
+		assertTrue(sitesPlayer1_2.contains(81));
+		assertTrue(sitesPlayer1_2.contains(42));
+		TIntArrayList sitesPlayer2_2 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_2.size(), 2);
+		assertTrue(sitesPlayer2_2.contains(82));
+		assertTrue(sitesPlayer2_2.contains(43));
+		
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard3 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard3.size(), 3);
+		assertTrue(sitesBoard3.contains(59));
+		assertTrue(sitesBoard3.contains(60));
+		assertTrue(sitesBoard3.contains(61));
+		TIntArrayList sitesPlayer1_3 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_3.size(), 3);
+		assertTrue(sitesPlayer1_3.contains(121));
+		assertTrue(sitesPlayer1_3.contains(62));
+		assertTrue(sitesPlayer1_3.contains(64));
+		TIntArrayList sitesPlayer2_3 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_3.size(), 2);
+		assertTrue(sitesPlayer2_3.contains(122));
+		assertTrue(sitesPlayer2_3.contains(63));
+		
+		applyMove(context, 122, 65, 2, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard4 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard4.size(), 3);
+		assertTrue(sitesBoard4.contains(83));
+		assertTrue(sitesBoard4.contains(84));
+		assertTrue(sitesBoard4.contains(85));
+		TIntArrayList sitesPlayer1_4 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_4.size(), 3);
+		assertTrue(sitesPlayer1_4.contains(169));
+		assertTrue(sitesPlayer1_4.contains(86));
+		assertTrue(sitesPlayer1_4.contains(88));
+		TIntArrayList sitesPlayer2_4 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_4.size(), 3);
+		assertTrue(sitesPlayer2_4.contains(170));
+		assertTrue(sitesPlayer2_4.contains(87));
+		assertTrue(sitesPlayer2_4.contains(89));
+		
+		applyMove(context, 169, 90, 1, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard5 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard5.size(), 3);
+		assertTrue(sitesBoard5.contains(111));
+		assertTrue(sitesBoard5.contains(112));
+		assertTrue(sitesBoard5.contains(113));
+		TIntArrayList sitesPlayer1_5 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_5.size(), 3);
+		assertTrue(sitesPlayer1_5.contains(114));
+		assertTrue(sitesPlayer1_5.contains(116));
+		assertTrue(sitesPlayer1_5.contains(118));
+		TIntArrayList sitesPlayer2_5 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_5.size(), 3);
+		assertTrue(sitesPlayer2_5.contains(226));
+		assertTrue(sitesPlayer2_5.contains(115));
+		assertTrue(sitesPlayer2_5.contains(117));
+		
+		applyMove(context, 226, 119, 2, 0);
+		updateBoard(context);
+		TIntArrayList sitesBoard6 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard6.size(), 3);
+		assertTrue(sitesBoard6.contains(143));
+		assertTrue(sitesBoard6.contains(144));
+		assertTrue(sitesBoard6.contains(145));
+		TIntArrayList sitesPlayer1_6 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1_6.size(), 3);
+		assertTrue(sitesPlayer1_6.contains(146));
+		assertTrue(sitesPlayer1_6.contains(148));
+		assertTrue(sitesPlayer1_6.contains(150));
+		TIntArrayList sitesPlayer2_6 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2_6.size(), 3);
+		assertTrue(sitesPlayer2_6.contains(147));
+		assertTrue(sitesPlayer2_6.contains(149));
+		assertTrue(sitesPlayer2_6.contains(151));
+	}
+	
+	/**
+	 * Tests the content of Owned after multiple moves (containing edges ones) and 
+	 * the hand of player that is empty.
+	 */
+	@Test
+	public void testOwnerAfterEmptyPlayerHand()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		applyMove(context, 122, 65, 2, 0);
+		updateBoard(context);
+		applyMove(context, 169, 90, 1, 0);
+		updateBoard(context);
+		applyMove(context, 226, 119, 2, 0);
+		updateBoard(context);
+		applyMove(context, 146, 129, 1, 0);
+		applyMove(context, 146, 146, 1, 1);
+		applyMove(context, 151, 152, 2, 0);
+		updateBoard(context);
+		
+		// test
+		TIntArrayList sitesBoard = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard.size(), 4);
+		assertTrue(sitesBoard.contains(179));
+		assertTrue(sitesBoard.contains(180));
+		assertTrue(sitesBoard.contains(181));
+		assertTrue(sitesBoard.contains(182));
+		TIntArrayList sitesPlayer1 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1.size(), 3);
+		assertTrue(sitesPlayer1.contains(163));
+		assertTrue(sitesPlayer1.contains(184));
+		assertTrue(sitesPlayer1.contains(186));
+		TIntArrayList sitesPlayer2 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2.size(), 3);
+		assertTrue(sitesPlayer2.contains(183));
+		assertTrue(sitesPlayer2.contains(185));
+		assertTrue(sitesPlayer2.contains(188));
+		
 	}
 }

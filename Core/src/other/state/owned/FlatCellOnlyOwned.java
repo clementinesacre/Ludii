@@ -227,4 +227,11 @@ public final class FlatCellOnlyOwned implements Owned, Serializable
 	
 	//-------------------------------------------------------------------------
 
+	/**
+	 * @return locations
+	 */
+	public FastTIntArrayList[][] locations()
+	{
+		return this.locations;
+	}
 }

@@ -8,30 +8,29 @@ import java.util.HashSet;
 import java.util.List;
 
 import game.Game;
+import game.equipment.component.Component;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
-import game.rules.play.moves.BaseMoves;
 import game.rules.play.moves.Moves;
-import game.types.play.ModeType;
+import game.types.board.SiteType;
 import game.util.equipment.Region;
-import game.util.graph.Perimeter;
 import gnu.trove.list.array.TIntArrayList;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
 import main.Constants;
 import main.collections.ChunkSet;
+import main.collections.FastTIntArrayList;
 import other.action.Action;
+import other.action.ActionType;
 import other.context.Context;
 import other.move.Move;
 import other.move.MoveSequence;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
+import other.state.owned.FlatCellOnlyOwned;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
 import other.state.zhash.ZobristHashGenerator;
-import other.state.zhash.ZobristHashUtilities;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 
@@ -174,7 +173,13 @@ public class GrowingBoard
 	
 	//-------------------------------------------------------------------------
 	
-	protected static void updateTopology(Context context, GraphFunction newGraphFunction)
+	/**
+	 * Updates the content of the Topology to match the new board.
+	 * Re-launches pre-computations.
+	 * 
+	 * @param context
+	 */
+	protected static void updateTopology(Context context)
 	{		
 		/*System.out.println("GrowingBoard.java updateTopology() regions : "+Arrays.toString(game.equipment().regions()));
 		System.out.println("GrowingBoard.java updateTopology() containers : "+Arrays.toString(game.equipment().containers()));
@@ -208,7 +213,7 @@ public class GrowingBoard
 		
 		board.setDimension(board.dimension() + Constants.GROWING_STEP);
 		
-		updateTopology(context, newGraphFunction); //board.topology().pregenerate ... TODO
+		updateTopology(context);
 	}
 	
 	/** 
@@ -548,6 +553,108 @@ public class GrowingBoard
 		return newMove;
 	}
 	
+	/**
+	 * Update the Owned (contains information about where the pieces are (indexes) for 
+	 * a specific player / board).  Does it by updating Owned each time a move is 
+	 * re-applied based on the new board, by removing previous index, and if needed 
+	 * adding new index.
+	 * 
+	 * PROBLEM : the Owned structure does not restart to initial structure, so at the 
+	 * first Move, I am already working with a structure that expect me to be on the 
+	 * last Move. It creates inconsistencies.
+	 * e.g. : if the player has a hand of 3 items, once his hand is empty, the index of
+	 * his hand will no longer be linked to anything and will therefore no longer exist 
+	 * in the Owned.
+	 * 
+	 * @param context
+	 * @param move move that have just been re-apply.
+	 * @param i position of the move in the list of move applied from the beginning.
+	 * @param numInitialPlacementMoves number of initial placement moves.
+	 */
+	protected static void updateOwnedWithMove(Context context, Move move, int i, int numInitialPlacementMoves)
+	{
+		int to = move.to();
+		int from = move.from();
+		ActionType actionType = move.actionType();
+		int what = move.what();
+		
+		System.out.println("GrowingBoard.java updateOwned() move : "+move);
+
+		if (i < numInitialPlacementMoves)
+		{
+			for (final Action a : move.actions()) 
+			{
+				if (a.to() != Constants.UNDEFINED) 
+				{
+					to = a.to();
+					break;
+				}
+			}
+			for (final Action a : move.actions()) 
+			{
+				if (a.what() != 0) 
+				{
+					what = a.what();
+					break;
+				}
+			}
+			for (final Action a : move.actions()) 
+			{
+				if (a.actionType() != null) 
+				{
+					actionType = a.actionType();
+					break;
+				}
+			}
+		}
+		System.out.println("GrowingBoard.java updateOwned() mappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
+		System.out.println(i+" - GrowingBoard.java updateOwned() before type : "+move.getClass().getName()+" - move : "+actionType+" - to : "+to+" - from : "+from+" - what : "+what+" - mapped to : "+mappedNewToPrevIndexes().get(to));
+		
+		if (actionType == ActionType.Add)
+		{
+			int containerId = context.containerId()[mappedPrevToNewIndexes().get(to)];
+			Component piece = context.components()[what];
+			final int owner = piece.owner();
+			
+			System.out.println("GrowingBoard.java updateOwned() ADD before sites : "+context.state().owned().sites(owner));
+			int beforeSize = context.state().owned().sites(owner).size();
+
+			context.state().owned().remove(owner, what, to, SiteType.Cell);
+			
+			int currSize = context.state().owned().sites(owner).size();
+			System.out.println("GrowingBoard.java updateOwned() ADD afterr sites : "+context.state().owned().sites(owner));
+			if (currSize < beforeSize && !context.state().owned().sites(owner).contains(mappedPrevToNewIndexes().get(to))) 
+			{
+				context.state().owned().add(owner, what, mappedPrevToNewIndexes().get(to), SiteType.Cell);
+				System.out.println(i+" - GrowingBoard.java updateOwned() ADD add : "+mappedPrevToNewIndexes().get(to)+" - containerId to : "+context.containerId()[to]+ "- to owner : "+owner +" - cc : "+((FlatCellOnlyOwned) context.state().owned()).sites(owner)+" - curr size : "+newDimensionBoard());
+			}
+		}
+		else if (actionType == ActionType.Move)
+		{
+			int containerId = context.containerId()[mappedPrevToNewIndexes().get(from)];
+			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE what before : "+what);
+			if (containerId > 0)
+			{
+				what = context.state().containerStates()[containerId].what(mappedPrevToNewIndexes().get(from), SiteType.Cell);
+				//what2 = context.state().containerStates()[containerId].what(move.from() - (prevAreaBoard - 1 + containerId), SiteType.Cell);
+			}
+			else
+				what = context.state().containerStates()[containerId].what(from, SiteType.Cell);
+			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE what afterr : "+what);
+			Component piece = context.components()[what];
+			int owner = piece.owner();
+			//owner = containerId;
+			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE containerId : "+containerId+" - owner : "+owner);
+			
+			context.state().owned().remove(owner, what, to, SiteType.Cell);
+			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE removed : "+to+" - of owner : "+owner +" - sites: "+((FlatCellOnlyOwned) context.state().owned()).sites(owner));
+		
+		}
+
+		System.out.println(i+" - GrowingBoard.java updateOwned() afterr type : "+move.getClass().getName()+" - move : "+actionType+" - to : "+to+" - from : "+from+" - what : "+what);
+				
+	}
+	
 	/** 
 	 * Replays the moves mapped to the proper new component (like tile or hand) index.
 	 * 
@@ -559,19 +666,20 @@ public class GrowingBoard
 		Move move = null;
 		int mover = context.state().mover();
 		int next = context.nextTo((context.state().mover()) % context.game().players().count() + 1);
+		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
 		
 		for (int i = 0; i < movesDone.size(); i++)
 		{
-			if (i == context.trial().numInitialPlacementMoves())
+			if (i == numInitialPlacementMoves)
 			{
 				context.state().setMover(mover);
 				context.state().setNext(next);
 			}
 			
 			move = movesDone.get(i);
-
+			//updateOwnedWithMove(context, move, i, numInitialPlacementMoves);
 			Move newMove = generateNewMove(move);
-			context.game().apply(context, newMove);
+			context.game().apply(context, newMove);	
 		}
 	}
 	
@@ -593,6 +701,74 @@ public class GrowingBoard
 		context.trial().setLegalMoves(newLegaleMoves, context);*/
 	}
 	
+	/**
+	 * Update the Owned (contains information about where the pieces are (indexes) for 
+	 * a specific player / board).  Does it by updating Owned at once by mapping previous 
+	 * indexes to new ones.
+	 * 
+	 * PROBLEM : this method is called before re-applying moves. When re-applying moves, 
+	 * it is (highly) likely that the same indexes will be added to Owned, so we are going 
+	 * to have duplicates.
+	 * 
+	 * @param context
+	 */
+	protected static void updateOwned(Context context)
+	{
+		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
+		FastTIntArrayList[][] locations = owned.locations();
+		
+		for (int i=0; i<locations.length; i++)
+			for (int j=0; j<locations[i].length; j++)
+			{
+				FastTIntArrayList newFastTIntArrayList = new FastTIntArrayList();
+				for (int k=0; k<locations[i][j].size(); k++)
+					newFastTIntArrayList.add(mappedPrevToNewIndexes().get(locations[i][j].get(k)));
+				locations[i][j] = newFastTIntArrayList;
+			}
+	}
+	
+	/**
+	 * Remove duplicates indexes from Owned.
+	 * Created because of the problem of the updateOwned() method.
+	 * 
+	 * @param context
+	 */
+	protected static void removeDuplicateInOwned(Context context)
+	{
+		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
+		FastTIntArrayList[][] locations = owned.locations();
+		
+		for (int i=0; i<locations.length; i++)
+			for (int j=0; j<locations[i].length; j++)
+			{
+				FastTIntArrayList newFastTIntArrayList = new FastTIntArrayList();
+				for (int k=0; k<locations[i][j].size(); k++)
+				{
+					int value = locations[i][j].get(k);
+					if(!newFastTIntArrayList.contains(value))
+						newFastTIntArrayList.add(value);
+				}
+				locations[i][j] = newFastTIntArrayList;
+			}
+	}
+	
+	/**
+	 * Update the Owned (contains information about where the pieces are (indexes) for 
+	 * a specific player / board).  Does it by reseting the Owned structure, as moves, 
+	 * when being re-apply, will add proper information to the structure.
+	 * 
+	 * PROBLEM : When re-creating moves with the proper index for the new board size, 
+	 * I don't really re-create Move, but I update the previous ones. And Add Move does'nt 
+	 * re-add data in the Owned, there is a code preventing it, it is only done at 
+	 * initialization of the Object, and it is only initialize once in my current implementation.
+	 * 
+	 * @param context
+	 */
+	protected static void resetOwned(Context context) 
+	{
+		context.state().setOwned(new FlatCellOnlyOwned(context.game())); 
+	}
+	
 	/** 
 	 * Start over the game on the new board and apply the historic of move mapped to the new board.
 	 * 
@@ -601,7 +777,9 @@ public class GrowingBoard
 	protected static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves) 
 	{
 		updateChunks(context);
+		updateOwned(context);
 		replayMoves(context, movesDone);
+		removeDuplicateInOwned(context);
 		generateLegalMoves(context, legalMoves);
 	}
 	
