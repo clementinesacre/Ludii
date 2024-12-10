@@ -26,6 +26,7 @@ import gnu.trove.list.array.TIntArrayList;
 import main.collections.ChunkSet;
 import main.collections.FastArrayList;
 import other.GameLoader;
+import other.action.ActionType;
 import other.trial.Trial;
 import other.context.Context;
 import other.move.Move;
@@ -120,6 +121,39 @@ public class GrowingBoardTest {
 		GrowingBoard.updateBoard(context);
 		
 		return prevContainerStates;
+	}
+	
+	/**
+	 * Generates the legal moves.
+	 * 
+	 * @param context
+	 * @param player player index.
+	 * @return legal moves.
+	 */
+	public HashMap<Integer, HashSet<Integer>> generateLegalMoves(Context context, int player)
+	{
+		final int indexPhase = context.state().currentPhase(player);
+		final Phase phase = context.game().rules().phases()[indexPhase];
+		final FastArrayList<Move> phaseMoves = phase.play().moves().eval(context).moves();
+		HashMap<Integer, HashSet<Integer>> legalMoves = new HashMap<Integer, HashSet<Integer>>();
+
+		for(int i=0; i<phaseMoves.size(); i++)
+		{
+			int from = phaseMoves.get(i).from();
+			int to = phaseMoves.get(i).to();
+			HashSet<Integer> tos;
+			if (legalMoves.containsKey(from))
+			{
+				tos = legalMoves.get(from);
+			}
+			else
+			{
+				tos = new HashSet<Integer>();
+			}
+			tos.add(to);
+			legalMoves.put(from, tos);
+		}
+		return legalMoves;
 	}
 	
 	/**
@@ -2632,28 +2666,7 @@ public class GrowingBoardTest {
 		applyMove(context, 226, 119, 2, 0);
 		updateBoard(context);
 
-		int p = 0;
-		final int indexPhase = context.state().currentPhase(p);
-		final Phase phase = context.game().rules().phases()[indexPhase];
-		final FastArrayList<Move> phaseMoves = phase.play().moves().eval(context).moves();
-		HashMap<Integer, HashSet<Integer>> legalMoves = new HashMap<Integer, HashSet<Integer>>();
-
-		for(int i=0; i<phaseMoves.size(); i++)
-		{
-			int from = phaseMoves.get(i).from();
-			int to = phaseMoves.get(i).to();
-			HashSet<Integer> tos;
-			if (legalMoves.containsKey(from))
-			{
-				tos = legalMoves.get(from);
-			}
-			else
-			{
-				tos = new HashSet<Integer>();
-			}
-			tos.add(to);
-			legalMoves.put(from, tos);
-		}
+		HashMap<Integer, HashSet<Integer>> legalMoves = generateLegalMoves(context, 1);
 
 		// test
 		assertEquals(legalMoves.size(), 3);
@@ -2802,10 +2815,54 @@ public class GrowingBoardTest {
 	
 	/**
 	 * Tests the content of Owned after multiple moves (containing edges ones) and 
-	 * the hand of player that is empty.
+	 * the last move is apply when hand of player is already empty.
 	 */
 	@Test
 	public void testOwnerAfterEmptyPlayerHand()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		applyMove(context, 122, 65, 2, 0);
+		updateBoard(context);
+		applyMove(context, 169, 90, 1, 0);
+		updateBoard(context);
+		applyMove(context, 226, 119, 2, 0);
+		updateBoard(context);
+		applyMove(context, 146, 129, 1, 0);
+		applyMove(context, 146, 146, 1, 1);
+		
+		// test
+		TIntArrayList sitesBoard = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
+		assertEquals(sitesBoard.size(), 4);
+		assertTrue(sitesBoard.contains(143));
+		assertTrue(sitesBoard.contains(144));
+		assertTrue(sitesBoard.contains(145));
+		assertTrue(sitesBoard.contains(146));
+		TIntArrayList sitesPlayer1 = ((FlatCellOnlyOwned) context.state().owned()).sites(1);
+		assertEquals(sitesPlayer1.size(), 3);
+		assertTrue(sitesPlayer1.contains(129));
+		assertTrue(sitesPlayer1.contains(148));
+		assertTrue(sitesPlayer1.contains(150));
+		TIntArrayList sitesPlayer2 = ((FlatCellOnlyOwned) context.state().owned()).sites(2);
+		assertEquals(sitesPlayer2.size(), 3);
+		assertTrue(sitesPlayer2.contains(147));
+		assertTrue(sitesPlayer2.contains(149));
+		assertTrue(sitesPlayer2.contains(151));	
+	}
+	
+	/**
+	 * Tests the content of Owned after multiple moves (containing edges ones) and 
+	 * the last move is apply on an edge when all players's hand are empty.
+	 */
+	@Test
+	public void testOwnerAfterEmptyPlayersHand()
 	{
 		// init
 		Context context = initGame();
@@ -2843,7 +2900,44 @@ public class GrowingBoardTest {
 		assertEquals(sitesPlayer2.size(), 3);
 		assertTrue(sitesPlayer2.contains(183));
 		assertTrue(sitesPlayer2.contains(185));
-		assertTrue(sitesPlayer2.contains(188));
+		assertTrue(sitesPlayer2.contains(188));	
+	}
+	
+	/**
+	 * Tests the possibles moves once we move a piece on an edge 
+	 * (and not just adding one on an edge anymore).
+	 */
+	@Test
+	public void testMoveMoveOnEdge()
+	{
+		// init
+		Context context = initGame();
 		
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		applyMove(context, 122, 65, 2, 0);
+		updateBoard(context);
+		applyMove(context, 169, 90, 1, 0);
+		updateBoard(context);
+		applyMove(context, 226, 119, 2, 0);
+		updateBoard(context);
+		applyMove(context, 146, 129, 1, 0);
+		applyMove(context, 146, 146, 1, 1);
+		applyMove(context, 151, 152, 2, 0);
+		updateBoard(context);	
+		
+		// test
+		Move lastMove = context.trial().lastMove();
+		assertEquals(187, lastMove.fromNonDecision());
+
+		Moves moves = context.game().moves(context);
+		assertEquals(1, moves.count());
+		assertEquals(151, moves.get(0).to());
+		assertEquals(ActionType.Add, moves.get(0).actionType());
+		assertEquals(2, moves.get(0).state());
 	}
 }

@@ -592,7 +592,8 @@ public class Move extends BaseAction
 		}
 
 		final Move returnMove = new Move(returnActions);
-		returnMove.setFromNonDecision(from);
+		//returnMove.setFromNonDecision(from);
+		returnMove.setFromNonDecision(from());
 		returnMove.setBetweenNonDecision(new TIntArrayList(betweenNonDecision()));
 		returnMove.setToNonDecision(to);
 		returnMove.setStateNonDecision(state);
