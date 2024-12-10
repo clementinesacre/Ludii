@@ -681,6 +681,7 @@ public class GrowingBoard
 			Move newMove = generateNewMove(move);
 			context.game().apply(context, newMove);	
 		}
+		//context.game().moves(context); // help to initialize trial.cachedLegalMoves();
 	}
 	
 	/**
