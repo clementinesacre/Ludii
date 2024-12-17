@@ -27,7 +27,7 @@ public class Trajectories
 	private Radials[][]	radials;
 		
 	/** Total directions for graph. */
-	private final BitSet totalDirections = new BitSet();
+	private BitSet totalDirections = new BitSet();
 	
 	//-------------------------------------------------------------------------
 
@@ -886,5 +886,14 @@ public class Trajectories
 	}
 	
 	//-------------------------------------------------------------------------
+	
+	/**
+	 * Clear the Trajectories. Only needs to reset totalDirections, as other 
+	 * attributes are erase ones being created again.
+	 */
+	public void clear()
+	{
+		this.totalDirections = new BitSet();
+	}
 	
 }

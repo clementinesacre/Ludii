@@ -8,6 +8,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +24,7 @@ import game.types.board.SiteType;
 import game.util.directions.CompassDirection;
 import game.util.directions.DirectionFacing;
 import gnu.trove.list.array.TIntArrayList;
+import main.Constants;
 import main.collections.ChunkSet;
 import main.collections.FastArrayList;
 import other.GameLoader;
@@ -497,6 +499,7 @@ public class GrowingBoardTest {
 		
 		applyMove(context, 25, 10, 1, 0);		
 		updateBoard(context);
+		context.game().moves(context); // make sure cachedLegalMoves is init 
 		
 		// test
 		Moves newLegalMoves = context.trial().cachedLegalMoves();
@@ -1407,12 +1410,8 @@ public class GrowingBoardTest {
 	{
 		Context context = initGame();
 
-		System.out.println("GrowingBoardTest.java testTypology() slash : "+context.topology().connectivities());
-	
 		applyMove(context, 25, 10, 1, 0);
 		updateBoard(context);
-
-		System.out.println("GrowingBoardTest.java testTypology() slash : "+context.topology().distanceToRegions());
 		
 		// Corners
 		List<TopologyElement> cornerTypeVertex = context.topology().corners().get(SiteType.Vertex);
@@ -1513,9 +1512,9 @@ public class GrowingBoardTest {
 		for (int i=55; i<=63; i++)
 			assertTrue(outerTypeVertexIndexes.contains(i));
 		assertEquals(outerTypeVertex.size(), 28);
-		/*List<TopologyElement> outerTypeEdge = context.topology().outer().get(SiteType.Edge);
+		List<TopologyElement> outerTypeEdge = context.topology().outer().get(SiteType.Edge);
 		List<Integer> outerTypeEdgeIndexes = outerTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=0; i<=7; i++)
 			assertTrue(outerTypeEdgeIndexes.contains(i));
 		assertTrue(outerTypeEdgeIndexes.contains(14));
 		assertTrue(outerTypeEdgeIndexes.contains(22));
@@ -1524,7 +1523,14 @@ public class GrowingBoardTest {
 		assertTrue(outerTypeEdgeIndexes.contains(44));
 		assertTrue(outerTypeEdgeIndexes.contains(52));
 		assertTrue(outerTypeEdgeIndexes.contains(59));
-		assertEquals(outerTypeEdge.size(), 8);*/
+		assertTrue(outerTypeEdgeIndexes.contains(67));
+		assertTrue(outerTypeEdgeIndexes.contains(74));
+		assertTrue(outerTypeEdgeIndexes.contains(82));
+		assertTrue(outerTypeEdgeIndexes.contains(89));
+		assertTrue(outerTypeEdgeIndexes.contains(97));
+		for (int i=104; i<=111; i++)
+			assertTrue(outerTypeEdgeIndexes.contains(i));
+		assertEquals(outerTypeEdge.size(), 28);
 		List<TopologyElement> outerTypeCell = context.topology().outer().get(SiteType.Cell);
 		List<Integer> outerTypeCellIndexes = outerTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=0; i<=7; i++)
@@ -1559,9 +1565,9 @@ public class GrowingBoardTest {
 		for (int i=55; i<=63; i++)
 			assertTrue(perimeterTypeVertexIndexes.contains(i));
 		assertEquals(perimeterTypeVertex.size(), 28);
-		/*List<TopologyElement> perimeterTypeEdge = context.topology().perimeter.get(SiteType.Edge);
+		List<TopologyElement> perimeterTypeEdge = context.topology().perimeter().get(SiteType.Edge);
 		List<Integer> perimeterTypeEdgeIndexes = perimeterTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=0; i<=7; i++)
 			assertTrue(perimeterTypeEdgeIndexes.contains(i));
 		assertTrue(perimeterTypeEdgeIndexes.contains(14));
 		assertTrue(perimeterTypeEdgeIndexes.contains(22));
@@ -1570,7 +1576,14 @@ public class GrowingBoardTest {
 		assertTrue(perimeterTypeEdgeIndexes.contains(44));
 		assertTrue(perimeterTypeEdgeIndexes.contains(52));
 		assertTrue(perimeterTypeEdgeIndexes.contains(59));
-		assertEquals(perimeterTypeEdge.size(), 8);*/
+		assertTrue(perimeterTypeEdgeIndexes.contains(67));
+		assertTrue(perimeterTypeEdgeIndexes.contains(74));
+		assertTrue(perimeterTypeEdgeIndexes.contains(82));
+		assertTrue(perimeterTypeEdgeIndexes.contains(89));
+		assertTrue(perimeterTypeEdgeIndexes.contains(97));
+		for (int i=104; i<=111; i++)
+			assertTrue(perimeterTypeEdgeIndexes.contains(i));
+		assertEquals(perimeterTypeEdge.size(), 28);
 		List<TopologyElement> perimeterTypeCell = context.topology().perimeter().get(SiteType.Cell);
 		List<Integer> perimeterTypeCellIndexes = perimeterTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=0; i<=7; i++)
@@ -1603,18 +1616,35 @@ public class GrowingBoardTest {
 		for (int i=49; i<55; i++)
 			assertTrue(innerTypeVertexIndexes.contains(i));
 		assertEquals(innerTypeVertex.size(), 36);
-		/*List<TopologyElement> innerTypeEdge = context.topology().inner.get(SiteType.Edge);
+		List<TopologyElement> innerTypeEdge = context.topology().inner().get(SiteType.Edge);
 		List<Integer> innerTypeEdgeIndexes = innerTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=8; i<14; i++)
 			assertTrue(innerTypeEdgeIndexes.contains(i));
-		assertTrue(innerTypeEdgeIndexes.contains(14));
-		assertTrue(innerTypeEdgeIndexes.contains(22));
-		assertTrue(innerTypeEdgeIndexes.contains(29));
-		assertTrue(innerTypeEdgeIndexes.contains(37));
-		assertTrue(innerTypeEdgeIndexes.contains(44));
-		assertTrue(innerTypeEdgeIndexes.contains(52));
-		assertTrue(innerTypeEdgeIndexes.contains(59));
-		assertEquals(innerTypeEdge.size(), 8);*/
+		for (int i=15; i<22; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=23; i<29; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=30; i<37; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=38; i<44; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=45; i<52; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=53; i<59; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=60; i<67; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=68; i<74; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=75; i<82; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=83; i<89; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=90; i<97; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=98; i<104; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		assertEquals(innerTypeEdge.size(), 84);
 		List<TopologyElement> innerTypeCell = context.topology().inner().get(SiteType.Cell);
 		List<Integer> innerTypeCellIndexes = innerTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=8; i<12; i++)
@@ -1939,7 +1969,148 @@ public class GrowingBoardTest {
 				assertTrue(verticalTypeEdgeIndexes.contains(j));
 		assertEquals(verticalTypeEdge.size(), 56);
 		assertEquals(context.topology().vertical().get(SiteType.Cell).size(), 0);
-	}
+
+		// Trajectories
+		//TODO
+		
+		// Phases
+		List<List<TopologyElement>> phasesTypeVertex = context.topology().phases().get(SiteType.Vertex);
+		List<Integer> phasesTypeVertexIndexes0 = phasesTypeVertex.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=0; i<7; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=9; i<16; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=16; i<23; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=25; i<32; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=32; i<39; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=41; i<48; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=48; i<55; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=57; i<64; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		assertEquals(phasesTypeVertexIndexes0.size(), 32);
+		List<Integer> phasesTypeVertexIndexes1 = phasesTypeVertex.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=1; i<8; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=8; i<15; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=17; i<24; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=24; i<31; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=33; i<40; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=40; i<47; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=49; i<56; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=56; i<64; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		assertEquals(phasesTypeVertexIndexes1.size(), 32);
+		List<Integer> phasesTypeVertexIndexes2 = phasesTypeVertex.get(2).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes2.size(), 0);
+		List<Integer> phasesTypeVertexIndexes3 = phasesTypeVertex.get(3).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes3.size(), 0);
+		List<Integer> phasesTypeVertexIndexes4 = phasesTypeVertex.get(4).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes4.size(), 0);
+		List<Integer> phasesTypeVertexIndexes5 = phasesTypeVertex.get(5).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes5.size(), 0);
+		assertEquals(phasesTypeVertex.size(), Constants.MAX_CELL_COLOURS);
+		
+		List<List<TopologyElement>> phasesTypeEdge = context.topology().phases().get(SiteType.Edge);
+		List<Integer> phasesTypeEdgeIndexes0 = phasesTypeEdge.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase0Edges = {0, 3, 5, 9, 15, 19, 21, 30, 33, 36, 39, 42, 45, 48, 51, 61, 63, 65, 67, 74, 76, 78, 80, 91, 97, 100, 101, 102, 103, 104, 106};
+		for (int edge : phase0Edges)
+		    assertTrue(phasesTypeEdgeIndexes0.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes0.size(), 31);
+		List<Integer> phasesTypeEdgeIndexes1 = phasesTypeEdge.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase1Edges = {1, 4, 6, 7, 18, 20, 23, 24, 29, 35, 37, 40, 41, 46, 50, 59, 60, 64, 69, 70, 73, 75, 79, 89, 90, 93, 95, 99, 105, 108, 110};
+		for (int edge : phase1Edges)
+		    assertTrue(phasesTypeEdgeIndexes1.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes1.size(), 31);
+		List<Integer> phasesTypeEdgeIndexes2 = phasesTypeEdge.get(2).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase2Edges = {2, 8, 13, 14, 17, 22, 26, 27, 32, 38, 43, 44, 52, 54, 55, 56, 57, 66, 68, 82, 84, 85, 86, 87, 88, 98, 107, 109, 111};
+		for (int edge : phase2Edges)
+		    assertTrue(phasesTypeEdgeIndexes2.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes2.size(), 29);
+		List<Integer> phasesTypeEdgeIndexes3 = phasesTypeEdge.get(3).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase3Edges = {11, 12, 16, 25, 28, 31, 34, 47, 49, 53, 58, 62, 71, 72, 77, 81, 83, 92, 94, 96};
+		for (int edge : phase3Edges)
+		    assertTrue(phasesTypeEdgeIndexes3.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes3.size(), 20);
+		List<Integer> phasesTypeEdgeIndexes4 = phasesTypeEdge.get(4).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase4Edges = {10};
+		for (int edge : phase4Edges)
+		    assertTrue(phasesTypeEdgeIndexes4.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes4.size(), 1);
+		List<Integer> phasesTypeEdgeIndexes5 = phasesTypeEdge.get(5).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeEdgeIndexes5.size(), 0);
+
+		List<List<TopologyElement>> phasesTypeCell = context.topology().phases().get(SiteType.Cell);
+		List<Integer> phasesTypeCellIndexes0 = phasesTypeCell.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=0; i<49; i+=2)
+			assertTrue(phasesTypeCellIndexes0.contains(i));
+		assertEquals(phasesTypeCellIndexes0.size(), 25);
+		List<Integer> phasesTypeCellIndexes1 = phasesTypeCell.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=1; i<49; i+=2)
+			assertTrue(phasesTypeCellIndexes1.contains(i));
+		assertEquals(phasesTypeCellIndexes1.size(), 24);		
+		
+		// DistanceToOtherSite
+		assertEquals(context.topology().distanceToOtherSite().size(), 0);
+		
+		// DistanceToCorners
+		assertEquals(context.topology().distanceToCorners().size(), 0);
+		
+		// DistanceToSides
+		assertEquals(context.topology().distanceToSides().size(), 0);
+		
+		// DistanceToCentre
+		assertEquals(context.topology().distanceToCentre().size(), 0);
+		
+		// Layers
+		assertEquals(context.topology().layers().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().layers().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().layers().get(SiteType.Cell).size(), 0);
+		
+		// Diagonals
+		assertEquals(context.topology().diagonals().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().diagonals().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().diagonals().get(SiteType.Cell).size(), 0);
+		
+		// Angled
+		assertEquals(context.topology().angled().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().angled().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().angled().get(SiteType.Cell).size(), 0);
+		
+		// Slash
+		assertEquals(context.topology().slash().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().slash().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().slash().get(SiteType.Cell).size(), 0);
+		
+		// Slosh
+		assertEquals(context.topology().slosh().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().slosh().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().slosh().get(SiteType.Cell).size(), 0);
+		
+		// DistanceToRegions
+		assertEquals(context.topology().distanceToRegions().size(), 1);
+		assertEquals(context.topology().distanceToRegions().get(SiteType.Cell).length, 0);
+		
+		// PhaseByElementIndex
+		assertEquals(context.topology().phaseByElementIndex().size(), 0);
+
+		// Connectivities
+		assertEquals(context.topology().connectivities().size(), 2);
+		assertEquals(context.topology().connectivities().get(SiteType.Vertex).size(), 1);
+		assertTrue(context.topology().connectivities().get(SiteType.Vertex).contains(4));
+		assertEquals(context.topology().connectivities().get(SiteType.Cell).size(), 1);
+		assertTrue(context.topology().connectivities().get(SiteType.Cell).contains(4));
+	} 
 	
 	/**
 	 * Tests the pre-computed values stored in the Topology object. 
@@ -2058,18 +2229,29 @@ public class GrowingBoardTest {
 		for (int i=89; i<=99; i++)
 			assertTrue(outerTypeVertexIndexes.contains(i));
 		assertEquals(outerTypeVertex.size(), 36);
-		/*List<TopologyElement> outerTypeEdge = context.topology().outer.get(SiteType.Edge);
+		List<TopologyElement> outerTypeEdge = context.topology().outer().get(SiteType.Edge);
 		List<Integer> outerTypeEdgeIndexes = outerTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=0; i<=9; i++)
 			assertTrue(outerTypeEdgeIndexes.contains(i));
-		assertTrue(outerTypeEdgeIndexes.contains(14));
-		assertTrue(outerTypeEdgeIndexes.contains(22));
-		assertTrue(outerTypeEdgeIndexes.contains(29));
+		assertTrue(outerTypeEdgeIndexes.contains(18));
+		assertTrue(outerTypeEdgeIndexes.contains(28));
 		assertTrue(outerTypeEdgeIndexes.contains(37));
-		assertTrue(outerTypeEdgeIndexes.contains(44));
-		assertTrue(outerTypeEdgeIndexes.contains(52));
-		assertTrue(outerTypeEdgeIndexes.contains(59));
-		assertEquals(outerTypeEdge.size(), 8);*/
+		assertTrue(outerTypeEdgeIndexes.contains(47));
+		assertTrue(outerTypeEdgeIndexes.contains(56));
+		assertTrue(outerTypeEdgeIndexes.contains(66));
+		assertTrue(outerTypeEdgeIndexes.contains(75));
+		assertTrue(outerTypeEdgeIndexes.contains(85));
+		assertTrue(outerTypeEdgeIndexes.contains(94));
+		assertTrue(outerTypeEdgeIndexes.contains(104));
+		assertTrue(outerTypeEdgeIndexes.contains(113));
+		assertTrue(outerTypeEdgeIndexes.contains(123));
+		assertTrue(outerTypeEdgeIndexes.contains(132));
+		assertTrue(outerTypeEdgeIndexes.contains(142));
+		assertTrue(outerTypeEdgeIndexes.contains(151));
+		assertTrue(outerTypeEdgeIndexes.contains(161));
+		for (int i=170; i<=179; i++)
+			assertTrue(outerTypeEdgeIndexes.contains(i));
+		assertEquals(outerTypeEdge.size(), 36);
 		List<TopologyElement> outerTypeCell = context.topology().outer().get(SiteType.Cell);
 		List<Integer> outerTypeCellIndexes = outerTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=0; i<=9; i++)
@@ -2112,18 +2294,29 @@ public class GrowingBoardTest {
 		for (int i=89; i<=99; i++)
 			assertTrue(perimeterTypeVertexIndexes.contains(i));
 		assertEquals(perimeterTypeVertex.size(), 36);
-		/*List<TopologyElement> perimeterTypeEdge = context.topology().perimeter.get(SiteType.Edge);
+		List<TopologyElement> perimeterTypeEdge = context.topology().perimeter().get(SiteType.Edge);
 		List<Integer> perimeterTypeEdgeIndexes = perimeterTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=0; i<=9; i++)
 			assertTrue(perimeterTypeEdgeIndexes.contains(i));
-		assertTrue(perimeterTypeEdgeIndexes.contains(14));
-		assertTrue(perimeterTypeEdgeIndexes.contains(22));
-		assertTrue(perimeterTypeEdgeIndexes.contains(29));
+		assertTrue(perimeterTypeEdgeIndexes.contains(18));
+		assertTrue(perimeterTypeEdgeIndexes.contains(28));
 		assertTrue(perimeterTypeEdgeIndexes.contains(37));
-		assertTrue(perimeterTypeEdgeIndexes.contains(44));
-		assertTrue(perimeterTypeEdgeIndexes.contains(52));
-		assertTrue(perimeterTypeEdgeIndexes.contains(59));
-		assertEquals(perimeterTypeEdge.size(), 8);*/
+		assertTrue(perimeterTypeEdgeIndexes.contains(47));
+		assertTrue(perimeterTypeEdgeIndexes.contains(56));
+		assertTrue(perimeterTypeEdgeIndexes.contains(66));
+		assertTrue(perimeterTypeEdgeIndexes.contains(75));
+		assertTrue(perimeterTypeEdgeIndexes.contains(85));
+		assertTrue(perimeterTypeEdgeIndexes.contains(94));
+		assertTrue(perimeterTypeEdgeIndexes.contains(104));
+		assertTrue(perimeterTypeEdgeIndexes.contains(113));
+		assertTrue(perimeterTypeEdgeIndexes.contains(123));
+		assertTrue(perimeterTypeEdgeIndexes.contains(132));
+		assertTrue(perimeterTypeEdgeIndexes.contains(142));
+		assertTrue(perimeterTypeEdgeIndexes.contains(151));
+		assertTrue(perimeterTypeEdgeIndexes.contains(161));
+		for (int i=170; i<=179; i++)
+			assertTrue(perimeterTypeEdgeIndexes.contains(i));
+		assertEquals(perimeterTypeEdge.size(), 36);
 		List<TopologyElement> perimeterTypeCell = context.topology().perimeter().get(SiteType.Cell);
 		List<Integer> perimeterTypeCellIndexes = perimeterTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=0; i<=9; i++)
@@ -2164,18 +2357,43 @@ public class GrowingBoardTest {
 		for (int i=81; i<89; i++)
 			assertTrue(innerTypeVertexIndexes.contains(i));
 		assertEquals(innerTypeVertex.size(), 64);
-		/*List<TopologyElement> innerTypeEdge = context.topology().inner.get(SiteType.Edge);
+		List<TopologyElement> innerTypeEdge = context.topology().inner().get(SiteType.Edge);
 		List<Integer> innerTypeEdgeIndexes = innerTypeEdge.stream().map(TopologyElement::index).collect(Collectors.toList());
-		for (int i=0; i<=8; i++)
+		for (int i=10; i<18; i++)
 			assertTrue(innerTypeEdgeIndexes.contains(i));
-		assertTrue(innerTypeEdgeIndexes.contains(14));
-		assertTrue(innerTypeEdgeIndexes.contains(22));
-		assertTrue(innerTypeEdgeIndexes.contains(29));
-		assertTrue(innerTypeEdgeIndexes.contains(37));
-		assertTrue(innerTypeEdgeIndexes.contains(44));
-		assertTrue(innerTypeEdgeIndexes.contains(52));
-		assertTrue(innerTypeEdgeIndexes.contains(59));
-		assertEquals(innerTypeEdge.size(), 8);*/
+		for (int i=19; i<28; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=29; i<37; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=38; i<47; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=48; i<56; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=57; i<66; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=67; i<75; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=76; i<85; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=86; i<94; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=95; i<104; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=105; i<113; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=114; i<123; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=124; i<132; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=133; i<142; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=143; i<151; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=152; i<161; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		for (int i=162; i<170; i++)
+			assertTrue(innerTypeEdgeIndexes.contains(i));
+		assertEquals(innerTypeEdge.size(), 144);
 		List<TopologyElement> innerTypeCell = context.topology().inner().get(SiteType.Cell);
 		List<Integer> innerTypeCellIndexes = innerTypeCell.stream().map(TopologyElement::index).collect(Collectors.toList());
 		for (int i=10; i<17; i++)
@@ -2506,6 +2724,148 @@ public class GrowingBoardTest {
 				assertTrue(verticalTypeEdgeIndexes.contains(j));
 		assertEquals(verticalTypeEdge.size(), 90);
 		assertEquals(context.topology().vertical().get(SiteType.Cell).size(), 0);
+		
+
+		// Trajectories
+		//TODO
+		
+		// Phases
+		List<List<TopologyElement>> phasesTypeVertex = context.topology().phases().get(SiteType.Vertex);
+		List<Integer> phasesTypeVertexIndexes0 = phasesTypeVertex.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=0; i<9; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=11; i<20; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=20; i<29; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=31; i<40; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=40; i<49; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=51; i<60; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=60; i<69; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		for (int i=71; i<80; i+=2)
+			assertTrue(phasesTypeVertexIndexes0.contains(i));
+		assertEquals(phasesTypeVertexIndexes0.size(), 50);
+		List<Integer> phasesTypeVertexIndexes1 = phasesTypeVertex.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=1; i<10; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=10; i<19; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=21; i<30; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=30; i<39; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=41; i<50; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=50; i<59; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=61; i<70; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		for (int i=70; i<79; i+=2)
+			assertTrue(phasesTypeVertexIndexes1.contains(i));
+		assertEquals(phasesTypeVertexIndexes1.size(), 50);
+		List<Integer> phasesTypeVertexIndexes2 = phasesTypeVertex.get(2).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes2.size(), 0);
+		List<Integer> phasesTypeVertexIndexes3 = phasesTypeVertex.get(3).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes3.size(), 0);
+		List<Integer> phasesTypeVertexIndexes4 = phasesTypeVertex.get(4).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes4.size(), 0);
+		List<Integer> phasesTypeVertexIndexes5 = phasesTypeVertex.get(5).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeVertexIndexes5.size(), 0);
+		assertEquals(phasesTypeVertex.size(), Constants.MAX_CELL_COLOURS);
+		
+		List<List<TopologyElement>> phasesTypeEdge = context.topology().phases().get(SiteType.Edge);
+		List<Integer> phasesTypeEdgeIndexes0 = phasesTypeEdge.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase0Edges = {0, 3, 5, 7, 11, 19, 23, 26, 34, 37, 38, 41, 45, 49, 52, 57, 60, 64, 72, 75, 77, 79, 83, 85, 90, 96, 98, 101, 103, 115, 117, 119, 121, 123, 132, 134, 136, 138, 140, 153, 161, 164, 165, 166, 167, 168, 169, 170, 172};
+		for (int edge : phase0Edges)
+		    assertTrue(phasesTypeEdgeIndexes0.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes0.size(), 49);
+		List<Integer> phasesTypeEdgeIndexes1 = phasesTypeEdge.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase1Edges = {1, 4, 6, 8, 9, 22, 24, 27, 29, 30, 35, 42, 46, 47, 50, 53, 58, 65, 70, 71, 73, 76, 84, 87, 88, 91, 95, 102, 108, 109, 113, 114, 120, 125, 126, 131, 133, 137, 139, 151, 152, 155, 157, 159, 163, 171, 174, 176, 178};
+		for (int edge : phase1Edges)
+		    assertTrue(phasesTypeEdgeIndexes1.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes1.size(), 49);
+		List<Integer> phasesTypeEdgeIndexes2 = phasesTypeEdge.get(2).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase2Edges = {2, 10, 17, 18, 21, 25, 28, 32, 33, 40, 44, 48, 55, 56, 61, 63, 66, 68, 69, 80, 82, 86, 93, 94, 99, 104, 106, 107, 110, 111, 118, 122, 124, 142, 144, 145, 146, 147, 148, 149, 150, 162, 173, 175, 177, 179};
+		for (int edge : phase2Edges)
+		    assertTrue(phasesTypeEdgeIndexes2.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes2.size(), 46);
+		List<Integer> phasesTypeEdgeIndexes3 = phasesTypeEdge.get(3).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase3Edges = {13, 14, 15, 16, 20, 31, 36, 39, 43, 51, 54, 59, 62, 67, 74, 78, 81, 89, 92, 97, 100, 105, 112, 116, 127, 128, 129, 130, 135, 141, 143, 154, 156, 158, 160};
+		for (int edge : phase3Edges)
+		    assertTrue(phasesTypeEdgeIndexes3.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes3.size(), 35);
+		List<Integer> phasesTypeEdgeIndexes4 = phasesTypeEdge.get(4).stream().map(TopologyElement::index).collect(Collectors.toList());
+		int[] phase4Edges = {12};
+		for (int edge : phase4Edges)
+		    assertTrue(phasesTypeEdgeIndexes4.contains(edge));
+		assertEquals(phasesTypeEdgeIndexes4.size(), 1);
+		List<Integer> phasesTypeEdgeIndexes5 = phasesTypeEdge.get(5).stream().map(TopologyElement::index).collect(Collectors.toList());
+		assertEquals(phasesTypeEdgeIndexes5.size(), 0);
+
+		List<List<TopologyElement>> phasesTypeCell = context.topology().phases().get(SiteType.Cell);
+		List<Integer> phasesTypeCellIndexes0 = phasesTypeCell.get(0).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=0; i<81; i+=2)
+			assertTrue(phasesTypeCellIndexes0.contains(i));
+		assertEquals(phasesTypeCellIndexes0.size(), 41);
+		List<Integer> phasesTypeCellIndexes1 = phasesTypeCell.get(1).stream().map(TopologyElement::index).collect(Collectors.toList());
+		for (int i=1; i<81; i+=2)
+			assertTrue(phasesTypeCellIndexes1.contains(i));
+		assertEquals(phasesTypeCellIndexes1.size(), 40);		
+		
+		// DistanceToOtherSite
+		assertEquals(context.topology().distanceToOtherSite().size(), 0);
+		
+		// DistanceToCorners
+		assertEquals(context.topology().distanceToCorners().size(), 0);
+		
+		// DistanceToSides
+		assertEquals(context.topology().distanceToSides().size(), 0);
+		
+		// DistanceToCentre
+		assertEquals(context.topology().distanceToCentre().size(), 0);
+		
+		// Layers
+		assertEquals(context.topology().layers().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().layers().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().layers().get(SiteType.Cell).size(), 0);
+		
+		// Diagonals
+		assertEquals(context.topology().diagonals().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().diagonals().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().diagonals().get(SiteType.Cell).size(), 0);
+		
+		// Angled
+		assertEquals(context.topology().angled().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().angled().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().angled().get(SiteType.Cell).size(), 0);
+		
+		// Slash
+		assertEquals(context.topology().slash().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().slash().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().slash().get(SiteType.Cell).size(), 0);
+		
+		// Slosh
+		assertEquals(context.topology().slosh().get(SiteType.Vertex).size(), 0);
+		assertEquals(context.topology().slosh().get(SiteType.Edge).size(), 0);
+		assertEquals(context.topology().slosh().get(SiteType.Cell).size(), 0);
+		
+		// DistanceToRegions
+		assertEquals(context.topology().distanceToRegions().size(), 1);
+		assertEquals(context.topology().distanceToRegions().get(SiteType.Cell).length, 0);
+		
+		// PhaseByElementIndex
+		assertEquals(context.topology().phaseByElementIndex().size(), 0);
+
+		// Connectivities
+		assertEquals(context.topology().connectivities().size(), 2);
+		assertEquals(context.topology().connectivities().get(SiteType.Vertex).size(), 1);
+		assertTrue(context.topology().connectivities().get(SiteType.Vertex).contains(4));
+		assertEquals(context.topology().connectivities().get(SiteType.Cell).size(), 1);
+		assertTrue(context.topology().connectivities().get(SiteType.Cell).contains(4));
 	}
 	
 	/**
@@ -2910,6 +3270,9 @@ public class GrowingBoardTest {
 	@Test
 	public void testMoveMoveOnEdge()
 	{
+		// TODO BUG : I DONT KNOW HOW TO APPLY A MOVE PROPERLY  - HERE THERE ARE NO LEGAL MOVES AFTER 
+		// I APPLIED THE MOVE - UNLIKE WHEN DOING IT WITH THE VISUAL INTERFACE
+		
 		// init
 		Context context = initGame();
 		

@@ -2967,32 +2967,37 @@ public class Topology implements Serializable
 			centre.get(type).clear();
 			columns.get(type).clear();
 			rows.get(type).clear();
+			phases.get(type).clear();
+			for (int i = 0; i < Constants.MAX_CELL_COLOURS; i++)
+				phases.get(type).add(new ArrayList<TopologyElement>());
+			layers.get(type).clear();
+			diagonals.get(type).clear();
+			angled.get(type).clear();
+			slash.get(type).clear();
+			slosh.get(type).clear();
 			for (final CompassDirection direction : CompassDirection.values())
 				sides.get(type).get(direction).clear();
 			axials.get(type).clear();
 			horizontal.get(type).clear();
 			vertical.get(type).clear();
 		}
-		
 		this.perimeters = new ArrayList<Perimeter>();
 		
-		/*trajectories.clear(); ??
-		phases.clear(); ?? // The list of each set of sites in the same phase 
-		distanceToOtherSite.clear(); ??
-		distanceToCorners.clear(); ??
-		distanceToSides.clear(); ??
-		distanceToCentre.clear(); ??
-		layers.clear(); ??
-		diagonals.clear(); ??
-		angled.clear(); ??
-		slash.clear(); ??
-		slosh.clear(); ??
-		distanceToRegions.clear(); ??
-		phaseByElementIndex.clear(); ??
-		connectivities.clear(); ??
-		;*/
+		for (final SiteType type : distanceToOtherSite.keySet())
+			distanceToOtherSite.put(type, new int[0][0]);
+		for (final SiteType type : distanceToCorners.keySet())
+			distanceToCorners.put(type, new int[0]);
+		for (final SiteType type : distanceToSides.keySet())
+			distanceToSides.put(type, new int[0]);
+		for (final SiteType type : distanceToCentre.keySet())
+			distanceToCentre.put(type, new int[0]);
+		for (final SiteType type : distanceToRegions.keySet())
+			distanceToRegions.put(type, new int[0][0]);
+		for (final SiteType type : phaseByElementIndex.keySet())
+			phaseByElementIndex.put(type, new int[0]);
+		for (final SiteType type : connectivities.keySet())
+			connectivities.get(type).clear();
 		
-		
+		trajectories.clear();
 	}
-
 }
