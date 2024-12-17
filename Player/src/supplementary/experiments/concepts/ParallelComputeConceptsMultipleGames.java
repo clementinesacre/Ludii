@@ -471,7 +471,7 @@ public class ParallelComputeConceptsMultipleGames
 		for (int i = 0; i < Concept.values().length; ++i)
 		{
 			final Concept concept = Concept.values()[i];
-			final int frequencyStringIndex = concept.name().indexOf("");
+			final int frequencyStringIndex = concept.name().indexOf("Frequency");
 			
 			if (frequencyStringIndex >= 0)
 			{
@@ -701,10 +701,21 @@ public class ParallelComputeConceptsMultipleGames
 								{
 									final BitSet moveConcepts = legalMove.moveConcepts(context);
 									
-									for (int conceptIdx = moveConcepts.nextSetBit(0); conceptIdx >= 0; conceptIdx = moveConcepts.nextSetBit(conceptIdx + 1))
+									for (int indexConcept = 0; indexConcept < Concept.values().length; indexConcept++)
 									{
-										final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(Concept.values()[conceptIdx].name()).intValue();
-										frequencyPlayout[frequencyConceptIdx] += 1.0 / numLegalMoves;
+										final Concept concept = Concept.values()[indexConcept];
+										if (moveConcepts.get(concept.id()))
+										{
+											if (conceptToFrequencyIndexMap.containsKey(concept.name()))
+											{
+												final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(concept.name()).intValue();
+												frequencyPlayout[frequencyConceptIdx] += 1.0 / numLegalMoves;
+											}
+											else
+											{
+												frequencyPlayout[concept.id()] += 1.0 / numLegalMoves;
+											}
+										}
 									}
 								}
 
@@ -752,8 +763,15 @@ public class ParallelComputeConceptsMultipleGames
 											final Concept concept = Concept.values()[indexConcept];
 											if (concept.type().equals(ConceptType.End) && endConcepts.get(concept.id()))
 											{
-												final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(concept.name()).intValue();
-												frequencyPlayouts[frequencyConceptIdx]++; 
+												if (conceptToFrequencyIndexMap.containsKey(concept.name()))
+												{
+													final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(concept.name()).intValue();
+													frequencyPlayouts[frequencyConceptIdx]++; 
+												}
+												else
+												{
+													frequencyPlayout[concept.id()]++;
+												}
 											}
 										}
 										break;
@@ -779,8 +797,15 @@ public class ParallelComputeConceptsMultipleGames
 										final Concept concept = Concept.values()[indexConcept];
 										if (concept.type().equals(ConceptType.End) && endConcepts.get(concept.id()))
 										{
-											final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(concept.name()).intValue();
-											frequencyPlayouts[frequencyConceptIdx]++; 
+											if (conceptToFrequencyIndexMap.containsKey(concept.name()))
+											{
+												final int frequencyConceptIdx = conceptToFrequencyIndexMap.get(concept.name()).intValue();
+												frequencyPlayouts[frequencyConceptIdx]++; 
+											}
+											else
+											{
+												frequencyPlayout[concept.id()]++;
+											}
 										}
 									}
 									break;
@@ -1008,17 +1033,17 @@ public class ParallelComputeConceptsMultipleGames
 					for (int indexConcept = 0; indexConcept < Concept.values().length; indexConcept++)
 					{
 						final Concept concept = Concept.values()[indexConcept];
-						MapUtils.add(mergedResults, concept.name(), jobOutput.frequenciesConcepts.getQuick(indexConcept));
+						MapUtils.add(mergedResults, concept.name(), numTrials * jobOutput.frequenciesConcepts.getQuick(indexConcept));
 					}
 					
 					for (final Entry<String, Double> entry : jobOutput.metricsMap.entrySet())
 					{
-						MapUtils.add(mergedResults, entry.getKey(), entry.getValue().doubleValue());
+						MapUtils.add(mergedResults, entry.getKey(), numTrials * entry.getValue().doubleValue());
 					}
 					
 					for (final Entry<String, Double> entry : jobOutput.mapStarting.entrySet())
 					{
-						MapUtils.add(mergedResults, entry.getKey(), entry.getValue().doubleValue());
+						MapUtils.add(mergedResults, entry.getKey(), numTrials * entry.getValue().doubleValue());
 					}
 										
 					totalNumTrials += numTrials;
