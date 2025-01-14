@@ -15,9 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import app.PlayerApp;
 import app.move.GrowingBoard;
+import app.move.GrowingBoardVisual;
+import app.utils.GameUtil;
+import app.views.tools.ToolView;
 import game.Game;
 import game.equipment.Equipment;
+import game.equipment.container.board.Boardless;
 import game.rules.phase.Phase;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
@@ -31,6 +36,7 @@ import other.GameLoader;
 import other.action.ActionType;
 import other.trial.Trial;
 import other.context.Context;
+import other.location.FullLocation;
 import other.move.Move;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
@@ -43,6 +49,7 @@ import other.topology.TopologyElement;
 /**
  * Test that the board size is changing properly, through all aspects.
  * We suppose the game is boardless - this test does not concern normal board games.
+ * These tests focus on just playing moves, straight forward.
  *
  * @author Clémentine Sacré
  */
@@ -120,7 +127,7 @@ public class GrowingBoardTest {
 	public ContainerState[] updateBoard(Context context)
 	{		
 		ContainerState[] prevContainerStates = context.state().containerStates();
-		GrowingBoard.updateBoard(context);
+		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + Constants.GROWING_STEP, true);
 		
 		return prevContainerStates;
 	}
@@ -157,6 +164,7 @@ public class GrowingBoardTest {
 		}
 		return legalMoves;
 	}
+	
 	
 	/**
 	 * Tests the method that check if a move made is done on an edge (= the perimeter 
@@ -210,7 +218,7 @@ public class GrowingBoardTest {
 		// test main data structures
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
 		HashMap<Integer, Integer> mappedNewToPrevIndexes = GrowingBoard.mappedNewToPrevIndexes();
-		HashSet<Integer> newAddedIndexes = GrowingBoard.newAddedIndexes();
+		HashSet<Integer> newAddedIndexes = GrowingBoard.surplusIndexes();
 		
 		for (int i=0; i<=26; i++)
 			assertTrue(mappedPrevToNewIndexes.containsKey(i));
@@ -294,7 +302,7 @@ public class GrowingBoardTest {
 		// test main data structures
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
 		HashMap<Integer, Integer> mappedNewToPrevIndexes = GrowingBoard.mappedNewToPrevIndexes();
-		HashSet<Integer> newAddedIndexes = GrowingBoard.newAddedIndexes();
+		HashSet<Integer> newAddedIndexes = GrowingBoard.surplusIndexes();
 
 		for (int i=0; i<=50; i++)
 			assertTrue(mappedPrevToNewIndexes.containsKey(i));
@@ -412,7 +420,7 @@ public class GrowingBoardTest {
 	 * Tests the indexes used inside the equipment after 2 edge moves.
 	 */
 	@Test
-	public void testUpdateIndexesInsideEquipmentAfter2Move()
+	public void testUpdateIndexesInsideEquipmentAfter2Moves()
 	{
 		// init
 		Context context = initGame();
@@ -1215,23 +1223,23 @@ public class GrowingBoardTest {
 		
 		// test
 		List<Move> movesDone = context.trial().generateCompleteMovesList();
-		assertEquals(movesDone.get(0).getFromLocation().site(), 49);
-		assertEquals(movesDone.get(0).getToLocation().site(), 49);
+		assertEquals(movesDone.get(0).actions().get(0).from(), 49);
+		assertEquals(movesDone.get(0).actions().get(0).to(), 49);
 
-		assertEquals(movesDone.get(1).getFromLocation().site(), 50);
-		assertEquals(movesDone.get(1).getToLocation().site(), 50);
+		assertEquals(movesDone.get(1).actions().get(0).from(), 50);
+		assertEquals(movesDone.get(1).actions().get(0).to(), 50);
 
-		assertEquals(movesDone.get(2).getFromLocation().site(), 24);
-		assertEquals(movesDone.get(2).getToLocation().site(), 24);
+		assertEquals(movesDone.get(2).actions().get(0).from(), 24);
+		assertEquals(movesDone.get(2).actions().get(0).to(), 24);
 
-		assertEquals(movesDone.get(3).getFromLocation().site(), 25);
-		assertEquals(movesDone.get(3).getToLocation().site(), 25);
+		assertEquals(movesDone.get(3).actions().get(0).from(), 25);
+		assertEquals(movesDone.get(3).actions().get(0).to(), 25);
 
-		assertEquals(movesDone.get(4).getFromLocation().site(), 23);
-		assertEquals(movesDone.get(4).getToLocation().site(), 23);
+		assertEquals(movesDone.get(4).actions().get(0).from(), 23);
+		assertEquals(movesDone.get(4).actions().get(0).to(), 23);
 
-		assertEquals(movesDone.get(5).getFromLocation().site(), 49);
-		assertEquals(movesDone.get(5).getToLocation().site(), 22);
+		assertEquals(movesDone.get(5).actions().get(0).from(), 49);
+		assertEquals(movesDone.get(5).actions().get(0).to(), 22);
 	}
 	
 	/**

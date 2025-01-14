@@ -29,7 +29,7 @@ public final class FlatCellOnlyOwned implements Owned, Serializable
 	 * All the sites where is a piece owned by a player. PlayerId
 	 * --> ComponentId --> Sites.
 	 */
-	protected final FastTIntArrayList[][] locations;
+	protected FastTIntArrayList[][] locations;
 	
 	/** Our index mapper */
 	protected final OwnedIndexMapper indexMapper;
@@ -233,5 +233,12 @@ public final class FlatCellOnlyOwned implements Owned, Serializable
 	public FastTIntArrayList[][] locations()
 	{
 		return this.locations;
+	}
+	/**
+	 * @param newLocations 
+	 */
+	public void setLocations(FastTIntArrayList[][] newLocations)
+	{
+		this.locations = newLocations;
 	}
 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import app.PlayerApp;
 import app.utils.PuzzleSelectionType;
 import game.equipment.component.Component;
+import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
 import game.util.directions.AbsoluteDirection;
@@ -129,7 +130,9 @@ public class MoveHandler
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
-				GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0));
+				int currDim = ((Boardless) context.board()).dimension();
+				int newDim = currDim + Constants.GROWING_STEP;
+				GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), currDim, newDim, true);
 				return true; // move found
 			}
 		}
