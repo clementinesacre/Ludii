@@ -131,6 +131,9 @@ public class Move extends BaseAction
 
 	/** The "Moves" where comes from the move. */
 	private transient Moves movesLudeme;
+	
+	/** Remember the size of the board when the move was made on an edge - useful for boardless game only. */
+	private int onEdge = -1;
 
 	//-------------------------------------------------------------------------
 
@@ -592,8 +595,8 @@ public class Move extends BaseAction
 		}
 
 		final Move returnMove = new Move(returnActions);
-		//returnMove.setFromNonDecision(from);
-		returnMove.setFromNonDecision(from());
+		returnMove.setFromNonDecision(from);
+		//returnMove.setFromNonDecision(from());
 		returnMove.setBetweenNonDecision(new TIntArrayList(betweenNonDecision()));
 		returnMove.setToNonDecision(to);
 		returnMove.setStateNonDecision(state);
@@ -602,6 +605,7 @@ public class Move extends BaseAction
 		returnMove.setMover(mover);
 		returnMove.setLevelMaxNonDecision(levelMax);
 		returnMove.setLevelMinNonDecision(levelMin);
+		returnMove.setOnEdge(onEdge());
 		
 		if (store)
 		{
@@ -1740,4 +1744,34 @@ public class Move extends BaseAction
 	
 	//-------------------------------------------------------------------------
 
+
+	/**
+	 * @return if the move was made on an edge of the board.
+	 * Useful only in boardless games.
+	 */
+	public boolean isOnEdge()
+	{
+		return this.onEdge != -1;
+	}
+	
+	/**
+	 * @return the dimension of the board when move was done, 
+	 * if it was done on an edge, -1 else.
+	 */
+	public int onEdge()
+	{
+		return this.onEdge;
+	}
+	
+	/**
+	 * Update the isOnEdge.
+	 * 
+	 * @param newIsOnEdge
+	 */
+	public void setOnEdge(int newIsOnEdge)
+	{
+		this.onEdge = newIsOnEdge;
+	}
+	
+	
 }

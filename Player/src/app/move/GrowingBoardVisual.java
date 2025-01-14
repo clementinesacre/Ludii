@@ -3,6 +3,7 @@ package app.move;
 import java.awt.EventQueue;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import app.PlayerApp;
 import app.utils.GameUtil;
@@ -27,10 +28,11 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param board
+	 * @param newSize new size of the board.
 	 */
-	private static void updateBoardDimensions(final PlayerApp app, Boardless board) 
+	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int newSize) 
 	{
-		updateBoardDimensions(app.manager().ref().context(), board);
+		updateBoardDimensions(app.manager().ref().context(), board, newSize);
 
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -70,12 +72,12 @@ public class GrowingBoardVisual extends GrowingBoard
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
 		//final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
-		final int moveToJumpToWithSetup = 0;
+		/*final int moveToJumpToWithSetup = 0;
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
 		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
 		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);
+		app.manager().setUndoneMoves(newUndoneMoves);*/
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();
@@ -93,7 +95,7 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 */
-	private static void remakeTrial(final PlayerApp app) 
+	private static void remakeTrial(final PlayerApp app, final boolean replayMoves) 
 	{
 		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
@@ -101,7 +103,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		Moves legalMoves = trial.cachedLegalMoves();
 		//int mover = context.state().mover();
 		resetMoves(app);
-		remakeTrial(context, movesDone, legalMoves);
+		remakeTrial(context, movesDone, legalMoves, replayMoves);
 		//context.state().setMover(mover);
 	}
 	
@@ -110,17 +112,20 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param context
+	 * @param fromSize TODO
+	 * @param toSize TODO
+	 * @param replayMoves TODO
 	 */
-	public static void updateBoard(final PlayerApp app, Context context)
+	public static void updateBoard(final PlayerApp app, Context context, int fromSize, int toSize, final boolean replayMoves)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, board.dimension());
+		initMainConstants(context, fromSize, toSize);
 		
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java impactBoard() : touching an edge in a boardless game --> need to increase board size");
-		updateBoardDimensions(app, board);
-		remakeTrial(app);
+		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
+		updateBoardDimensions(app, board, toSize);
+		remakeTrial(app, replayMoves);
 	}
 	
 	public static void displayInfo(Context context)
@@ -141,8 +146,11 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param move
+	 * @param fromSize
+	 * @param toSize
+	 * @param replayMoves if wee need to re-apply the moves 
 	 */
-	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move) 
+	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
 	{
 		final Context context = app.manager().ref().context();
 
@@ -153,10 +161,9 @@ public class GrowingBoardVisual extends GrowingBoard
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
-			
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
-				updateBoard(app, context);
+				updateBoard(app, context, fromSize, toSize, replayMoves);
 				
 				//displayInfo(context); //TODO : to remove once code is ready
 			}
