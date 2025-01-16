@@ -46,7 +46,7 @@ public class GameSetup
 				app.manager().aiSelected()[i].setAI(null);
 			
 			app.loadGameSpecificPreferences();
-			GameUtil.resetGame(app, false);
+			GameUtil.resetGame(app, false, true);
 		}
 		catch (final Exception e)
 		{

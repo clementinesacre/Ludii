@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
@@ -30,6 +31,7 @@ import other.concept.Concept;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
+import other.state.container.ContainerFlatState;
 import other.state.owned.FlatCellOnlyOwned;
 
 //-----------------------------------------------------------------------------
@@ -217,6 +219,8 @@ public class ToolView extends View
 		app.settingsPlayer().setWebGameResultValid(false);
 		
 		final Context context = app.manager().ref().context();
+		int prev = context.state().prev();
+		int mover = context.state().mover();
 
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
@@ -224,32 +228,59 @@ public class ToolView extends View
 
 		Moves legalMoves = context.trial().cachedLegalMoves();
 		FastTIntArrayList[][] locations = ((FlatCellOnlyOwned) context.state().owned()).locations();
+
+		int moveToJumpToWithSetup;
+		if (moveToJumpTo == 0)
+			moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
+		else
+			moveToJumpToWithSetup = moveToJumpTo;
+		Move currMove = allMoves.get(moveToJumpToWithSetup);
 		
-		GameUtil.resetGame(app, true);
+		GameUtil.resetGame(app, true, true);
+		/*if (currMove.isOnEdge())
+			GameUtil.resetGame(app, true, false);
+		else
+			GameUtil.resetGame(app, true, true);*/
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
-		final int moveToJumpToWithSetup;
+		//final int moveToJumpToWithSetup;
 		if (moveToJumpTo == 0)
 			moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
 		else
 			moveToJumpToWithSetup = moveToJumpTo;
 
+		//System.out.println("ToolView.java jumpToMove() mover : "+context.state().mover()+" - prev : "+context.state().prev());
 		// -------------
-		Move currMove = allMoves.get(moveToJumpToWithSetup);
 		if (currMove.isOnEdge())
 		{
 			context.trial().setLegalMoves(legalMoves, context);
-			
+
 			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
 			
 			int currDim = ((Boardless) context.board()).dimension();
 			GrowingBoardVisual.updateBoard(app, context, currDim, currDim - Constants.GROWING_STEP, false);
 
-			for (int i=0; i<allMoves.size(); i++) 
+			int newPrev = prev - 1;
+			while (!context.active(newPrev))
 			{
-				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i));
-				allMoves.set(i, newMove);
+				newPrev--;
+				if (newPrev < 0)
+					newPrev = context.game().players().count();
 			}
+			
+			for (int i=0; i<allMoves.size(); i++) 
+				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));
+			
+			
+			/*System.out.println("ToolView.java jumptToMove() prev : "+prev);
+			System.out.println("ToolView.java jumptToMove() mover : "+mover);
+			System.out.println("ToolView.java jumptToMove() next : "+context.state().next());
+			System.out.println("ToolView.java jumptToMove() new prev : "+newPrev);
+			System.out.println("ToolView.java jumptToMove() new mover : "+prev);
+			System.out.println("ToolView.java jumptToMove() new next : "+mover);*/
+			context.state().setPrev(newPrev);
+			context.state().setMover(prev);
+			context.state().setNext(mover);
 		}
 		// -------------
 		

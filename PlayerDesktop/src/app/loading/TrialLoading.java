@@ -155,7 +155,7 @@ public class TrialLoading
 
 			final List<Move> trialMoves = loadedRecord.trial().generateCompleteMovesList();
 			app.manager().setCurrGameStartRngState(loadedRecord.rngState());
-			GameUtil.resetGame(app, true);
+			GameUtil.resetGame(app, true, true);
 
 			app.manager().ref().makeSavedMoves(app.manager(), trialMoves);
 		}

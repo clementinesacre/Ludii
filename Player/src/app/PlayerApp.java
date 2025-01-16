@@ -356,7 +356,7 @@ public abstract class PlayerApp implements PlayerInterface, ActionListener, Item
 	@Override
 	public void restartGame()
 	{
-		GameUtil.resetGame(this, false);
+		GameUtil.resetGame(this, false, true);
 	}
 	
 	//-----------------------------------------------------------------------------

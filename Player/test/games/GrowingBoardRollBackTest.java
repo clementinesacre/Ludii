@@ -195,7 +195,7 @@ public class GrowingBoardRollBackTest {
 
 			for (int i=0; i<allMoves.size(); i++) 
 			{
-				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i));
+				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i), false);
 				allMoves.set(i, newMove);
 			}
 		}
@@ -255,13 +255,13 @@ public class GrowingBoardRollBackTest {
 		goBack1Move(context);
 		
 		// test main constants
-		assertEquals(GrowingBoard.prevDimensionBoard(), 9);
-		assertEquals(GrowingBoard.prevAreaBoard(), 81);
-		assertEquals(GrowingBoard.prevTotalIndexes(), 83);
-		assertEquals(GrowingBoard.newDimensionBoard(), 7);
-		assertEquals(GrowingBoard.newAreaBoard(), 49);
-		assertEquals(GrowingBoard.newTotalIndexes(), 51);
-		assertEquals(GrowingBoard.diff(), 32);
+		assertEquals(9, GrowingBoard.prevDimensionBoard());
+		assertEquals(81, GrowingBoard.prevAreaBoard());
+		assertEquals(83, GrowingBoard.prevTotalIndexes());
+		assertEquals(7, GrowingBoard.newDimensionBoard());
+		assertEquals(49, GrowingBoard.newAreaBoard());
+		assertEquals(51, GrowingBoard.newTotalIndexes());
+		assertEquals(32, GrowingBoard.diff());
 		
 		// test main data structures
 		HashMap<Integer, Integer> mappedPrevToNewIndexes = GrowingBoard.mappedPrevToNewIndexes();
@@ -362,27 +362,27 @@ public class GrowingBoardRollBackTest {
 		// test
 		int[] newOffset = equipment.offset();
 		for (int i=0; i<=48; i++)
-			assertEquals(newOffset[i], i);
-		assertEquals(newOffset[49], 0);
-		assertEquals(newOffset[50], 0);
+			assertEquals(i, newOffset[i]);
+		assertEquals(0, newOffset[49]);
+		assertEquals(0, newOffset[50]);
 		
 		int[] newContainerId = equipment.containerId();
 		for (int i=0; i<=48; i++)
-			assertEquals(newContainerId[i], 0);
-		assertEquals(newContainerId[49], 1);
-		assertEquals(newContainerId[50], 2);
+			assertEquals(0, newContainerId[i]);
+		assertEquals(1, newContainerId[49]);
+		assertEquals(2, newContainerId[50]);
 				
 		int[] newSitesFrom = equipment.sitesFrom();
-		assertEquals(newSitesFrom[0], 0);
-		assertEquals(newSitesFrom[1], 49);
-		assertEquals(newSitesFrom[2], 50);
+		assertEquals(0, newSitesFrom[0]);
+		assertEquals(49, newSitesFrom[1]);
+		assertEquals(50, newSitesFrom[2]);
 		
 		TopologyElement topologyElement0 = game.equipment().containers()[0].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement0.index(), 0);
+		assertEquals(0, topologyElement0.index());
 		TopologyElement topologyElement1 = game.equipment().containers()[1].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement1.index(), 49);
+		assertEquals(49, topologyElement1.index());
 		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement2.index(), 50);
+		assertEquals(50, topologyElement2.index());
 	}
 	
 	/**
@@ -409,27 +409,27 @@ public class GrowingBoardRollBackTest {
 		// test
 		int[] newOffset = equipment.offset();
 		for (int i=0; i<=80; i++)
-			assertEquals(newOffset[i], i);
-		assertEquals(newOffset[81], 0);
-		assertEquals(newOffset[82], 0);
+			assertEquals(i, newOffset[i]);
+		assertEquals(0, newOffset[81]);
+		assertEquals(0, newOffset[82]);
 		
 		int[] newContainerId = equipment.containerId();
 		for (int i=0; i<=80; i++)
-			assertEquals(newContainerId[i], 0);
-		assertEquals(newContainerId[81], 1);
-		assertEquals(newContainerId[82], 2);
+			assertEquals(0, newContainerId[i]);
+		assertEquals(1, newContainerId[81]);
+		assertEquals(2, newContainerId[82]);
 				
 		int[] newSitesFrom = equipment.sitesFrom();
-		assertEquals(newSitesFrom[0], 0);
-		assertEquals(newSitesFrom[1], 81);
-		assertEquals(newSitesFrom[2], 82);
+		assertEquals(0, newSitesFrom[0]);
+		assertEquals(81, newSitesFrom[1]);
+		assertEquals(82, newSitesFrom[2]);
 		
 		TopologyElement topologyElement0 = game.equipment().containers()[0].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement0.index(), 0);
+		assertEquals(0, topologyElement0.index());
 		TopologyElement topologyElement1 = game.equipment().containers()[1].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement1.index(), 81);
+		assertEquals(81, topologyElement1.index());
 		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
-		assertEquals(topologyElement2.index(), 82);
+		assertEquals(82, topologyElement2.index());
 	}
 	
 	/**
@@ -451,25 +451,25 @@ public class GrowingBoardRollBackTest {
 
 		// test
 		List<Move> newMovesDone = context.trial().generateCompleteMovesList();
-		assertEquals(newMovesDone.get(0).actions().get(0).to(), 49);
-		assertEquals(newMovesDone.get(0).actions().get(0).what(), 2);
-		assertEquals(newMovesDone.get(0).actions().get(0).count(), 3);
+		assertEquals(49, newMovesDone.get(0).actions().get(0).to());
+		assertEquals(2, newMovesDone.get(0).actions().get(0).what());
+		assertEquals(3, newMovesDone.get(0).actions().get(0).count());
 		
-		assertEquals(newMovesDone.get(1).actions().get(0).to(), 50);
-		assertEquals(newMovesDone.get(1).actions().get(0).what(), 3);
-		assertEquals(newMovesDone.get(1).actions().get(0).count(), 3);
+		assertEquals(50, newMovesDone.get(1).actions().get(0).to());
+		assertEquals(3, newMovesDone.get(1).actions().get(0).what());
+		assertEquals(3, newMovesDone.get(1).actions().get(0).count());
 		
-		assertEquals(newMovesDone.get(2).actions().get(0).to(), 24);
-		assertEquals(newMovesDone.get(2).actions().get(0).what(), 4);
+		assertEquals(24, newMovesDone.get(2).actions().get(0).to());
+		assertEquals(4, newMovesDone.get(2).actions().get(0).what());
 		
-		assertEquals(newMovesDone.get(3).actions().get(0).to(), 25);
-		assertEquals(newMovesDone.get(3).actions().get(0).what(), 4);
+		assertEquals(25, newMovesDone.get(3).actions().get(0).to());
+		assertEquals(4, newMovesDone.get(3).actions().get(0).what());
 		
-		assertEquals(newMovesDone.get(4).actions().get(0).to(), 23);
-		assertEquals(newMovesDone.get(4).actions().get(0).what(), 4);
+		assertEquals(23, newMovesDone.get(4).actions().get(0).to());
+		assertEquals(4, newMovesDone.get(4).actions().get(0).what());
 		
-		assertEquals(newMovesDone.get(5).actions().get(0).from(), 49);
-		assertEquals(newMovesDone.get(5).actions().get(0).to(), 26);
+		assertEquals(49, newMovesDone.get(5).actions().get(0).from());
+		assertEquals(26, newMovesDone.get(5).actions().get(0).to());
 	}
 	
 	/**
@@ -498,38 +498,38 @@ public class GrowingBoardRollBackTest {
 		// test
 		Moves newLegalMoves = context.trial().cachedLegalMoves();
 
-		assertEquals(newLegalMoves.get(0).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(0).actions().get(0).to(), 15);
+		assertEquals(50, newLegalMoves.get(0).actions().get(0).from());
+		assertEquals(15, newLegalMoves.get(0).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(1).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(1).actions().get(0).to(), 16);
+		assertEquals(50, newLegalMoves.get(1).actions().get(0).from());
+		assertEquals(16, newLegalMoves.get(1).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(2).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(2).actions().get(0).to(), 17);
+		assertEquals(50, newLegalMoves.get(2).actions().get(0).from());
+		assertEquals(17, newLegalMoves.get(2).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(3).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(3).actions().get(0).to(), 18);
+		assertEquals(50, newLegalMoves.get(3).actions().get(0).from());
+		assertEquals(18, newLegalMoves.get(3).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(4).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(4).actions().get(0).to(), 19);
+		assertEquals(50, newLegalMoves.get(4).actions().get(0).from());
+		assertEquals(19, newLegalMoves.get(4).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(5).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(5).actions().get(0).to(), 26);
+		assertEquals(50, newLegalMoves.get(5).actions().get(0).from());
+		assertEquals(26, newLegalMoves.get(5).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(6).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(6).actions().get(0).to(), 29);
+		assertEquals(50, newLegalMoves.get(6).actions().get(0).from());
+		assertEquals(20, newLegalMoves.get(6).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(7).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(7).actions().get(0).to(), 30);
+		assertEquals(50, newLegalMoves.get(7).actions().get(0).from());
+		assertEquals(30, newLegalMoves.get(7).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(8).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(8).actions().get(0).to(), 31);
+		assertEquals(50, newLegalMoves.get(8).actions().get(0).from());
+		assertEquals(31, newLegalMoves.get(8).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(9).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(9).actions().get(0).to(), 32);
+		assertEquals(50, newLegalMoves.get(9).actions().get(0).from());
+		assertEquals(32, newLegalMoves.get(9).actions().get(0).to());
 
-		assertEquals(newLegalMoves.get(10).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(10).actions().get(0).to(), 33);
+		assertEquals(50, newLegalMoves.get(10).actions().get(0).from());
+		assertEquals(33, newLegalMoves.get(10).actions().get(0).to());
 	}
 	
 	/**
@@ -542,18 +542,14 @@ public class GrowingBoardRollBackTest {
 		// init
 		Context context = initGame();
 
-		System.out.println("GrowingBoardRollBackTest.java testUpdateChunksAfter2EdgeMoves() prevContainerStates[0] 0: "+(ContainerFlatState) context.state().containerStates()[0]);
 		applyMove(context, 25, 14, 1, 0);
 		updateBoard(context);
 
-		System.out.println("GrowingBoardRollBackTest.java testUpdateChunksAfter2EdgeMoves() prevContainerStates[0] 1: "+(ContainerFlatState) context.state().containerStates()[0]);
 		applyMove(context, 50, 27, 2, 0);
 		updateBoard(context);
 		
 		ContainerState[] prevContainerStates = context.state().containerStates();
-		System.out.println("GrowingBoardRollBackTest.java testUpdateChunksAfter2EdgeMoves() prevContainerStates[0] 2: "+(ContainerFlatState) context.state().containerStates()[0]);
 		goBack1Move(context);
-		
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -573,57 +569,56 @@ public class GrowingBoardRollBackTest {
 
 			HashedChunkSet who = newContainerFlatState.who();
 			System.out.println("GrowingBoardRollBackTest.java testUpdateChunksAfter2EdgeMoves() newContainerFlatState 3: "+newContainerFlatState);
-			System.out.println("GrowingBoardRollBackTest.java testUpdateChunksAfter2EdgeMoves() who : "+who);
-			for (int i=0; i<22; i++)
-				assertEquals(who.getChunk(i), 0);
-			assertEquals(who.getChunk(22), 1);
-			for (int i=23; i<=50; i++)
-				assertEquals(who.getChunk(i), 0);
+			for (int i=0; i<26; i++)
+				assertEquals(0, who.getChunk(i));
+			assertEquals(1, who.getChunk(26));
+			for (int i=27; i<=50; i++)
+				assertEquals(0, who.getChunk(i));
 
 			HashedChunkSet what = newContainerFlatState.what();
-			for (int i=0; i<22; i++)
-				assertEquals(who.getChunk(i), 0);
-			assertEquals(what.getChunk(22), 2);
-			assertEquals(what.getChunk(23), 4);
-			assertEquals(what.getChunk(24), 4);
-			assertEquals(what.getChunk(25), 4);
-			for (int i=26; i<=50; i++)
+			for (int i=0; i<23; i++)
+				assertEquals(0, who.getChunk(i));
+			assertEquals(4, what.getChunk(23));
+			assertEquals(4, what.getChunk(24));
+			assertEquals(4, what.getChunk(25));
+			assertEquals(2, what.getChunk(26));
+			for (int i=27; i<=50; i++)
 				assertEquals(what.getChunk(i), 0);
 
 			HashedChunkSet count = newContainerFlatState.count();
-			for (int i=0; i<22; i++)
-				assertEquals(count.getChunk(i), 0);
-			for (int i=22; i<=25; i++)
-				assertEquals(count.getChunk(i), 1);
-			for (int i=26; i<=50; i++)
-				assertEquals(count.getChunk(i), 0);
+			for (int i=0; i<23; i++)
+				assertEquals(0, count.getChunk(i));
+			for (int i=23; i<=26; i++)
+				assertEquals(1, count.getChunk(i));
+			for (int i=27; i<=50; i++)
+				assertEquals(0, count.getChunk(i));
 
 			HashedChunkSet state = newContainerFlatState.state();
 			for (int i=0; i<=50; i++)
-				assertEquals(state.getChunk(i), 0);
+				assertEquals(0, state.getChunk(i));
 
 			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
-			for (int i=0; i<22; i++)
+			for (int i=0; i<23; i++)
 				assertTrue(empty.get(i));
-			for (int i=22; i<=25; i++)
+			for (int i=23; i<=26; i++)
 				assertFalse(empty.get(i));
-			for (int i=26; i<=48; i++)
+			for (int i=27; i<=48; i++)
 				assertTrue(empty.get(i));
 			
 			HashedBitSet playable = newContainerFlatState.playable();
-			for (int i=0; i<14; i++)
+			for (int i=0; i<15; i++)
 				assertFalse(playable.get(i));
-			for (int i=14; i<=19; i++)
+			for (int i=15; i<=20; i++)
 				assertTrue(playable.get(i));
-			assertFalse(playable.get(20));
-			assertTrue(playable.get(21));
-			for (int i=22; i<26; i++)
+			assertFalse(playable.get(21));
+			assertTrue(playable.get(22));
+			for (int i=23; i<27; i++)
 				assertFalse(playable.get(i));
-			assertTrue(playable.get(26));
-			assertFalse(playable.get(27));
-			for (int i=28; i<=33; i++)
+			assertTrue(playable.get(27));
+			assertFalse(playable.get(28));
+			for (int i=29; i<=34; i++)
 				assertTrue(playable.get(i));
-			for (int i=34; i<=48; i++)
+			for (int i=35; i<=48; i++)
 				assertFalse(playable.get(i));
 		}
 		else 
@@ -644,16 +639,16 @@ public class GrowingBoardRollBackTest {
 			assertNull(newContainerFlatState.value());
 
 			HashedChunkSet who = newContainerFlatState.who();
-			assertEquals(who.getChunk(0), 1);
+			assertEquals(1, who.getChunk(0));
 
 			HashedChunkSet what = newContainerFlatState.what();
-			assertEquals(what.getChunk(0), 2);
+			assertEquals(2, what.getChunk(0));
 
 			HashedChunkSet count = newContainerFlatState.count();
-			assertEquals(count.getChunk(0), 2);
+			assertEquals(2, count.getChunk(0));
 
 			HashedChunkSet state = newContainerFlatState.state();
-			assertEquals(state.internalState().numNonZeroChunks(), 0);
+			assertEquals(0, state.internalState().numNonZeroChunks());
 			
 			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
 			assertTrue(empty.isEmpty());
@@ -679,16 +674,16 @@ public class GrowingBoardRollBackTest {
 			assertNull(newContainerFlatState.value());
 
 			HashedChunkSet who = newContainerFlatState.who();
-			assertEquals(who.getChunk(0), 2);
+			assertEquals(2, who.getChunk(0));
 
 			HashedChunkSet what = newContainerFlatState.what();
-			assertEquals(what.getChunk(0), 3);
+			assertEquals(3, what.getChunk(0));
 
 			HashedChunkSet count = newContainerFlatState.count();
-			assertEquals(count.getChunk(0), 3);
+			assertEquals(3, count.getChunk(0));
 
 			HashedChunkSet state = newContainerFlatState.state();
-			assertEquals(state.internalState().numNonZeroChunks(), 0);
+			assertEquals(0, state.internalState().numNonZeroChunks());
 
 			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
 			assertTrue(empty.isEmpty());
@@ -701,5 +696,33 @@ public class GrowingBoardRollBackTest {
 			fail();
 	}
 	
-	
+	/**
+	 * Tests the mover, prev and next after multiple edges move and roll back.
+	 */
+	@Test
+	public void testMovers()
+	{
+		// init
+		Context context = initGame();
+		
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		goBack1Move(context);
+		applyMove(context, 50, 20, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 44, 1, 0);
+		updateBoard(context);
+		applyMove(context, 122, 75, 2, 0);
+		updateBoard(context);
+		applyMove(context, 121, 76, 1, 0);
+		updateBoard(context);
+		goBack1Move(context);
+
+		// test
+		assertEquals(2, context.state().prev());
+		assertEquals(1, context.state().mover());
+		assertEquals(2, context.state().next());
+	}
 }

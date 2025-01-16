@@ -21,6 +21,7 @@ import manager.ai.AIUtil;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
+import other.state.container.ContainerFlatState;
 import tournament.TournamentUtil;
 
 /**
@@ -32,11 +33,20 @@ public class GameUtil
 {
 	
 	//-------------------------------------------------------------------------
+	/**
+	 * All function calls needed to restart the game, but without reset the context 
+	 * and the state as well. This is used in the case of boardless games, where each 
+	 * time we expand the board, we simulate a return to the start, but we do not want 
+	 * the context and the state to be impacted, in order to keep track of what happened.
+	 */
 	
 	/**
 	 * All function calls needed to restart the game.
 	 * 
-	 * @param resetToContext if game but be start based on a specified context.
+	 * @param resetToContext if false, does not reset the context and state.
+	 * This is used in the case of boardless games, where each time we update the board 
+	 * size, we simulate a return to the start, but we do not want the context and the 
+	 * state to be impacted, in order to keep track of what happened.
 	 */
 	public static void resetGame(final PlayerApp app, final boolean keepSameTrial, boolean resetToContext)
 	{
@@ -101,26 +111,6 @@ public class GameUtil
 
 		updateRecentGames(app, app.manager().ref().context().game().name());
 		resetUIVariables(app);
-	}
-	
-	/**
-	 * All function calls needed to restart the game.
-	 */
-	public static void resetGame(final PlayerApp app, final boolean keepSameTrial)
-	{
-		resetGame(app, keepSameTrial, true);
-	}
-	
-
-	/**
-	 * All function calls needed to restart the game, but without reset the context 
-	 * and the state as well. This is used in the case of boardless games, where each 
-	 * time we expand the board, we simulate a return to the start, but we do not want 
-	 * the context and the state to be impacted, in order to keep track of what happened.
-	 */
-	public static void resetGameWithoutResetContext(final PlayerApp app)
-	{
-		resetGame(app, false, false);
 	}
 	
 	//-------------------------------------------------------------------------
@@ -295,7 +285,7 @@ public class GameUtil
 					}
 					catch (final Exception exception)
 					{
-						GameUtil.resetGame(app, false);
+						GameUtil.resetGame(app, false, true);
 					}
 					
 					break;

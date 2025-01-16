@@ -3,7 +3,6 @@ package app.move;
 import java.awt.EventQueue;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import app.PlayerApp;
 import app.utils.GameUtil;
@@ -64,7 +63,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		allMoves.addAll(app.manager().undoneMoves());
 		
 		//----------
-		GameUtil.resetGameWithoutResetContext(app);
+		//GameUtil.resetGameWithoutResetContext(app);
+		//GameUtil.resetGame(app, false, false);
+		GameUtil.resetGame(app, true, true);
 		//----------
 		
 		// also reset initial placement moves
