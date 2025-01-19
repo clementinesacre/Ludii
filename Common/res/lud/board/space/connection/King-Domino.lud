@@ -3,7 +3,7 @@
 	(move 
 		(from (handSite Shared #1))
     	(to 
-    		(sites Around (sites Occupied by:All components:{#2 "TileCastle"}) Orthogonal if:(is Empty (to)))
+    		(sites Around (sites Occupied by:All components:{#2 #3 "TileCastle"}) Orthogonal if:(is Empty (to)))
     	) 
     	copy:True
 	)
@@ -11,12 +11,18 @@
 
 (define "PlaceATileTo" 
     (or {
-        ("MoveTileNextToSameTileOrCastle" 0 "TileLake")
-        ("MoveTileNextToSameTileOrCastle" 1 "TileForest")
-        ("MoveTileNextToSameTileOrCastle" 2 "TileField")
-        ("MoveTileNextToSameTileOrCastle" 3 "TileSwamp")
-        ("MoveTileNextToSameTileOrCastle" 4 "TileMine")
-        ("MoveTileNextToSameTileOrCastle" 5 "TileGrassland")
+        ("MoveTileNextToSameTileOrCastle" 0 "TileLake" "TileLakeCrown")
+        ("MoveTileNextToSameTileOrCastle" 1 "TileForest" "TileForestCrown")
+        ("MoveTileNextToSameTileOrCastle" 2 "TileField" "TileFieldCrown")
+        ("MoveTileNextToSameTileOrCastle" 3 "TileSwamp" "TileSwampCrown")
+        ("MoveTileNextToSameTileOrCastle" 4 "TileMine" "TileMineCrown")
+        ("MoveTileNextToSameTileOrCastle" 5 "TileGrassland" "TileGrasslandCrown")
+        ("MoveTileNextToSameTileOrCastle" 6 "TileLakeCrown" "TileLake")
+        ("MoveTileNextToSameTileOrCastle" 7 "TileForestCrown" "TileForest")
+        ("MoveTileNextToSameTileOrCastle" 8 "TileFieldCrown" "TileField")
+        ("MoveTileNextToSameTileOrCastle" 9 "TileSwampCrown" "TileSwamp")
+        ("MoveTileNextToSameTileOrCastle" 10 "TileMineCrown" "TileMine")
+        ("MoveTileNextToSameTileOrCastle" 11 "TileGrasslandCrown" "TileGrassland")
     })
 )
 
@@ -26,25 +32,39 @@
     (players 1) 
     (equipment { 
         (boardless Square 11) 
-        (hand Shared size:6)
+        (hand Shared size:12)
         
         (tile "TileCastle" numSides:4)
+        
         (tile "TileLake" numSides:4)
         (tile "TileField" numSides:4)
         (tile "TileSwamp" numSides:4)
         (tile "TileForest" numSides:4)
         (tile "TileMine" numSides:4)
         (tile "TileGrassland" numSides:4)
+        (tile "TileLakeCrown" numSides:4)
+        (tile "TileFieldCrown" numSides:4)
+        (tile "TileSwampCrown" numSides:4)
+        (tile "TileForestCrown" numSides:4)
+        (tile "TileMineCrown" numSides:4)
+        (tile "TileGrasslandCrown" numSides:4)
     }) 
     (rules         
         (start {
         	(place "TileCastle" (centrePoint))
+        	
             (place "TileLake" (handSite Shared)) 
             (place "TileForest" (handSite Shared 1))
             (place "TileField" (handSite Shared 2))
             (place "TileSwamp" (handSite Shared 3))
             (place "TileMine" (handSite Shared 4))
             (place "TileGrassland" (handSite Shared 5))
+            (place "TileLakeCrown" (handSite Shared 6)) 
+            (place "TileForestCrown" (handSite Shared 7))
+            (place "TileFieldCrown" (handSite Shared 8))
+            (place "TileSwampCrown" (handSite Shared 9))
+            (place "TileMineCrown" (handSite Shared 10))
+            (place "TileGrasslandCrown" (handSite Shared 11))
         })
         
         (play  
@@ -83,6 +103,13 @@
         (piece Colour "TileSwamp" fillColour:(colour 192 190 163))
         (piece Colour "TileMine" fillColour:(colour 55 55 50))
         (piece Colour "TileGrassland" fillColour:(colour 209 214 80))
+        
+        (piece Foreground "TileLakeCrown" image:"Pawn" fillColour:(colour 68 152 214) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TileForestCrown" image:"Pawn" fillColour:(colour 76 117 62) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TileFieldCrown" image:"Pawn" fillColour:(colour 249 215 73) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TileSwampCrown" image:"Pawn" fillColour:(colour 192 190 163) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TileMineCrown" image:"Pawn" fillColour:(colour 55 55 50) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TileGrasslandCrown" image:"Pawn" fillColour:(colour 209 214 80) edgeColour:(colour 0 0 0 0))
         
         (board Style Board)
     })
