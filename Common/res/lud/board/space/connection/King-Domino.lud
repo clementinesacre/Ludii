@@ -1,0 +1,90 @@
+
+(define "MoveTileNextToSameTileOrCastle"
+	(move 
+		(from (handSite Shared #1))
+    	(to 
+    		(sites Around (sites Occupied by:All components:{#2 "TileCastle"}) Orthogonal if:(is Empty (to)))
+    	) 
+    	copy:True
+	)
+)
+
+(define "PlaceATileTo" 
+    (or {
+        ("MoveTileNextToSameTileOrCastle" 0 "TileLake")
+        ("MoveTileNextToSameTileOrCastle" 1 "TileForest")
+        ("MoveTileNextToSameTileOrCastle" 2 "TileField")
+        ("MoveTileNextToSameTileOrCastle" 3 "TileSwamp")
+        ("MoveTileNextToSameTileOrCastle" 4 "TileMine")
+        ("MoveTileNextToSameTileOrCastle" 5 "TileGrassland")
+    })
+)
+
+//------------------------------------------------------------------------------
+
+(game "King-Domino" 
+    (players 1) 
+    (equipment { 
+        (boardless Square 11) 
+        (hand Shared size:6)
+        
+        (tile "TileCastle" numSides:4)
+        (tile "TileLake" numSides:4)
+        (tile "TileField" numSides:4)
+        (tile "TileSwamp" numSides:4)
+        (tile "TileForest" numSides:4)
+        (tile "TileMine" numSides:4)
+        (tile "TileGrassland" numSides:4)
+    }) 
+    (rules         
+        (start {
+        	(place "TileCastle" (centrePoint))
+            (place "TileLake" (handSite Shared)) 
+            (place "TileForest" (handSite Shared 1))
+            (place "TileField" (handSite Shared 2))
+            (place "TileSwamp" (handSite Shared 3))
+            (place "TileMine" (handSite Shared 4))
+            (place "TileGrassland" (handSite Shared 5))
+        })
+        
+        (play  
+            ("PlaceATileTo")
+        )
+        (end {
+            (if (= (count Moves) 10) (result Mover Win))
+        })
+        
+    )
+)
+
+//------------------------------------------------------------------------------
+
+(metadata
+    
+    (info
+        {
+        (description "")
+        (version "1.3.13")
+        (classification "board/space/connection")
+        (credit "Clémentine Sacré")
+        }
+    )
+    
+    (graphics {
+        (player Colour P1 (colour Pink))
+        (player Colour P2 (colour Yellow))
+        (player Colour P3 (colour Green))
+        (player Colour P4 (colour Blue))
+                
+        (piece Colour "TileCastle" fillColour:(colour Pink))
+        (piece Colour "TileLake" fillColour:(colour 68 152 214))
+        (piece Colour "TileForest" fillColour:(colour 76 117 62))
+        (piece Colour "TileField" fillColour:(colour 249 215 73))
+        (piece Colour "TileSwamp" fillColour:(colour 192 190 163))
+        (piece Colour "TileMine" fillColour:(colour 55 55 50))
+        (piece Colour "TileGrassland" fillColour:(colour 209 214 80))
+        
+        (board Style Board)
+    })
+    
+)
