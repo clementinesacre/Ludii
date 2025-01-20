@@ -29,7 +29,7 @@
 //------------------------------------------------------------------------------
 
 (game "King-Domino" 
-    (players 1) 
+    (players <Players:nbrPlayer>) 
     (equipment { 
         (boardless Square 11) 
         (hand Shared size:12)
@@ -68,13 +68,25 @@
         })
         
         (play  
-            ("PlaceATileTo")
+       		("PlaceATileTo")
         )
+        
         (end {
-            (if (= (count Moves) 10) (result Mover Win))
+            (if (= (count Moves) <Players:rounds>) (result Mover Win))
         })
         
     )
+)
+
+//------------------------------------------------------------------------------
+
+(option "Players" <Players> args:{<nbrPlayer> <rounds>} 
+    {
+    (item "One player" <1> <12> "The game is played with one player.")** //todo : delete this - for test only
+    (item "Two players" <2> <6> "The game is played with two players.")
+    (item "Three players" <3> <12> "The game is played with three players.")
+    (item "Four players" <4> <12> "The game is played with four players.")
+    }
 )
 
 //------------------------------------------------------------------------------
