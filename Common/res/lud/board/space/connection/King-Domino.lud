@@ -26,6 +26,83 @@
     })
 )
 
+(define "Line3D" 
+    (< 5 
+        (count Sites
+            in:(forEach 
+                (expand (sites Bottom) steps:(- <Board:size> 1))
+                if:(all Sites <Board:3dSites>
+                    if:(= (mover) (who at:(site)))
+                )
+            )
+        )
+    )
+)
+
+
+(define "CountPieceTypeInStack"
+    (count Pieces of:(mover) in:(sites {(from)}))
+)
+
+//(>= 10 (count Pieces in:(sites {(handSite Mover) (mapEntry "Entry" Mover)})))
+
+// FONCTIONNE - probleme : quand le joueur fait à l'opposé, il faut le limiter pour empecher de dépasser un carré de 5, il peut y arriver sans directement faire une ligne de 5
+(define "IsLine"
+    (= 0
+        (count Sites
+            in:(forEach
+                (sites Occupied by:Neutral components:{"TileCastle" "TileLake" "TileField" "TileSwamp" "TileForest" "TileMine" "TileGrassland" "TileLakeCrown" "TileFieldCrown" "TileSwampCrown" "TileForestCrown" "TileMineCrown" "TileGrasslandCrown"})
+                if:(is Line 3
+                    through:(site)
+                    //if:(is In (sites State #1))
+                )
+            )
+        )
+    )
+)
+
+(define "HoppedPiece"
+    (+
+        (array
+        	(sites Occupied by:Neutral)
+        )
+    )
+)
+
+(define "Aa"
+	(= 0
+		(count Sites
+            in:(forEach
+                (sites Occupied by:Neutral components:{"TileCastle" "TileLake" "TileField" "TileSwamp" "TileForest" "TileMine" "TileGrassland" "TileLakeCrown" "TileFieldCrown" "TileSwampCrown" "TileForestCrown" "TileMineCrown" "TileGrasslandCrown"})
+                if:(<= 3 (count Steps Cell All (site) (site)))
+            )
+	    )
+    )
+)
+
+(define "MoveTileNextToSameTileOrCastle2"
+	(move 
+		(from (handSite Shared #1))
+    	(to 
+    		(sites Around (sites Occupied by:All components:{#2 #3 "TileCastle"}) Orthogonal 
+    			if:
+    				(and 
+    					(is Empty (to))
+    					(= 0
+							(count Sites
+					            in:(forEach
+					                (sites Occupied by:Mover components:{"TileCastle" "TileLake" "TileField" "TileSwamp" "TileForest" "TileMine" "TileGrassland" "TileLakeCrown" "TileFieldCrown" "TileSwampCrown" "TileForestCrown" "TileMineCrown" "TileGrasslandCrown"})
+					                if:(<= 3 (count Steps Cell All (to) (site)))
+					            )
+						    )
+					    )
+    				)
+    		)
+    	) 
+    	copy:True
+	)
+)
+
 //------------------------------------------------------------------------------
 
 (game "King-Domino" 
@@ -68,7 +145,7 @@
         })
         
         (play  
-       		("PlaceATileTo")
+        	("MoveTileNextToSameTileOrCastle2" 0 "TileLake" "TileLakeCrown")
         )
         
         (end {
@@ -82,10 +159,10 @@
 
 (option "Players" <Players> args:{<nbrPlayer> <rounds>} 
     {
-    (item "One player" <1> <12> "The game is played with one player.")** //todo : delete this - for test only
-    (item "Two players" <2> <6> "The game is played with two players.")
-    (item "Three players" <3> <12> "The game is played with three players.")
-    (item "Four players" <4> <12> "The game is played with four players.")
+    (item "One player" <1> <24> "The game is played with one player.")** //todo : delete this - for test only
+    (item "Two players" <2> <12> "The game is played with two players.")
+    (item "Three players" <3> <24> "The game is played with three players.")
+    (item "Four players" <4> <24> "The game is played with four players.")
     }
 )
 
