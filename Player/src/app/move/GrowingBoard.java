@@ -235,7 +235,7 @@ public class GrowingBoard
 	 */
 	protected static void initMappingIndexes()
 	{
-		// data structure to map between current plate and new plate
+		// data structures to map between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();		
@@ -258,6 +258,14 @@ public class GrowingBoard
 				if (!mappedNewToPrevIndexes().containsKey(i))
 					surplusIndexes().add(i);
 		}
+		else if (prevDimensionBoard() == newDimensionBoard())
+		{
+			for (int prevIndex = 0; prevIndex < newTotalIndexes(); prevIndex++)
+			{
+			    mappedNewToPrevIndexes().put(prevIndex, prevIndex);
+				mappedPrevToNewIndexes().put(prevIndex, prevIndex);
+			}
+		}
 		else
 		{
 			int inter;
@@ -277,7 +285,7 @@ public class GrowingBoard
 					surplusIndexes().add(i);
 		}
 		
-		// data structure to map between initial plate and new plate
+		// data structures to map between initial plate and new plate
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();

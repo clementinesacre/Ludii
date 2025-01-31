@@ -251,14 +251,19 @@ public class ToolView extends View
 
 		//System.out.println("ToolView.java jumpToMove() mover : "+context.state().mover()+" - prev : "+context.state().prev());
 		// -------------
-		if (currMove.isOnEdge())
+		if (context.game().isBoardless()) 
 		{
-			context.trial().setLegalMoves(legalMoves, context);
-
-			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
-			
 			int currDim = ((Boardless) context.board()).dimension();
-			GrowingBoardVisual.updateBoard(app, context, currDim, currDim - Constants.GROWING_STEP, false);
+			int newDim;
+			if (currMove.isOnEdge())
+				newDim = currDim - Constants.GROWING_STEP;
+			else 
+				newDim = currDim;
+			
+			
+			context.trial().setLegalMoves(legalMoves, context);
+			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
+			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
 
 			int newPrev = prev - 1;
 			while (!context.active(newPrev))

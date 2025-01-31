@@ -39,6 +39,7 @@ import other.state.container.ContainerState;
 import other.state.owned.FlatCellOnlyOwned;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
+import other.topology.Cell;
 import other.topology.TopologyElement;
 
 /**
@@ -724,5 +725,123 @@ public class GrowingBoardRollBackTest {
 		assertEquals(2, context.state().prev());
 		assertEquals(1, context.state().mover());
 		assertEquals(2, context.state().next());
+	}
+	
+	/**
+	 * Tests to roll back after multiple edges moves, and the last one being a 
+	 * normal (not edge) move. Need to map the current board to the current 
+	 * board, and not to the initial board.
+	 */
+	@Test
+	public void testNormalMoves()
+	{
+		// init
+		Context context = initGame();
+		Game game = context.game();
+		Equipment equipment = game.equipment();
+		
+		applyMove(context, 25, 14, 1, 0);
+		updateBoard(context);
+		applyMove(context, 50, 27, 2, 0);
+		updateBoard(context);
+		applyMove(context, 81, 52, 1, 0);
+		updateBoard(context);
+		goBack1Move(context);
+
+		// test		
+		// test
+		ContainerState[] newContainerStates = context.state().containerStates();
+		// Board's state
+		ContainerState newContainerState0 = newContainerStates[0];
+		if (newContainerState0 instanceof other.state.container.ContainerFlatState) 
+		{
+			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
+
+			//List<Cell> adj1 = context.topology().cells().get(15).adjacent();
+			//List<Cell> adj2 = context.state().containerStates()[0].container().topology().cells().get(15).adjacent();
+			//assertEquals(adj1, adj2);
+						
+			HashedChunkSet who = newContainerFlatState.who();
+			for (int i=0; i<42; i++)
+				assertEquals(who.getChunk(i), 0);
+			assertEquals(who.getChunk(42), 1);
+			assertEquals(who.getChunk(43), 2);
+			for (int i=44; i<=80; i++)
+				assertEquals(who.getChunk(i), 0);
+
+			HashedChunkSet what = newContainerFlatState.what();
+			for (int i=0; i<39; i++)
+				assertEquals(what.getChunk(i), 0);
+			for (int i=39; i<=41; i++)
+				assertEquals(what.getChunk(i), 4);
+			assertEquals(what.getChunk(42), 2);
+			assertEquals(what.getChunk(43), 3);
+			for (int i=44; i<=80; i++)
+				assertEquals(what.getChunk(i), 0);
+
+			HashedChunkSet count = newContainerFlatState.count();
+			for (int i=0; i<39; i++)
+				assertEquals(count.getChunk(i), 0);
+			for (int i=39; i<=43; i++)
+				assertEquals(count.getChunk(i), 1);
+			for (int i=44; i<=80; i++)
+				assertEquals(count.getChunk(i), 0);
+
+			HashedChunkSet state = newContainerFlatState.state();
+			for (int i=0; i<=82; i++)
+				assertEquals(state.getChunk(i), 0);
+
+			ChunkSet empty =  newContainerFlatState.emptyChunkSetCell();
+			for (int i=0; i<39; i++)
+				assertTrue(empty.get(i));
+			for (int i=39; i<44; i++)
+				assertFalse(empty.get(i));
+			for (int i=44; i<=80; i++)
+				assertTrue(empty.get(i));
+			
+			HashedBitSet playable = newContainerFlatState.playable();
+			for (int i=0; i<29; i++)
+				assertFalse(playable.get(i));
+			for (int i=29; i<36; i++)
+				assertTrue(playable.get(i));
+			for (int i=36; i<38; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(38));
+			for (int i=39; i<44; i++)
+				assertFalse(playable.get(i));
+			assertTrue(playable.get(44));
+			for (int i=45; i<47; i++)
+				assertFalse(playable.get(i));
+			for (int i=47; i<54; i++)
+				assertTrue(playable.get(i));
+			for (int i=54; i<=80; i++)
+				assertFalse(playable.get(i));
+		}
+		else 
+			fail();
+		
+		int[] newOffset = equipment.offset();
+		for (int i=0; i<=80; i++)
+			assertEquals(newOffset[i], i);
+		assertEquals(newOffset[81], 0);
+		assertEquals(newOffset[82], 0);
+		
+		int[] newContainerId = equipment.containerId();
+		for (int i=0; i<=80; i++)
+			assertEquals(newContainerId[i], 0);
+		assertEquals(newContainerId[81], 1);
+		assertEquals(newContainerId[82], 2);
+				
+		int[] newSitesFrom = equipment.sitesFrom();
+		assertEquals(newSitesFrom[0], 0);
+		assertEquals(newSitesFrom[1], 81);
+		assertEquals(newSitesFrom[2], 82);
+		
+		TopologyElement topologyElement0 = game.equipment().containers()[0].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement0.index(), 0);
+		TopologyElement topologyElement1 = game.equipment().containers()[1].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement1.index(), 81);
+		TopologyElement topologyElement2 = game.equipment().containers()[2].topology().getGraphElements(SiteType.Cell).get(0);
+		assertEquals(topologyElement2.index(), 82);
 	}
 }
