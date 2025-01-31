@@ -268,13 +268,18 @@ public class GrowingBoard
 		}
 		else
 		{
-			int inter;
 			int newIndex;
 			for (int prevIndex = 0; prevIndex < newTotalIndexes(); prevIndex++)
 			{
-				inter = prevIndex / newDimensionBoard();
-				if (prevIndex < newAreaBoard())
-					newIndex = prevIndex + newDimensionBoard() + Constants.GROWING_STEP + 1 + (2 * (inter));
+				if (prevIndex < newAreaBoard()) {
+					int col = prevIndex%newDimensionBoard();
+					int line = prevIndex/newDimensionBoard();
+					int offset = (prevDimensionBoard()-newDimensionBoard())/2;
+
+					int mCol = col + offset;
+					int mLine = line + offset;
+					newIndex = mLine * prevDimensionBoard() + mCol;
+				}
 				else
 					newIndex = prevIndex + diff();
 				mappedNewToPrevIndexes().put(prevIndex, newIndex);
@@ -351,7 +356,7 @@ public class GrowingBoard
 		
 		initMappingIndexes();
 		
-		System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
+		/*System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() mappedPrevToNewIndexes() : "+mappedPrevToNewIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() surplusIndexes() : "+surplusIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() prevDimensionBoard() : "+prevDimensionBoard());
@@ -367,7 +372,7 @@ public class GrowingBoard
 		System.out.println("GrowingBoard.java initMainConstants() diffInit() : "+diffInit());
 		System.out.println("GrowingBoard.java initMainConstants() mappedNewToInitIndexes() : "+mappedNewToInitIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() mappedInitToNewIndexes() : "+mappedInitToNewIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() surplusInitIndexes() : "+surplusInitIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() surplusInitIndexes() : "+surplusInitIndexes());*/
 	}
 	
 	//-------------------------------------------------------------------------
@@ -717,7 +722,6 @@ public class GrowingBoard
 			int to = newAction.to();
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED) {
-				System.out.println("GrowingBoard.java generateNewMove() to : "+to+" - mappedPrevToNewIndexes : "+mappedPrevToNewIndexes());
 				newAction.setTo(mappedPrevToNewIndexes().get(to));
 			}
 			if (from != Constants.UNDEFINED)

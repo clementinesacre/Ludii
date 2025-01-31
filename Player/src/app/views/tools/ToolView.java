@@ -234,7 +234,10 @@ public class ToolView extends View
 			moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
 		else
 			moveToJumpToWithSetup = moveToJumpTo;
-		Move currMove = allMoves.get(moveToJumpToWithSetup);
+
+		Move currMove = null;
+		if (moveToJumpToWithSetup < allMoves.size())
+			currMove = allMoves.get(moveToJumpToWithSetup);
 		
 		GameUtil.resetGame(app, true, true);
 		/*if (currMove.isOnEdge())
@@ -255,7 +258,9 @@ public class ToolView extends View
 		{
 			int currDim = ((Boardless) context.board()).dimension();
 			int newDim;
-			if (currMove.isOnEdge())
+			if (currMove == null || moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
+				newDim = ((Boardless) context.board()).initDimension();
+			else if (currMove.isOnEdge())
 				newDim = currDim - Constants.GROWING_STEP;
 			else 
 				newDim = currDim;

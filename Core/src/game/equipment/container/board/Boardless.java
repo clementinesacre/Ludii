@@ -33,6 +33,7 @@ public class Boardless extends Board
 	private static final long serialVersionUID = 1L;
 	private int dimension;
 	private TilingBoardlessType tiling;
+	private int initDimension;
 
 	//-------------------------------------------------------------------------
 
@@ -67,6 +68,7 @@ public class Boardless extends Board
 
 		this.style = ContainerStyleType.Boardless;
 		this.dimension = dimension.eval();
+		this.initDimension = dimension.eval();
 		this.tiling = tiling;
 	}
 	
@@ -82,6 +84,7 @@ public class Boardless extends Board
 	{
 		super(other);
 		this.dimension = other.dimension;
+		this.initDimension = other.initDimension;
 		this.tiling = other.tiling;
 	}
 
@@ -126,6 +129,16 @@ public class Boardless extends Board
 	public String toEnglish(final Game game) 
 	{
 		return "table" ;
+	}
+	
+	/**
+	 * Gets the initial dimension of the board.
+	 * 
+	 * @return initial dimension of the board.
+	 */
+	public int initDimension()
+	{
+		return this.initDimension;
 	}
 	
 	/**
