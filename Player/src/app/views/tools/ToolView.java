@@ -268,7 +268,8 @@ public class ToolView extends View
 					newPrev = context.game().players().count();
 			}
 			
-			for (int i=0; i<allMoves.size(); i++) 
+			//for (int i=0; i<allMoves.size(); i++) 
+			for (int i=0; i<moveToJumpToWithSetup; i++) 
 				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));
 			
 			
@@ -285,13 +286,8 @@ public class ToolView extends View
 		// -------------
 		
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
 		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);
-
-		if (currMove.isOnEdge()) //TODO fix this, there should be no duplicate
-			GrowingBoardVisual.removeDuplicateInOwned(context);
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();
