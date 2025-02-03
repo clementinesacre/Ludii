@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
@@ -24,15 +23,11 @@ import app.views.tools.buttons.ButtonSettings;
 import app.views.tools.buttons.ButtonShow;
 import app.views.tools.buttons.ButtonStart;
 import game.equipment.container.board.Boardless;
-import game.rules.play.moves.Moves;
 import main.Constants;
-import main.collections.FastTIntArrayList;
 import other.concept.Concept;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
-import other.state.container.ContainerFlatState;
-import other.state.owned.FlatCellOnlyOwned;
 
 //-----------------------------------------------------------------------------
 
@@ -217,17 +212,12 @@ public class ToolView extends View
 	{
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		app.settingsPlayer().setWebGameResultValid(false);
-		
+
 		final Context context = app.manager().ref().context();
-		int prev = context.state().prev();
-		int mover = context.state().mover();
 
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
-
-		Moves legalMoves = context.trial().cachedLegalMoves();
-		FastTIntArrayList[][] locations = ((FlatCellOnlyOwned) context.state().owned()).locations();
 
 		int moveToJumpToWithSetup;
 		if (moveToJumpTo == 0)
@@ -238,21 +228,10 @@ public class ToolView extends View
 		Move currMove = null;
 		if (moveToJumpToWithSetup < allMoves.size())
 			currMove = allMoves.get(moveToJumpToWithSetup);
-		
+
 		GameUtil.resetGame(app, true, true);
-		/*if (currMove.isOnEdge())
-			GameUtil.resetGame(app, true, false);
-		else
-			GameUtil.resetGame(app, true, true);*/
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
-		//final int moveToJumpToWithSetup;
-		if (moveToJumpTo == 0)
-			moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
-		else
-			moveToJumpToWithSetup = moveToJumpTo;
-
-		//System.out.println("ToolView.java jumpToMove() mover : "+context.state().mover()+" - prev : "+context.state().prev());
 		// -------------
 		if (context.game().isBoardless()) 
 		{
@@ -264,39 +243,16 @@ public class ToolView extends View
 				newDim = currDim - Constants.GROWING_STEP;
 			else 
 				newDim = currDim;
-			
-			
-			context.trial().setLegalMoves(legalMoves, context);
-			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
+	
 			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
-
-			int newPrev = prev - 1;
-			while (!context.active(newPrev))
-			{
-				newPrev--;
-				if (newPrev < 0)
-					newPrev = context.game().players().count();
-			}
 			
-			//for (int i=0; i<allMoves.size(); i++) 
 			for (int i=0; i<moveToJumpToWithSetup; i++) 
 				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));
-			
-			
-			/*System.out.println("ToolView.java jumptToMove() prev : "+prev);
-			System.out.println("ToolView.java jumptToMove() mover : "+mover);
-			System.out.println("ToolView.java jumptToMove() next : "+context.state().next());
-			System.out.println("ToolView.java jumptToMove() new prev : "+newPrev);
-			System.out.println("ToolView.java jumptToMove() new mover : "+prev);
-			System.out.println("ToolView.java jumptToMove() new next : "+mover);*/
-			context.state().setPrev(newPrev);
-			context.state().setMover(prev);
-			context.state().setNext(mover);
 		}
 		// -------------
-		
+
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		
+
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial

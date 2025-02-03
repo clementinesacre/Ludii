@@ -14,7 +14,6 @@ import main.Constants;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
-import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 import other.state.container.ContainerFlatState;
@@ -62,23 +61,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		final List<Move> allMoves = context.trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
 		
-		//----------
-		//GameUtil.resetGameWithoutResetContext(app);
-		//GameUtil.resetGame(app, false, false);
 		GameUtil.resetGame(app, true, true);
-		//----------
 		
-		// also reset initial placement moves
-		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		
-		//final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
-		/*final int moveToJumpToWithSetup = 0;
-		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
-		
-		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);*/
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();
@@ -89,7 +74,6 @@ public class GrowingBoardVisual extends GrowingBoard
 		// Reset 
 		resetState(context);
 	}
-	
 	
 	/** 
 	 * Start over the game on the new board and apply the historic of move mapped to the new board.
@@ -102,10 +86,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		//int mover = context.state().mover();
-		resetMoves(app);
+		if (replayMoves) // TODO does not change if we call it or not - test that
+			resetMoves(app);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
-		//context.state().setMover(mover);
 	}
 	
 	/**

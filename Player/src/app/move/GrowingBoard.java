@@ -534,7 +534,7 @@ public class GrowingBoard
 			// TODO maybe there is another way to copy a HashedChunkSet
 			HashedChunkSet who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites, mappedInitToNewIndexes());
 			HashedChunkSet what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites, mappedInitToNewIndexes());
-			HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites);//copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
+			HashedChunkSet count = copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxWhatVal(), numSites, mappedInitToNewIndexes());//copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
 			HashedChunkSet state = copyChunkWithNewBoardSize(containerFlatState.state(), generator, containerFlatState.getMaxStateVal(), numSites, mappedInitToNewIndexes());
 			HashedChunkSet rotation = copyChunkWithNewBoardSize(containerFlatState.rotation(), generator, containerFlatState.getMaxRotationVal(), numSites, mappedInitToNewIndexes());
 			HashedChunkSet value = copyChunkWithNewBoardSize(containerFlatState.value(), generator, containerFlatState.getMaxPieceValue(), numSites, mappedInitToNewIndexes());
@@ -624,7 +624,7 @@ public class GrowingBoard
 				// TODO maybe there is another way to copy a HashedChunkSet
 				HashedChunkSet who = copyChunk(containerFlatState.who(), generator, numPlayers+1, numSites);
 				HashedChunkSet what = copyChunk(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites);
-				HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites); //copyChunkWithNewBoardSize2(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
+				HashedChunkSet count = copyChunk(containerFlatState.count(), generator, containerFlatState.getMaxWhatVal(), numSites); //copyChunkWithNewBoardSize2(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
 				HashedChunkSet state = copyChunk(containerFlatState.state(), generator, containerFlatState.getMaxStateVal(), numSites);
 				HashedChunkSet rotation = copyChunk(containerFlatState.rotation(), generator, containerFlatState.getMaxRotationVal(), numSites);
 				HashedChunkSet value = copyChunk(containerFlatState.value(), generator, containerFlatState.getMaxPieceValue(), numSites);
@@ -721,9 +721,8 @@ public class GrowingBoard
 			Action newAction = actions.get(0);
 			int to = newAction.to();
 			int from = newAction.from();
-			if (to != Constants.UNDEFINED) {
+			if (to != Constants.UNDEFINED)
 				newAction.setTo(mappedPrevToNewIndexes().get(to));
-			}
 			if (from != Constants.UNDEFINED)
 				newAction.setFrom(mappedPrevToNewIndexes().get(from));
 			
@@ -750,8 +749,8 @@ public class GrowingBoard
 			for (final Action a : actions)
 				if (a.isDecision())
 				{
-					prevMove.setTo(mappedPrevToNewIndexes().get(a.to()));
-					prevMove.setFrom(mappedPrevToNewIndexes().get(a.from()));
+					prevMove.setTo(a.to());
+					prevMove.setFrom(a.from());
 					break;
 				}
 		}
@@ -872,22 +871,18 @@ public class GrowingBoard
 	protected static void replayMoves(Context context, List<Move> movesDone)
 	{
 		Move move = null;
-		int mover = context.state().mover();
-		int next = context.nextTo((context.state().mover()) % context.game().players().count() + 1);
 		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
 		
 		for (int i = 0; i < movesDone.size(); i++)
 		{
-			if (i == numInitialPlacementMoves)
-			{
-				context.state().setMover(mover);
-				context.state().setNext(next);
-			}
-			
 			move = movesDone.get(i);	
 			generateNewMove(move, i == movesDone.size()-1);
 			
-			context.game().apply(context, move);
+			if (i>=numInitialPlacementMoves)
+			{
+				context.game().apply(context, move);
+			}
+			
 		}
 		//context.game().moves(context); // help to initialize trial.cachedLegalMoves();
 	}
@@ -1018,8 +1013,6 @@ public class GrowingBoard
 		context.state().initialise(context.currentInstanceContext().game());
 		context.trial().setStatus(null);
 		
-		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
-		//resetMoves(app);
 		resetState(context);
 	}
 	
@@ -1033,11 +1026,9 @@ public class GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		//int mover = context.state().mover();
 		if (replayMoves)
 			resetMoves(context);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
-		//context.state().setMover(mover);
 	}
 	
 	/**
