@@ -3,7 +3,6 @@ package app.move;
 import java.awt.EventQueue;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import app.PlayerApp;
 import app.utils.GameUtil;
@@ -62,22 +61,19 @@ public class GrowingBoardVisual extends GrowingBoard
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = context.trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
-		
-		//----------
+
 		GameUtil.resetGameWithoutResetContext(app);
-		//----------
-		
+
 		// also reset initial placement moves
 		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
-		//final int moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
-		/*final int moveToJumpToWithSetup = 0;
+		final int moveToJumpToWithSetup = 0;
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
 		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
 		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);*/
+		app.manager().setUndoneMoves(newUndoneMoves);
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();
@@ -101,10 +97,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
-		//int mover = context.state().mover();
-		resetMoves(app);
+		if (replayMoves) // TODO does not change if we call it or not - test that
+			resetMoves(app);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
-		//context.state().setMover(mover);
 	}
 	
 	/**

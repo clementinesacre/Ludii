@@ -221,12 +221,7 @@ public class ToolView extends View
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
-
-		Moves legalMoves = context.trial().cachedLegalMoves();
-		FastTIntArrayList[][] locations = ((FlatCellOnlyOwned) context.state().owned()).locations();
 		
-		GameUtil.resetGame(app, true);
-		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
 		final int moveToJumpToWithSetup;
 		if (moveToJumpTo == 0)
@@ -234,33 +229,35 @@ public class ToolView extends View
 		else
 			moveToJumpToWithSetup = moveToJumpTo;
 
-		// -------------
-		Move currMove = allMoves.get(moveToJumpToWithSetup);
-		if (currMove.isOnEdge())
-		{
-			context.trial().setLegalMoves(legalMoves, context);
-			
-			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
-			
-			int currDim = ((Boardless) context.board()).dimension();
-			GrowingBoardVisual.updateBoard(app, context, currDim, currDim - Constants.GROWING_STEP, false);
+		Move currMove = null;
+		if (moveToJumpToWithSetup < allMoves.size())
+			currMove = allMoves.get(moveToJumpToWithSetup);
 
-			for (int i=0; i<allMoves.size(); i++) 
-			{
-				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i));
-				allMoves.set(i, newMove);
-			}
+		GameUtil.resetGame(app, true);
+		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
+		
+		// -------------
+		if (context.game().isBoardless()) 
+		{
+			int currDim = ((Boardless) context.board()).dimension();
+			int newDim;
+			if (currMove == null || moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
+				newDim = ((Boardless) context.board()).initDimension();
+			else if (currMove.isOnEdge())
+				newDim = currDim - Constants.GROWING_STEP;
+			else 
+				newDim = currDim;
+	
+			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
+			
+			for (int i=0; i<moveToJumpToWithSetup; i++) 
+				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));
 		}
 		// -------------
 		
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
 		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);
-
-		if (currMove.isOnEdge()) //TODO fix this, there should be no duplicate
-			GrowingBoardVisual.removeDuplicateInOwned(context);
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();

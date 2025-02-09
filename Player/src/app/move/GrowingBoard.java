@@ -46,6 +46,10 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> mappedNewToPrevIndexes;
 	private static HashSet<Integer> surplusIndexes; // indexes that are being added from one board to another
 	
+	private static int initDimensionBoard;
+	private static int initAreaBoard;
+	private static int initTotalIndexes;
+	private static int diffInit;
 	private static int prevDimensionBoard;
 	private static int prevAreaBoard;
 	private static int prevTotalIndexes;
@@ -53,6 +57,10 @@ public class GrowingBoard
 	private static int newAreaBoard;
 	private static int newTotalIndexes;
 	private static int diff;
+
+	private static HashMap<Integer, Integer> mappedInitToNewIndexes;
+	private static HashMap<Integer, Integer> mappedNewToInitIndexes;
+	private static HashSet<Integer> surplusInitIndexes; // indexes that are being added from init board to new one
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -69,6 +77,21 @@ public class GrowingBoard
 	public static HashSet<Integer> surplusIndexes()
 	{
 		return surplusIndexes;
+	}
+	
+	public static HashMap<Integer, Integer> mappedInitToNewIndexes()
+	{
+		return mappedInitToNewIndexes;
+	}
+	
+	public static HashMap<Integer, Integer> mappedNewToInitIndexes()
+	{
+		return mappedNewToInitIndexes;
+	}
+	
+	public static HashSet<Integer> surplusInitIndexes()
+	{
+		return surplusInitIndexes;
 	}
 	
 	public static int prevDimensionBoard()
@@ -106,7 +129,34 @@ public class GrowingBoard
 		return diff;
 	}
 	
+	public static int initDimensionBoard()
+	{
+		return initDimensionBoard;
+	}
+	
+	public static int initAreaBoard()
+	{
+		return initAreaBoard;
+	}
+	
+	public static int initTotalIndexes()
+	{
+		return initTotalIndexes;
+	}
+	
+	public static int diffInit()
+	{
+		return diffInit;
+	}
+	
 	//----------------------------Initialization-------------------------------
+	
+	protected static void initInitConstants(Context context, int initDimension)
+	{
+		initDimensionBoard = initDimension;
+		initAreaBoard = (int) Math.pow(initDimensionBoard(), 2);
+		initTotalIndexes = initAreaBoard()+context.sitesFrom().length-1;
+	}
 	
 	/** 
 	 * Initializes data structures to map the previous indexes to the new indexes, 
@@ -129,50 +179,75 @@ public class GrowingBoard
 			{
 				inter = prevIndex / prevDimensionBoard();
 				if (prevIndex < prevAreaBoard())
-				{
 					newIndex = prevIndex + prevDimensionBoard() + Constants.GROWING_STEP + 1 + (2 * (inter));
-				}
 				else
-				{
 					newIndex = prevIndex + diff;
-				}
 				mappedPrevToNewIndexes().put(prevIndex, newIndex);
 				mappedNewToPrevIndexes().put(newIndex, prevIndex);
 			}
 			for (int i = 0; i < newTotalIndexes(); i++)
-			{
 				if (!mappedNewToPrevIndexes().containsKey(i))
-				{
 					surplusIndexes().add(i);
-				}
+		}
+		else if (prevDimensionBoard() == newDimensionBoard())
+		{
+			for (int prevIndex = 0; prevIndex < newTotalIndexes(); prevIndex++)
+			{
+			    mappedNewToPrevIndexes().put(prevIndex, prevIndex);
+				mappedPrevToNewIndexes().put(prevIndex, prevIndex);
 			}
 		}
 		else
 		{
-			int inter;
 			int newIndex;
 			for (int prevIndex = 0; prevIndex < newTotalIndexes(); prevIndex++)
 			{
-				inter = prevIndex / newDimensionBoard();
 				if (prevIndex < newAreaBoard())
 				{
-					newIndex = prevIndex + newDimensionBoard() + Constants.GROWING_STEP + 1 + (2 * (inter));
+					int col = prevIndex%newDimensionBoard();
+					int line = prevIndex/newDimensionBoard();
+					int offset = (prevDimensionBoard()-newDimensionBoard())/2;
+
+					int mCol = col + offset;
+					int mLine = line + offset;
+					newIndex = mLine * prevDimensionBoard() + mCol;
 				}
 				else
-				{
-					newIndex = prevIndex + diff;
-				}
+					newIndex = prevIndex + diff();
 				mappedNewToPrevIndexes().put(prevIndex, newIndex);
 				mappedPrevToNewIndexes().put(newIndex, prevIndex);
 			}
 			for (int i = 0; i < prevTotalIndexes(); i++)
-			{
 				if (!mappedPrevToNewIndexes().containsKey(i))
-				{
 					surplusIndexes().add(i);
-				}
-			}
 		}
+		
+		// data structures to map between initial plate and new plate
+		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+		surplusInitIndexes = new HashSet<Integer>();
+		
+		int newIndex;
+		for (int prevIndex = 0; prevIndex < initTotalIndexes(); prevIndex++)
+		{
+			if (prevIndex < initAreaBoard())
+			{
+				int col = prevIndex%initDimensionBoard();
+				int line = prevIndex/initDimensionBoard();
+				int offset = (newDimensionBoard()-initDimensionBoard())/2;
+
+				int mCol = col + offset;
+				int mLine = line + offset;
+				newIndex = mLine * newDimensionBoard() + mCol;
+			}
+			else
+				newIndex = prevIndex + diffInit();
+			mappedInitToNewIndexes().put(prevIndex, newIndex);
+			mappedNewToInitIndexes().put(newIndex, prevIndex);
+		}
+		for (int i = 0; i < newTotalIndexes(); i++)
+			if (!mappedNewToInitIndexes().containsKey(i))
+				surplusInitIndexes().add(i);
 	}
 	
 	/** 
@@ -198,15 +273,37 @@ public class GrowingBoard
 		newTotalIndexes = newAreaBoard()+context.sitesFrom().length-1;
 		
 		if (prevAreaBoard() < newAreaBoard())
-		{
 			diff = newAreaBoard() - prevAreaBoard();
-		}
 		else
-		{
 			diff = prevAreaBoard() - newAreaBoard();
-		}
+
+		if (initAreaBoard() < newAreaBoard())
+			diffInit = newAreaBoard() - initAreaBoard();
+		else
+			diffInit = initAreaBoard() - newAreaBoard(); // TODO : should never happened, as init size is the smallest one
+		
+		if (initDimensionBoard() == 0)
+			initInitConstants(context, currDimensionBoard);
 		
 		initMappingIndexes();
+		
+		/*System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() mappedPrevToNewIndexes() : "+mappedPrevToNewIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() surplusIndexes() : "+surplusIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() prevDimensionBoard() : "+prevDimensionBoard());
+		System.out.println("GrowingBoard.java initMainConstants() prevAreaBoard() : "+prevAreaBoard());
+		System.out.println("GrowingBoard.java initMainConstants() prevTotalIndexes() : "+prevTotalIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() newDimensionBoard() : "+newDimensionBoard());
+		System.out.println("GrowingBoard.java initMainConstants() newAreaBoard() : "+newAreaBoard());
+		System.out.println("GrowingBoard.java initMainConstants() newTotalIndexes() : "+newTotalIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() diff() : "+diff());
+		System.out.println("GrowingBoard.java initMainConstants() initDimensionBoard() : "+initDimensionBoard());
+		System.out.println("GrowingBoard.java initMainConstants() initAreaBoard() : "+initAreaBoard());
+		System.out.println("GrowingBoard.java initMainConstants() initTotalIndexes() : "+initTotalIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() diffInit() : "+diffInit());
+		System.out.println("GrowingBoard.java initMainConstants() mappedNewToInitIndexes() : "+mappedNewToInitIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() mappedInitToNewIndexes() : "+mappedInitToNewIndexes());
+		System.out.println("GrowingBoard.java initMainConstants() surplusInitIndexes() : "+surplusInitIndexes());*/
 	}
 	
 	//-------------------------------------------------------------------------
@@ -301,9 +398,8 @@ public class GrowingBoard
 			ChunkSet previousCS = previousHCS.internalState();
 			ChunkSet newCS = (ChunkSet) newHCS.internalState();
 			TIntArrayList nonzeroChunks = previousCS.getNonzeroChunks();
-			for (int prevVal : nonzeroChunks.toArray()) { 
+			for (int prevVal : nonzeroChunks.toArray())
 				newCS.setChunk(mappedPrevToNewIndexes2.get(prevVal), previousCS.getChunk(prevVal));
-			}
 		}
 		else
 			newHCS = null;
@@ -351,17 +447,13 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateChunks(Context context)
+	protected static void updateChunks(Context context, HashMap<Integer, Integer> mappedPrevToNewIndexesX, HashSet<Integer> surplusIndexesX)
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
 		int numSites = mappedNewToPrevIndexes().size()+surplusIndexes().size();
 		ContainerState[] containerStates = context.state().containerStates();
 		
-		//System.out.println("GrowingBoard.java updateChunks() adjacent 15 : "+context.topology().cells().get(15).adjacent());
-		//System.out.println("GrowingBoard.java updateChunks() adjacent 15 n2 : "+((BaseContainerState) newContainerState0).container().topology().cells().get(15).adjacent());
-		
-
 		// update each container state (container state 0 is the board state)
 		for (int i=0; i<1; i++)
 		{	
@@ -372,12 +464,12 @@ public class GrowingBoard
 				ZobristHashGenerator generator = containerFlatState.getGenerator();
 				
 				// TODO maybe there is another way to copy a HashedChunkSet
-				HashedChunkSet who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites, mappedPrevToNewIndexes());
-				HashedChunkSet what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites, mappedPrevToNewIndexes());
-				HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites);//copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
-				HashedChunkSet state = copyChunkWithNewBoardSize(containerFlatState.state(), generator, containerFlatState.getMaxStateVal(), numSites, mappedPrevToNewIndexes());
-				HashedChunkSet rotation = copyChunkWithNewBoardSize(containerFlatState.rotation(), generator, containerFlatState.getMaxRotationVal(), numSites, mappedPrevToNewIndexes());
-				HashedChunkSet value = copyChunkWithNewBoardSize(containerFlatState.value(), generator, containerFlatState.getMaxPieceValue(), numSites, mappedPrevToNewIndexes());
+				HashedChunkSet who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites, mappedPrevToNewIndexesX);
+				HashedChunkSet what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites, mappedPrevToNewIndexesX);
+				HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites);//copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxWhatVal(), numSites, mappedPrevToNewIndexesX); 
+				HashedChunkSet state = copyChunkWithNewBoardSize(containerFlatState.state(), generator, containerFlatState.getMaxStateVal(), numSites, mappedPrevToNewIndexesX);
+				HashedChunkSet rotation = copyChunkWithNewBoardSize(containerFlatState.rotation(), generator, containerFlatState.getMaxRotationVal(), numSites, mappedPrevToNewIndexesX);
+				HashedChunkSet value = copyChunkWithNewBoardSize(containerFlatState.value(), generator, containerFlatState.getMaxPieceValue(), numSites, mappedPrevToNewIndexesX);
 				HashedBitSet playable = new HashedBitSet(generator, numSites);
 				Region empty = new Region(numSites);
 				
@@ -386,14 +478,14 @@ public class GrowingBoard
 				int[] newEmptySites;
 				if (emptySites.length > 0)
 				{
-					newEmptySites = new int[emptySites.length + surplusIndexes().size()];
+					newEmptySites = new int[emptySites.length + surplusIndexesX.size()];
 					int index = 0;
 					for (int j=0; j<emptySites.length; j++)
 					{
-						newEmptySites[index] = mappedPrevToNewIndexes().get(emptySites[index]);
+						newEmptySites[index] = mappedPrevToNewIndexesX.get(emptySites[index]);
 						index++;
 					}
-					for (Integer prevVal : surplusIndexes()) 
+					for (Integer prevVal : surplusIndexesX) 
 					{
 			            newEmptySites[index] = prevVal;
 			            index++;
@@ -423,8 +515,9 @@ public class GrowingBoard
 		                while (++j != endOfRun);
 		            }
 		        }
-				for (Integer prevVal : prevPlayableSites)
-					playableBS.flip(mappedPrevToNewIndexes().get(prevVal));
+				for (Integer prevVal : prevPlayableSites) {
+					playableBS.flip(mappedPrevToNewIndexesX.get(prevVal));
+				}
 						        
 				
 				ContainerFlatState newContainerFlatState = new ContainerFlatState
@@ -465,7 +558,7 @@ public class GrowingBoard
 				// TODO maybe there is another way to copy a HashedChunkSet
 				HashedChunkSet who = copyChunk(containerFlatState.who(), generator, numPlayers+1, numSites);
 				HashedChunkSet what = copyChunk(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites);
-				HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites); //copyChunkWithNewBoardSize2(containerFlatState.count(), generator, containerFlatState.getMaxCountVal(), numSites);
+				HashedChunkSet count = new HashedChunkSet(generator, containerFlatState.getMaxWhatVal(), numSites);//copyChunk(containerFlatState.count(), generator, containerFlatState.getMaxWhatVal(), numSites);
 				HashedChunkSet state = copyChunk(containerFlatState.state(), generator, containerFlatState.getMaxStateVal(), numSites);
 				HashedChunkSet rotation = copyChunk(containerFlatState.rotation(), generator, containerFlatState.getMaxRotationVal(), numSites);
 				HashedChunkSet value = copyChunk(containerFlatState.value(), generator, containerFlatState.getMaxPieceValue(), numSites);
@@ -477,14 +570,14 @@ public class GrowingBoard
 				int[] newEmptySites;
 				if (emptySites.length > 0)
 				{
-					newEmptySites = new int[emptySites.length + surplusIndexes().size()];
+					newEmptySites = new int[emptySites.length + surplusIndexesX.size()];
 					int index = 0;
 					for (int j=0; j<emptySites.length; j++)
 					{
 						newEmptySites[index] = emptySites[index];
 						index++;
 					}
-					for (Integer prevVal : surplusIndexes()) 
+					for (Integer prevVal : surplusIndexesX) 
 					{
 			            newEmptySites[index] = prevVal;
 			            index++;
@@ -806,11 +899,10 @@ public class GrowingBoard
 	 * @param prevMove previous move to copy, except for the indexes.
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove)
+	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge, HashMap<Integer, Integer> mappedPrevToNewIndexesX)
 	{
 		List<Action> actions = prevMove.actions();
 		
-		Move newMove = null;
 		if (actions.size() == 1)
 		{
 			Action newAction = actions.get(0);
@@ -818,17 +910,15 @@ public class GrowingBoard
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
 			{
-				newAction.setTo(mappedPrevToNewIndexes().get(to));
+				newAction.setTo(mappedPrevToNewIndexesX.get(to));
 			}
 			if (from != Constants.UNDEFINED)
 			{
-				newAction.setFrom(mappedPrevToNewIndexes().get(from));
+				newAction.setFrom(mappedPrevToNewIndexesX.get(from));
 			}
-			newMove = new Move(newAction);
-			newMove.setOnEdge(prevMove.onEdge());
 			
-			newMove.setTo(newMove.to());
-			newMove.setFrom(newMove.from());
+			prevMove.setTo(prevMove.to());
+			prevMove.setFrom(prevMove.from()); //TODO useful ?
 			
 		}
 		else 
@@ -841,28 +931,32 @@ public class GrowingBoard
 				int from = action.from();
 				
 				if (to != Constants.UNDEFINED)
-					action.setTo(mappedPrevToNewIndexes().get(to));
+					action.setTo(mappedPrevToNewIndexesX.get(to));
 				if (from != Constants.UNDEFINED)
-					action.setFrom(mappedPrevToNewIndexes().get(from));
+					action.setFrom(mappedPrevToNewIndexesX.get(from));
 				
 				newActions.add(action);
 			}
-			
-			// problem : this constructor does init the 'form' and 'to' of the Move, which are used to generate legal moves
-			newMove = new Move(newActions); 
-			newMove.setOnEdge(prevMove.onEdge());
 
+			// problem : this constructor does init the 'form' and 'to' of the Move, which are used to generate legal moves
 			for (final Action a : actions)
 				if (a.isDecision())
 				{
-					newMove.setTo(mappedPrevToNewIndexes().get(a.to()));
-					newMove.setFrom(mappedPrevToNewIndexes().get(a.from()));
+					prevMove.setTo(a.to());
+					prevMove.setFrom(a.from());
 					break;
 				}
 
 		}
+		if (isLastMoveDoneOnEdge)
+			prevMove.setOnEdge(prevDimensionBoard());
 		
-		return newMove;
+		return prevMove;
+	}
+	
+	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge) 
+	{
+		return generateNewMove(prevMove, isLastMoveDoneOnEdge, mappedInitToNewIndexes());
 	}
 	
 	/**
@@ -973,7 +1067,7 @@ public class GrowingBoard
 	 * @param context
 	 * @param movesDone
 	 */
-	protected static void replayMoves(Context context, List<Move> movesDone)
+	protected static void replayMoves(Context context, List<Move> movesDone, HashMap<Integer, Integer> mappedPrevToNewIndexesX)
 	{
 		Move move = null;
 		int mover = context.state().mover();
@@ -989,14 +1083,9 @@ public class GrowingBoard
 			}
 			
 			move = movesDone.get(i);
-			//updateOwnedWithMove(context, move, i, numInitialPlacementMoves);
-			Move newMove = generateNewMove(move);
-			if (i == movesDone.size()-1)
-				newMove.setOnEdge(prevDimensionBoard);
-			context.game().apply(context, newMove);	
-
+			generateNewMove(move,  i == movesDone.size()-1, mappedPrevToNewIndexesX);
+			context.game().apply(context, move);
 		}
-		//context.game().moves(context); // help to initialize trial.cachedLegalMoves();
 	}
 	
 	/**
@@ -1028,7 +1117,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateOwned(Context context)
+	protected static void updateOwnedPrevToNew(Context context)
 	{
 		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
 		FastTIntArrayList[][] locations = owned.locations();
@@ -1097,13 +1186,17 @@ public class GrowingBoard
 	protected static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves, final boolean replayMoves) 
 	{
 		if (prevDimensionBoard() < newDimensionBoard())
-			updateChunks(context);
+			updateChunks(context, mappedPrevToNewIndexes(), surplusIndexes());
 		else
-			//updateChunksReduce(context);
-			updateChunksReduceBasedOnFirstPlate(context);
-		updateOwned(context);
+			updateChunks(context, mappedInitToNewIndexes(), surplusInitIndexes());
+		updateOwnedPrevToNew(context);
+		
 		if (replayMoves)
-			replayMoves(context, movesDone);
+			if (prevDimensionBoard() < newDimensionBoard())
+				replayMoves(context, movesDone, mappedPrevToNewIndexes());
+			else
+				replayMoves(context, movesDone, mappedInitToNewIndexes());
+
 		removeDuplicateInOwned(context);
 		generateLegalMoves(context, legalMoves);
 	}
@@ -1124,9 +1217,7 @@ public class GrowingBoard
 	protected static void resetMoves(Context context)
 	{
 		// TODO - how reset moves properly? problem with legal moves when doing this
-		//resetMoves(app);
 		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
-		//resetMoves(app);
 		resetState(context);
 	}
 	
@@ -1141,7 +1232,8 @@ public class GrowingBoard
 		List<Move> movesDone = trial.generateCompleteMovesList();
 		Moves legalMoves = trial.cachedLegalMoves();
 		//int mover = context.state().mover();
-		resetMoves(context);
+		if (replayMoves)
+			resetMoves(context);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
 		//context.state().setMover(mover);
 	}
