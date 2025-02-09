@@ -251,7 +251,7 @@ public class ToolView extends View
 			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
 			
 			for (int i=0; i<moveToJumpToWithSetup; i++) 
-				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));
+				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i)));
 		}
 		// -------------
 		
