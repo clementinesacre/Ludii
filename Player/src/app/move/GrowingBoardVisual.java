@@ -96,10 +96,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
-		Moves legalMoves = trial.cachedLegalMoves();
 		if (replayMoves) // TODO does not change if we call it or not - test that
 			resetMoves(app);
-		remakeTrial(context, movesDone, legalMoves, replayMoves);
+		remakeTrial(context, movesDone, replayMoves);
 	}
 	
 	/**

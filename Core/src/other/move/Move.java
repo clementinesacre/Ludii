@@ -605,7 +605,6 @@ public class Move extends BaseAction
 		returnMove.setMover(mover);
 		returnMove.setLevelMaxNonDecision(levelMax);
 		returnMove.setLevelMinNonDecision(levelMin);
-		returnMove.setOnEdge(onEdge());
 		
 		if (store)
 		{
@@ -1753,25 +1752,4 @@ public class Move extends BaseAction
 	{
 		return this.onEdge != -1;
 	}
-	
-	/**
-	 * @return the dimension of the board when move was done, 
-	 * if it was done on an edge, -1 else.
-	 */
-	public int onEdge()
-	{
-		return this.onEdge;
-	}
-	
-	/**
-	 * Update the isOnEdge.
-	 * 
-	 * @param newIsOnEdge
-	 */
-	public void setOnEdge(int newIsOnEdge)
-	{
-		this.onEdge = newIsOnEdge;
-	}
-	
-	
 }
