@@ -225,9 +225,19 @@ public class ToolView extends View
 		else
 			moveToJumpToWithSetup = moveToJumpTo;
 
-		Move currMove = null;
-		if (moveToJumpToWithSetup < allMoves.size())
-			currMove = allMoves.get(moveToJumpToWithSetup);
+		Move currMove = allMoves.get(moveToJumpToWithSetup);
+		// Topology must be updated before state is reset as when it is boardless, it will refer at the center of the board to start over
+		if (context.game().isBoardless()) {
+			int currDim = ((Boardless) context.board()).dimension();
+			int newDim;
+			if (moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
+				newDim = ((Boardless) context.board()).initDimension();
+			else if (currMove.isOnEdge())
+				newDim = currDim - Constants.GROWING_STEP;
+			else 
+				newDim = currDim;
+			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
+		}
 		
 		GameUtil.resetGame(app, true);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
@@ -235,16 +245,9 @@ public class ToolView extends View
 		// -------------
 		if (context.game().isBoardless()) 
 		{
-			int currDim = ((Boardless) context.board()).dimension();
-			int newDim;
-			if (currMove == null || moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
-				newDim = ((Boardless) context.board()).initDimension();
-			else if (currMove.isOnEdge())
-				newDim = currDim - Constants.GROWING_STEP;
-			else 
-				newDim = currDim;
-
-			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
+			// the board is updated even if last move was not done on edge as when the game is reset lines above, it reset the board to 
+			// its initial state - which must be updated
+			GrowingBoardVisual.remakeTrial(app, false);
 
 			for (int i=0; i<moveToJumpToWithSetup; i++)
 				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));			
@@ -252,7 +255,6 @@ public class ToolView extends View
 		// -------------
 		
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
 		
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
