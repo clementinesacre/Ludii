@@ -455,7 +455,6 @@ public class GrowingBoard
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
-		//int numSites = mappedNewToPrevIndexes().size()+surplusIndexes().size();
 		int numSites = newTotalIndexes();
 		ContainerState[] containerStates = context.state().containerStates();
 
@@ -683,6 +682,7 @@ public class GrowingBoard
 	/**
 	 * Generates the new move based on a move, which means with the new indexes of the board
 	 * (which means updating to() and from().
+	 * Use the mapping current board and new board by default.
 	 * 
 	 * @param prevMove previous move to copy, except for the indexes.
 	 * @return the new move.
@@ -690,108 +690,6 @@ public class GrowingBoard
 	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge) 
 	{
 		return generateNewMove(prevMove, isLastMoveDoneOnEdge, mappedPrevToNewIndexes());
-	}
-	
-	/**
-	 * Update the Owned (contains information about where the pieces are (indexes) for 
-	 * a specific player / board).  Does it by updating Owned each time a move is 
-	 * re-applied based on the new board, by removing previous index, and if needed 
-	 * adding new index.
-	 * 
-	 * PROBLEM : the Owned structure does not restart to initial structure, so at the 
-	 * first Move, I am already working with a structure that expect me to be on the 
-	 * last Move. It creates inconsistencies.
-	 * e.g. : if the player has a hand of 3 items, once his hand is empty, the index of
-	 * his hand will no longer be linked to anything and will therefore no longer exist 
-	 * in the Owned.
-	 * 
-	 * @param context
-	 * @param move move that have just been re-apply.
-	 * @param i position of the move in the list of move applied from the beginning.
-	 * @param numInitialPlacementMoves number of initial placement moves.
-	 */
-	protected static void updateOwnedWithMove(Context context, Move move, int i, int numInitialPlacementMoves)
-	{
-		int to = move.to();
-		int from = move.from();
-		ActionType actionType = move.actionType();
-		int what = move.what();
-		
-		System.out.println("GrowingBoard.java updateOwned() move : "+move);
-
-		if (i < numInitialPlacementMoves)
-		{
-			for (final Action a : move.actions()) 
-			{
-				if (a.to() != Constants.UNDEFINED) 
-				{
-					to = a.to();
-					break;
-				}
-			}
-			for (final Action a : move.actions()) 
-			{
-				if (a.what() != 0) 
-				{
-					what = a.what();
-					break;
-				}
-			}
-			for (final Action a : move.actions()) 
-			{
-				if (a.actionType() != null) 
-				{
-					actionType = a.actionType();
-					break;
-				}
-			}
-		}
-		System.out.println("GrowingBoard.java updateOwned() mappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
-		System.out.println(i+" - GrowingBoard.java updateOwned() before type : "+move.getClass().getName()+" - move : "+actionType+" - to : "+to+" - from : "+from+" - what : "+what+" - mapped to : "+mappedNewToPrevIndexes().get(to));
-		
-		if (actionType == ActionType.Add)
-		{
-			int containerId = context.containerId()[mappedPrevToNewIndexes().get(to)];
-			Component piece = context.components()[what];
-			final int owner = piece.owner();
-			
-			System.out.println("GrowingBoard.java updateOwned() ADD before sites : "+context.state().owned().sites(owner));
-			int beforeSize = context.state().owned().sites(owner).size();
-
-			context.state().owned().remove(owner, what, to, SiteType.Cell);
-			
-			int currSize = context.state().owned().sites(owner).size();
-			System.out.println("GrowingBoard.java updateOwned() ADD afterr sites : "+context.state().owned().sites(owner));
-			if (currSize < beforeSize && !context.state().owned().sites(owner).contains(mappedPrevToNewIndexes().get(to))) 
-			{
-				context.state().owned().add(owner, what, mappedPrevToNewIndexes().get(to), SiteType.Cell);
-				System.out.println(i+" - GrowingBoard.java updateOwned() ADD add : "+mappedPrevToNewIndexes().get(to)+" - containerId to : "+context.containerId()[to]+ "- to owner : "+owner +" - cc : "+((FlatCellOnlyOwned) context.state().owned()).sites(owner)+" - curr size : "+newDimensionBoard());
-			}
-		}
-		else if (actionType == ActionType.Move)
-		{
-			int containerId = context.containerId()[mappedPrevToNewIndexes().get(from)];
-			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE what before : "+what);
-			if (containerId > 0)
-			{
-				what = context.state().containerStates()[containerId].what(mappedPrevToNewIndexes().get(from), SiteType.Cell);
-				//what2 = context.state().containerStates()[containerId].what(move.from() - (prevAreaBoard - 1 + containerId), SiteType.Cell);
-			}
-			else
-				what = context.state().containerStates()[containerId].what(from, SiteType.Cell);
-			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE what afterr : "+what);
-			Component piece = context.components()[what];
-			int owner = piece.owner();
-			//owner = containerId;
-			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE containerId : "+containerId+" - owner : "+owner);
-			
-			context.state().owned().remove(owner, what, to, SiteType.Cell);
-			System.out.println(i+" - GrowingBoard.java updateOwned() MOVE removed : "+to+" - of owner : "+owner +" - sites: "+((FlatCellOnlyOwned) context.state().owned()).sites(owner));
-		
-		}
-
-		System.out.println(i+" - GrowingBoard.java updateOwned() afterr type : "+move.getClass().getName()+" - move : "+actionType+" - to : "+to+" - from : "+from+" - what : "+what);
-				
 	}
 	
 	/** 
@@ -803,9 +701,6 @@ public class GrowingBoard
 	protected static void replayMoves(Context context, List<Move> movesDone, HashMap<Integer, Integer> mappingIndexes)
 	{
 		Move move = null;
-		int mover = context.state().mover();
-		int next = context.nextTo((context.state().mover()) % context.game().players().count() + 1);
-		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
 		
 		for (int i = 0; i < movesDone.size(); i++)
 		{
@@ -838,31 +733,6 @@ public class GrowingBoard
 				{
 					if (mappingIndexes.containsKey(locations[i][j].get(k)))
 						newFastTIntArrayList.add(mappingIndexes.get(locations[i][j].get(k)));
-				}
-				locations[i][j] = newFastTIntArrayList;
-			}
-	}
-	
-	/**
-	 * Remove duplicates indexes from Owned.
-	 * Created because of the problem of the updateOwned() method.
-	 * 
-	 * @param context
-	 */
-	public static void removeDuplicateInOwned(Context context)
-	{
-		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
-		FastTIntArrayList[][] locations = owned.locations();
-		
-		for (int i=0; i<locations.length; i++)
-			for (int j=0; j<locations[i].length; j++)
-			{
-				FastTIntArrayList newFastTIntArrayList = new FastTIntArrayList();
-				for (int k=0; k<locations[i][j].size(); k++)
-				{
-					int value = locations[i][j].get(k);
-					if(!newFastTIntArrayList.contains(value))
-						newFastTIntArrayList.add(value);
 				}
 				locations[i][j] = newFastTIntArrayList;
 			}
@@ -908,8 +778,6 @@ public class GrowingBoard
 			if (replayMoves)
 				replayMoves(context, movesDone, mappedInitToNewIndexes());
 		}
-
-		removeDuplicateInOwned(context);
 	}
 	
 	/**
@@ -928,7 +796,6 @@ public class GrowingBoard
 	protected static void resetMoves(Context context)
 	{
 		// TODO - how reset moves properly? problem with legal moves when doing this
-		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		resetState(context);
 	}
 	
