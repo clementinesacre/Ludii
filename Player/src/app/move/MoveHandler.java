@@ -2,6 +2,7 @@ package app.move;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import app.PlayerApp;
 import app.utils.PuzzleSelectionType;
@@ -21,6 +22,7 @@ import other.location.FullLocation;
 import other.location.Location;
 import other.move.Move;
 import other.state.container.ContainerState;
+import other.state.owned.FlatCellOnlyOwned;
 import other.topology.Vertex;
 import util.ContainerUtil;
 
@@ -129,10 +131,18 @@ public class MoveHandler
 		{
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
+				if (context.game().isBoardless()) 
+				{
+					int currDim = ((Boardless) context.board()).dimension();
+					int newDim = currDim + Constants.GROWING_STEP;
+					boolean isMoveOnEdge = GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), currDim, newDim, true);
+					
+					if (isMoveOnEdge)
+						GrowingBoardVisual.generateNewMove(possibleMoves.get(0), true);
+				}
+
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
-				int currDim = ((Boardless) context.board()).dimension();
-				int newDim = currDim + Constants.GROWING_STEP;
-				GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), currDim, newDim, true);
+
 				return true; // move found
 			}
 		}
