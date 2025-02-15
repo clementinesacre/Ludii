@@ -23,14 +23,11 @@ import app.views.tools.buttons.ButtonSettings;
 import app.views.tools.buttons.ButtonShow;
 import app.views.tools.buttons.ButtonStart;
 import game.equipment.container.board.Boardless;
-import game.rules.play.moves.Moves;
 import main.Constants;
-import main.collections.FastTIntArrayList;
 import other.concept.Concept;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
-import other.state.owned.FlatCellOnlyOwned;
 
 //-----------------------------------------------------------------------------
 
@@ -222,7 +219,6 @@ public class ToolView extends View
 		final List<Move> allMoves = app.manager().ref().context().trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
 		
-		
 		final int moveToJumpToWithSetup;
 		if (moveToJumpTo == 0)
 			moveToJumpToWithSetup = context.currentInstanceContext().trial().numInitialPlacementMoves();
@@ -232,7 +228,7 @@ public class ToolView extends View
 		Move currMove = null;
 		if (moveToJumpToWithSetup < allMoves.size())
 			currMove = allMoves.get(moveToJumpToWithSetup);
-
+		
 		GameUtil.resetGame(app, true);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		
@@ -247,11 +243,11 @@ public class ToolView extends View
 				newDim = currDim - Constants.GROWING_STEP;
 			else 
 				newDim = currDim;
-	
+
 			GrowingBoardVisual.updateBoard(app, context, currDim, newDim, false);
-			
-			for (int i=0; i<moveToJumpToWithSetup; i++) 
-				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i)));
+
+			for (int i=0; i<moveToJumpToWithSetup; i++)
+				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));			
 		}
 		// -------------
 		

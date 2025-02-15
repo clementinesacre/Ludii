@@ -9,15 +9,14 @@ import app.utils.GameUtil;
 import app.utils.MVCSetup;
 import game.Game;
 import game.equipment.container.board.Boardless;
-import game.rules.play.moves.Moves;
 import main.Constants;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
-import other.move.MoveSequence;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 import other.state.container.ContainerFlatState;
+import other.state.owned.FlatCellOnlyOwned;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -54,35 +53,39 @@ public class GrowingBoardVisual extends GrowingBoard
 	private static void resetMoves(final PlayerApp app)
 	{
 		Context context = app.manager().ref().context();
-		
+
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
 		app.settingsPlayer().setWebGameResultValid(false);
-		
+
 		// Store the previous saved trial, and reload it after resetting the game.
 		final List<Move> allMoves = context.trial().generateCompleteMovesList();
 		allMoves.addAll(app.manager().undoneMoves());
 
 		GameUtil.resetGameWithoutResetContext(app);
 
-		// also reset initial placement moves
-		context.trial().setMoves(new MoveSequence(null), context.trial().numInitialPlacementMoves());
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		
+
 		final int moveToJumpToWithSetup = 0;
 		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
 		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
 		
 		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
 		app.manager().setUndoneMoves(newUndoneMoves);
-		
+
 		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
 		context.game().incrementGameStartCount();
 
 		app.bridge().settingsVC().setSelectedFromLocation(new FullLocation(Constants.UNDEFINED));
 		GameUtil.resetUIVariables(app);
-		
-		// Reset 
+
+		// Reset state but without reseting movers - as moves are not re-applied, state of movers is still good
+		int mover = context.state().mover();
+		int prev = context.state().prev();
+		int next = context.state().next();
 		resetState(context);
+		context.state().setMover(mover);
+		context.state().setNext(next);
+		context.state().setPrev(prev);
 	}
 	
 	
@@ -115,9 +118,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
 		initMainConstants(context, fromSize, toSize);
-		
+
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
+		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
 		updateBoardDimensions(app, board, toSize);
 		remakeTrial(app, replayMoves);
 	}
@@ -131,6 +134,8 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java displayInfo() sitesFrom : "+Arrays.toString(context.game().equipment().sitesFrom()));
 		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
 		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
+		for (int i=0; i<((FlatCellOnlyOwned) context.state().owned()).locations().length; i++)
+			System.out.println("GrowingBoard.java updateOwnedPrevToNew() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
 		System.out.println("\n\n");
 	}
 	
@@ -143,8 +148,9 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * @param fromSize
 	 * @param toSize
 	 * @param replayMoves if wee need to re-apply the moves 
+	 * @return true if move was applied on edge
 	 */
-	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	public static boolean checkMoveImpactOnBoard(final PlayerApp app, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
 	{
 		final Context context = app.manager().ref().context();
 
@@ -160,7 +166,9 @@ public class GrowingBoardVisual extends GrowingBoard
 				updateBoard(app, context, fromSize, toSize, replayMoves);
 				
 				//displayInfo(context); //TODO : to remove once code is ready
+				return true;
 			}
 		}
+		return false;
 	}
 }
