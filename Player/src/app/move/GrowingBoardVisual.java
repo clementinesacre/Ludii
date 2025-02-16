@@ -17,6 +17,7 @@ import other.move.Move;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 import other.state.container.ContainerFlatState;
+import other.state.owned.FlatCellOnlyOwned;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -80,7 +81,7 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 */
-	private static void remakeTrial(final PlayerApp app, final boolean replayMoves) 
+	public static void remakeTrial(final PlayerApp app, final boolean replayMoves) 
 	{
 		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
@@ -89,6 +90,27 @@ public class GrowingBoardVisual extends GrowingBoard
 		if (replayMoves) // TODO does not change if we call it or not - test that
 			resetMoves(app);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
+	}
+	
+	/**
+	 * Updates board by making it grow logically and visually.
+	 * TODO
+	 * 
+	 * @param app
+	 * @param context
+	 * @param fromSize TODO
+	 * @param toSize TODO
+	 * @param replayMoves TODO
+	 */
+	public static void updateBoardWithoutRemakeTrial(final PlayerApp app, Context context, int fromSize, int toSize)
+	{
+		Game game = context.game();
+		Boardless board = (Boardless) game.board();
+		initMainConstants(context, fromSize, toSize);
+
+		// TODO check that the move is applied on a board type container
+		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
+		updateBoardDimensions(app, board, toSize);
 	}
 	
 	/**
@@ -121,6 +143,8 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java displayInfo() sitesFrom : "+Arrays.toString(context.game().equipment().sitesFrom()));
 		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
 		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
+		for (int i=0; i<((FlatCellOnlyOwned) context.state().owned()).locations().length; i++)
+			System.out.println("GrowingBoard.java updateOwnedPrevToNew() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
 		System.out.println("\n\n");
 	}
 	
