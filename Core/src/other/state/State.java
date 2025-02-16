@@ -962,7 +962,7 @@ public class State implements Serializable
 		}
 		else
 		{
-			isPlayable = containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell);
+			isPlayable = game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell);
 			containerStates = new ContainerState[other.containerStates.length];
 			for (int is = 0; is < containerStates.length; is++)
 				if (other.containerStates[is] == null)
