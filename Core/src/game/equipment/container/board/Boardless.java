@@ -66,9 +66,9 @@ public class Boardless extends Board
 				largeStack
 		);
 
-		this.style = ContainerStyleType.Boardless;
-		this.dimension = dimension.eval();
-		this.initDimension = dimension.eval();
+		this.style = ContainerStyleType.Boardless;		
+		this.dimension = this.graphFunction.dim()[0];
+		this.initDimension = this.graphFunction.dim()[0];
 		this.tiling = tiling;
 	}
 	
