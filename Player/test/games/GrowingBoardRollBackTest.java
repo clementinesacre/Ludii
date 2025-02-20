@@ -195,7 +195,7 @@ public class GrowingBoardRollBackTest {
 
 			for (int i=0; i<allMoves.size(); i++) 
 			{
-				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i));
+				Move newMove = GrowingBoardVisual.generateNewMove(allMoves.get(i), false);
 				allMoves.set(i, newMove);
 			}
 		}
