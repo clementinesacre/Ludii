@@ -123,7 +123,7 @@ public class GrowingBoardRollBackTest {
 	public ContainerState[] updateBoard(Context context)
 	{		
 		ContainerState[] prevContainerStates = context.state().containerStates();
-		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + Constants.GROWING_STEP, true);
+		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + GrowingBoardVisual.growingStep(context), true);
 		
 		return prevContainerStates;
 	}
@@ -192,7 +192,7 @@ public class GrowingBoardRollBackTest {
 			((FlatCellOnlyOwned) context.state().owned()).setLocations(locations);
 			
 			int currDim = ((Boardless) context.board()).dimension();
-			GrowingBoard.updateBoard(context, currDim, currDim - Constants.GROWING_STEP, false);
+			GrowingBoard.updateBoard(context, currDim, currDim - GrowingBoardVisual.growingStep(context), false);
 
 			for (int i=0; i<allMoves.size(); i++) 
 			{

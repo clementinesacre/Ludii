@@ -166,6 +166,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to())+" - move : "+move);
+			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() fromSize : "+fromSize+" - toSize : "+toSize);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));

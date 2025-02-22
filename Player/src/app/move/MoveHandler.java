@@ -133,7 +133,7 @@ public class MoveHandler
 				if (context.game().isBoardless()) 
 				{
 					int currDim = ((Boardless) context.board()).dimension();
-					int newDim = currDim + Constants.GROWING_STEP;
+					int newDim = currDim + GrowingBoardVisual.growingStep(context);
 					GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), currDim, newDim, true);
 				}
 				return true; // move found
