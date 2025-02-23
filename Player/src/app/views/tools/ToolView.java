@@ -233,7 +233,7 @@ public class ToolView extends View
 			if (moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
 				newDim = ((Boardless) context.board()).initDimension();
 			else if (currMove.isOnEdge())
-				newDim = currDim - Constants.GROWING_STEP;
+				newDim = currDim - GrowingBoardVisual.growingStep(context);
 			else 
 				newDim = currDim;
 			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);

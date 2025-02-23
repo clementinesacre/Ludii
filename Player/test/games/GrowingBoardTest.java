@@ -127,7 +127,7 @@ public class GrowingBoardTest {
 	public ContainerState[] updateBoard(Context context)
 	{		
 		ContainerState[] prevContainerStates = context.state().containerStates();
-		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + Constants.GROWING_STEP, true);
+		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + GrowingBoardVisual.growingStep(context), true);
 		
 		return prevContainerStates;
 	}
