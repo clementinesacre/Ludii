@@ -127,12 +127,10 @@ public final class Constants
 	public static final int GROUND_LEVEL = 0;
 
 	/** Size of default board for boardless games on hex tiling. */
-	//public static final int SIZE_HEX_BOARDLESS = 21;
-	public static final int SIZE_HEX_BOARDLESS = 3;
+	public static final int SIZE_HEX_BOARDLESS = 21;
 
 	/** Size of default board for boardless games. */
-	//public static final int SIZE_BOARDLESS = 41;
-	public static final int SIZE_BOARDLESS = 5;
+	public static final int SIZE_BOARDLESS = 41;
 
 	/** Size of the board will increase when a player touches one of its edges in a boardless game on hex tiling. */
 	/** should be a multiple of 2 so board grow from all side by 1. */
