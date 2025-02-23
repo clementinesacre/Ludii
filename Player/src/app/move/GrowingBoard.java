@@ -68,6 +68,14 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMaxPerColRow;
 	private static HashMap<Integer, Integer> initMinPerColRow;
 	private static ArrayList<Integer> initRowsSizeCumul;
+
+	// Remember information about the initial plate in case of triangular board
+	private static ArrayList<Integer> initMinColPerRowList;
+	private static ArrayList<Integer> initRowsSizeCumulTriangular;
+	private static int initMaxIndexRowOrCol;
+	private static HashMap<Integer, Integer> initMinColPerRow;
+	private static HashMap<Integer, Integer> initMaxColPerRow;
+	private static HashMap<Integer, Integer> initMaxRowPerCol;
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -171,14 +179,45 @@ public class GrowingBoard
 		return initRowsSizeCumul;
 	}
 	
+	public static ArrayList<Integer> initMinColPerRowList()
+	{
+		return initMinColPerRowList;
+	}
+	
+	public static ArrayList<Integer> initRowsSizeCumulTriangular()
+	{
+		return initRowsSizeCumulTriangular;
+	}
+	
+	public static int initMaxIndexRowOrCol()
+	{
+		return initMaxIndexRowOrCol;
+	}
+	
+	public static HashMap<Integer, Integer>initMinColPerRow()
+	{
+		return initMinColPerRow;
+	}
+	
+	public static HashMap<Integer, Integer> initMaxColPerRow()
+	{
+		return initMaxColPerRow;
+	}
+	
+	public static HashMap<Integer, Integer> initMaxRowPerCol()
+	{
+		return initMaxRowPerCol;
+	}
+	
+	
 	public static int growingStep(Context context)
 	{
 		if (growingStep != 0)
 			return growingStep;
 		else
 			return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
-			? Constants.GROWING_STEP_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
-			? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_BOARDLESS;
+			? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
+			? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 	}
 	
 	//----------------------------Initialization-------------------------------
@@ -222,7 +261,44 @@ public class GrowingBoard
 		}
 		else if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Triangular)
 		{
-			// TODO
+			initAreaBoard = (int) Math.pow(initDimensionBoard(), 2);
+			
+			initMinColPerRowList = new ArrayList<Integer>();
+			initRowsSizeCumulTriangular = new ArrayList<Integer>();
+			initMinColPerRowList().add(0);
+			initRowsSizeCumulTriangular().add(0);
+			initRowsSizeCumulTriangular().add(initDimensionBoard());
+			
+			for (int i=1; i<initDimensionBoard(); i++)
+			{
+				initMinColPerRowList().add(i);
+				initMinColPerRowList().add(i);
+				
+				initRowsSizeCumulTriangular().add(initDimensionBoard()-i + initRowsSizeCumulTriangular().get(initRowsSizeCumulTriangular().size()-1));
+				initRowsSizeCumulTriangular().add(initDimensionBoard()-i + initRowsSizeCumulTriangular().get(initRowsSizeCumulTriangular().size()-1));
+			}
+			initRowsSizeCumulTriangular().remove(initRowsSizeCumulTriangular().size() - 1);
+			
+			
+			initMaxIndexRowOrCol = (initDimensionBoard()*2) - 2;
+			initMinColPerRow = new HashMap<Integer, Integer>();
+			initMaxColPerRow = new HashMap<Integer, Integer>();
+			initMaxRowPerCol = new HashMap<Integer, Integer>();
+			initMinColPerRow().put(0, 0);
+			initMaxColPerRow().put(0, initMaxIndexRowOrCol());
+			initMaxRowPerCol().put(0, 0);
+			initMaxRowPerCol().put(initMaxIndexRowOrCol(), 0);
+			for (int i=1; i<initDimensionBoard(); i++) 
+			{
+				initMinColPerRow().put((i*2)-1, i);
+				initMinColPerRow().put(i*2, i);
+
+				initMaxColPerRow().put((i*2)-1, initMaxIndexRowOrCol() - i);
+				initMaxColPerRow().put(i*2, initMaxIndexRowOrCol() - i);
+
+				initMaxRowPerCol().put(i, i*2);
+				initMaxRowPerCol().put(initMaxIndexRowOrCol()-i, i*2);
+			}
 		}
 		else
 		{
@@ -231,8 +307,8 @@ public class GrowingBoard
 		
 		initTotalIndexes = initAreaBoard()+context.sitesFrom().length-1;
 		growingStep = ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
-				? Constants.GROWING_STEP_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
-				? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_BOARDLESS;
+				? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
+				? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 	}
 	
 	/** 
@@ -324,6 +400,18 @@ public class GrowingBoard
 				surplusInitIndexes().add(i);
 	}
 	
+	/**
+	 * Translates coordinates into index for a hexagonal board.
+	 * 
+	 * @param row row of the coordinate.
+	 * @param col column of the coordinate.
+	 * @param rowsSizeCumul helps to know how many cells there are before the beginning of a new row.
+	 * So if size of the board is 3, newRowsSizeCumul will look like [0, 3, 7, 12, 16, 19], showing 
+	 * that at there are 0 cells before the first row, 7 cells before the third row, ...
+	 * @param dim dimension of the board
+	 *
+	 * @return the index based on the coordinates.
+	 */
 	protected static int coordToIndexHex(int row, int col, int rowSizeCumul, int dim)
 	{
 		int newRow = row - (dim - 1);
@@ -332,6 +420,8 @@ public class GrowingBoard
 	}
 	 
 	/**
+	 * Initializes data structures to map the previous indexes to the new indexes, 
+	 * due to the change in board size. For a Hexagonal board.
 	 * 
 	 * @param context
 	 */
@@ -343,9 +433,6 @@ public class GrowingBoard
 		surplusIndexes = new HashSet<Integer>();	
 	
 		int newNbrRowsOrCols = (newDimensionBoard()*2)-1;
-		// newRowsSizeCumul helps to know how many cells before the beginning of a new row.  So if size of the 
-		// board is 3, newRowsSizeCumul will look like [0, 3, 7, 12, 16, 19], showing that at there are 0 cells 
-		// before the first row, 7 cells before the third row, ...
 		ArrayList<Integer> newRowsSizeCumul = new ArrayList<Integer>();
 		newRowsSizeCumul.add(0);
 		for (int i=0; i<newNbrRowsOrCols; i++) 
@@ -401,8 +488,7 @@ public class GrowingBoard
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
-
-		
+				    
 		int diffInitToPrevDimensionBoard = prevDimensionBoard() - initDimensionBoard();
 		int initMaxIndexRowOrCol = (initDimensionBoard()*2) - 2;
 		for (Cell prevIndex : context.topology().cells()) 
@@ -422,6 +508,157 @@ public class GrowingBoard
 				surplusInitIndexes().add(i);
 	}
 	
+	/**
+	 * Translates coordinates into index for a triangular board.
+	 * 
+	 * @param col column of the coordinate.
+	 * @param minColPerRow minimum possible column coordinate for a the row.
+	 * @param rowsSizeCumul helps to know how many cells there are before the beginning of a new row.
+	 *
+	 * @return the index based on the coordinates.
+	 */
+	protected static int coordToIndexTriangle(int col, int minColPerRow, int rowsSizeCumul)
+	{
+		return rowsSizeCumul + (col - minColPerRow)/2;
+	}
+	
+	/**
+	 * Initializes data structures to map the previous indexes to the new indexes, 
+	 * due to the change in board size. For a Triangular board.
+	 * 
+	 * @param context
+	 */
+	protected static void initMappingIndexesTriangle(Context context)
+	{
+		// data structures to map between current plate and new plate
+		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
+		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
+		surplusIndexes = new HashSet<Integer>();	
+		
+		ArrayList<Integer> newMinColPerRowList = new ArrayList<Integer>();
+		ArrayList<Integer> newRowsSizeCumul = new ArrayList<Integer>();
+		newMinColPerRowList.add(0);
+		newRowsSizeCumul.add(0);
+		newRowsSizeCumul.add(newDimensionBoard());
+		for (int i=1; i<newDimensionBoard(); i++)
+		{
+			newMinColPerRowList.add(i);
+			newMinColPerRowList.add(i);
+			
+			newRowsSizeCumul.add(newDimensionBoard()-i + newRowsSizeCumul.get(newRowsSizeCumul.size()-1));
+		    newRowsSizeCumul.add(newDimensionBoard()-i + newRowsSizeCumul.get(newRowsSizeCumul.size()-1));
+		}
+		newRowsSizeCumul.remove(newRowsSizeCumul.size() - 1);
+		
+		if (prevDimensionBoard() < newDimensionBoard()) 
+		{
+			for (Cell prevIndex : context.topology().cells()) 
+			{ 
+				int newCol = prevIndex.col()+Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+				int newRow = prevIndex.row()+Constants.GROWING_STEP_TRIANGLE_BOARDLESS-1;
+				int newIndex = coordToIndexTriangle(newCol, newMinColPerRowList.get(newRow), newRowsSizeCumul.get(newRow));
+				mappedPrevToNewIndexes().put(prevIndex.index(), newIndex);
+				mappedNewToPrevIndexes().put(newIndex, prevIndex.index());
+			}
+			// creating map for the cells outside the main board
+			for (int prevIndex=prevAreaBoard(); prevIndex<prevTotalIndexes(); prevIndex++) 
+			{
+				int newIndex = prevIndex + diff();
+				mappedPrevToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, prevIndex);
+			}
+			
+			for (int i = 0; i < newTotalIndexes(); i++)
+				if (!mappedNewToPrevIndexes().containsKey(i))
+					surplusIndexes().add(i);
+			
+		}
+		else if (prevDimensionBoard() == newDimensionBoard())
+		{
+			for (int prevIndex = 0; prevIndex < newTotalIndexes(); prevIndex++)
+			{
+			    mappedNewToPrevIndexes().put(prevIndex, prevIndex);
+				mappedPrevToNewIndexes().put(prevIndex, prevIndex);
+			}
+		}
+		else
+		{
+			int newMaxIndexRowOrCol = (newDimensionBoard()*2) - 2;
+			HashMap<Integer, Integer> minColPerRow = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> maxColPerRow = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> maxRowPerCol = new HashMap<Integer, Integer>();
+			minColPerRow.put(0, 0);
+			maxColPerRow.put(0, newMaxIndexRowOrCol);
+			maxRowPerCol.put(0, 0);
+			maxRowPerCol.put(newMaxIndexRowOrCol, 0);
+			for (int i=1; i<newDimensionBoard(); i++) 
+			{
+				minColPerRow.put((i*2)-1, i);
+				minColPerRow.put(i*2, i);
+
+				maxColPerRow.put((i*2)-1, newMaxIndexRowOrCol - i);
+				maxColPerRow.put(i*2, newMaxIndexRowOrCol - i);
+
+				maxRowPerCol.put(i, i*2);
+				maxRowPerCol.put(newMaxIndexRowOrCol-i, i*2);
+			}
+			for (Cell prevIndex : context.topology().cells()) 
+			{ 
+				int newCol = prevIndex.col()-Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+				int newRow = prevIndex.row()-(Constants.GROWING_STEP_TRIANGLE_BOARDLESS-1);
+				if (newCol >= 0 && newRow >= 0 && newCol <= newMaxIndexRowOrCol && newRow <= newMaxIndexRowOrCol) {
+					// make sure new coordinates exist on the smaller board
+					if (newCol >= minColPerRow.get(newRow) && newCol <= maxColPerRow.get(newRow) && (maxColPerRow.get(newRow)-newCol)%2 == 0 && newRow <= maxRowPerCol.get(newCol))
+					{
+						int newIndex = coordToIndexTriangle(newCol, newMinColPerRowList.get(newRow), newRowsSizeCumul.get(newRow));
+						mappedPrevToNewIndexes().put(prevIndex.index(), newIndex);
+						mappedNewToPrevIndexes().put(newIndex, prevIndex.index());
+					}
+				}
+			}
+			// creating map for the cells outside the main board
+			for (int prevIndex=prevAreaBoard(); prevIndex<prevTotalIndexes(); prevIndex++) 
+			{
+				int newIndex = prevIndex - diff();
+				mappedPrevToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, prevIndex);
+			}
+			for (int i = 0; i < prevTotalIndexes(); i++)
+				if (!mappedPrevToNewIndexes().containsKey(i))
+					surplusIndexes().add(i);
+		}
+		
+		// data structures to map between initial plate and new plate
+		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+		surplusInitIndexes = new HashSet<Integer>();
+		
+		int diffInitToPrevDimensionBoard = (prevDimensionBoard() - initDimensionBoard())/Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+		for (Cell prevIndex : context.topology().cells()) 
+		{ 
+			int newCol = prevIndex.col()-(Constants.GROWING_STEP_TRIANGLE_BOARDLESS*diffInitToPrevDimensionBoard);
+			int newRow = prevIndex.row()-((Constants.GROWING_STEP_TRIANGLE_BOARDLESS-1)*diffInitToPrevDimensionBoard);
+			if (newCol >= 0 && newRow >= 0 && newCol <= initMaxIndexRowOrCol() && newRow <= initMaxIndexRowOrCol()) {
+				// make sure new coordinates exist on the smaller board
+				if (newCol >= initMinColPerRow().get(newRow) && newCol <= initMaxColPerRow().get(newRow) && (initMaxColPerRow().get(newRow)-newCol)%2 == 0 && newRow <= initMaxRowPerCol().get(newCol))
+				{
+					int newIndex = coordToIndexTriangle(newCol, initMinColPerRowList().get(newRow), initRowsSizeCumulTriangular().get(newRow));
+					mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
+					mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
+				}
+			}
+		}
+		// creating map for the cells outside the main board
+		for (int prevIndex=initAreaBoard(); prevIndex<initTotalIndexes(); prevIndex++) 
+		{
+			int newIndex = prevIndex + diffInit();
+			mappedInitToNewIndexes().put(prevIndex, newIndex);
+			mappedNewToInitIndexes().put(newIndex, prevIndex);
+		}
+		for (int i = 0; i < newTotalIndexes(); i++)
+			if (!mappedNewToInitIndexes().containsKey(i))
+				surplusInitIndexes().add(i);
+	}
 	/** 
 	 * Initializes data structures to map the previous indexes to the new indexes, 
 	 * due to the change in board size, such as :
@@ -444,7 +681,7 @@ public class GrowingBoard
 		}
 		else if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Triangular)
 		{
-			// TODO
+			initMappingIndexesTriangle(context);
 		}
 		else
 		{
@@ -480,7 +717,8 @@ public class GrowingBoard
 		}
 		else if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Triangular)
 		{
-			// TODO
+			prevAreaBoard = (int) Math.pow(prevDimensionBoard(), 2);
+			newAreaBoard = (int) Math.pow(newDimensionBoard(), 2);
 		}
 		else
 		{
