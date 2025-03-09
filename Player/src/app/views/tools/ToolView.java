@@ -8,6 +8,7 @@ import java.util.List;
 
 import app.PlayerApp;
 import app.move.GrowingBoardVisual;
+import app.move.MappingBoardless;
 import app.utils.GameUtil;
 import app.utils.SettingsExhibition;
 import app.views.View;
@@ -240,6 +241,7 @@ public class ToolView extends View
 			else 
 				newDim = currDim;
 			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
+			MappingBoardless.createMappings(context, currMove, currDim, newDim);
 		}
 				
 		GameUtil.resetGame(app, true, true);

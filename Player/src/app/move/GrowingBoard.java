@@ -871,7 +871,6 @@ public class GrowingBoard
 	 * @param generator
 	 * @param maxChunkVal
 	 * @param maxChunkVal
-	 * @param mappedPrevToNewIndexes
 	 */
 	protected static HashedChunkSet copyChunk(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
 	{

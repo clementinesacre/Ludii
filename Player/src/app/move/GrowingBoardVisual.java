@@ -164,7 +164,6 @@ public class GrowingBoardVisual extends GrowingBoard
 
 		if (context.game().isBoardless()) 
 		{
-			MappingBoardless.createMapping(context, move);
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to())+" - move : "+move);
 			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() fromSize : "+fromSize+" - toSize : "+toSize);
@@ -173,6 +172,7 @@ public class GrowingBoardVisual extends GrowingBoard
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
+				MappingBoardless.createMappings(context, move, fromSize, toSize);
 				updateBoard(app, context, fromSize, toSize, replayMoves);
 				
 				//displayInfo(context); //TODO : to remove once code is ready

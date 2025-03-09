@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
+import app.move.MappingBoardless;
 import app.move.MoveHandler;
 import app.move.animation.MoveAnimation;
 import compiler.Compiler;
@@ -57,6 +58,9 @@ public class GameUtil
 		ref.interruptAI(app.manager());
 		AIUtil.checkAISupported(app.manager(), context);
 
+		// Useful for boardless games
+		MappingBoardless.init();
+		
 		// Web Player settings
 		app.settingsPlayer().setWebGameResultValid(true);
 		for (int i = 0; i <= game.players().count(); i++)
