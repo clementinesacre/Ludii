@@ -901,6 +901,23 @@ public class Topology implements Serializable
 
 		return null;
 	}
+
+	/**
+	 * @param row
+	 * @param col
+	 * @param level
+	 * @return Edge with the correct coordinates. If not exists null.
+	 */
+	public Edge getEdgeWithCoords(final int row, final int col, final int level)
+	{
+		for (final Edge e : edges)
+		{
+			if (e.row() == row && e.col() == col && e.layer() == level)
+				return e;
+		}
+
+		return null;
+	}
 	
 	//-------------------------------------------------------------------------
 	
