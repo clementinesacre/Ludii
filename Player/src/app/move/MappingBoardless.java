@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -33,90 +35,29 @@ public class MappingBoardless
 	private static HashMap<Integer, Integer> mappedNewToInitIndexes;
 	private static HashSet<Integer> surplusInitIndexes; // cells indexes that are being added from init board to new one
 	
-	private static HashMap<Integer, Integer> mappedPrevToNewIndexesVertices;
-	private static HashMap<Integer, Integer> mappedNewToPrevIndexesVertices;
-	private static HashSet<Integer> surplusIndexesVertices; // vertices indexes that are being added from one board to another
-
-	private static HashMap<Integer, Integer> mappedInitToNewIndexesVertices;
-	private static HashMap<Integer, Integer> mappedNewToInitIndexesVertices;
-	private static HashSet<Integer> surplusInitIndexesVertices; // vertices indexes that are being added from init board to new one
-	
-	private static HashMap<Integer, Integer> mappedPrevToNewIndexesEdges;
-	private static HashMap<Integer, Integer> mappedNewToPrevIndexesEdges;
-	private static HashSet<Integer> surplusIndexesEdges; // edges indexes that are being added from one board to another
-
-	private static HashMap<Integer, Integer> mappedInitToNewIndexesEdges;
-	private static HashMap<Integer, Integer> mappedNewToInitIndexesEdges;
-	private static HashSet<Integer> surplusInitIndexesEdges; // edges indexes that are being added from init board to new one
-	
-	private static int[][] cc = new int[][] { // coordonnées relatives des edges
-		{-3, -1}, {-3, 1}, {-3, 3}, 
-		{-2, -2}, {-2, 0}, {-2, 2}, {-2, 4}, 
-		{-1, -1}, {-1, 3}, 
-		{0, -2}, {0, 4}, 
-		{1, 3}, {1, -1}, 
-		{2, -2}, {2, 0}, {2, 2}, {2, 4}, 
-		{3, -1}, {3, 1}, {3, 3}};
-
-	private static int[][][] bb = new int[][][] { // pour chaque edge dans cc, les deux vertex liés et ce qu'il faut appliqué comme calcul par rapport au vertice en bas a gauche de la cell
-		{{-1, 0}, {-1, -1}}, {{-1, 0}, {-1, 0}}, {{-1, 2}, {-1, 1}}, 
-		{{-1, -1}, {0, -1}}, {{0, 0}, {-1, 0}}, {{-1, 1}, {0, 1}}, {{0, 2}, {-1, 2}}, 
-		{{0, 0}, {0 ,-1}}, {{0, 1}, {0, 2}}, 
-		{{0, -1}, {1, -1}}, {{1, 2}, {0, 2}}, 
-		{{1, 2}, {1, 1}}, {{1, -1}, {1, 0}}, 
-		{{1, -1}, {2, -1}}, {{2, 0}, {1, 0}}, {{1, 1}, {2, 1}}, {{2, 2}, {1, 2}}, 
-		{{2, -1}, {2, 0}}, {{2, 0}, {2, 1}}, {{2, 1}, {2, 2}}};
-	
-
 	//----------------------------Cells-----------------------------------------
 	// remember the cells added at each step to be able to undo them easily when going back
-	private static ArrayList<int[]> totalNbrNewCellsBeforeRow = new ArrayList<int[]>();
-	private static ArrayList<Integer> addedRowPerEdgeMove = new ArrayList<Integer>(); 
-	private static ArrayList<Integer> totalAddedRows = new ArrayList<Integer>();
-	private static ArrayList<Integer> totalAddedCells = new ArrayList<Integer>(); 
-	
-	private static ArrayList<Integer> rowsNeighbors; 
-	private static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToCols; 
-	private static int[] nbrNewCellsBeforeRow;
-	private static int[] cumulNbrNewCellsBeforeRow;
 
-	private static List<Cell> initCells;
+	private static int nbAddedCellsFromStart = 0; // total number  of row/col (=cell) added since the beginning
+	private static int[][] initialHands; // id initiaux des éléments qui ne sont pas sur le plateau (les mains des joueurs et autres)
+	private static int[][] intialCells; // matrice du plateau initial pour suivre combien de cellules ont été rajoutées à chaque edge move pour chaque cellule bien précis
+
+	private static ArrayList<ArrayList<int[]>> cellsRowsColsAddedFromStart = new ArrayList<ArrayList<int[]>>(); // liste de listes de row,col relatives au plateau courant ajoutées pour un edge move
+	private static ArrayList<int[]> cellsRowsColsAdded; // liste de row,col relatives au plateau courant ajoutées pour un edge move rowsColsAdded
+	private static ArrayList<Integer> cellsAddedLeftCols = new ArrayList<Integer>(); // pour chaque edge move combien de colonne ont été crée en négatif
+	private static ArrayList<Integer> cellsAddedDownRows = new ArrayList<Integer>(); // pour chaque edge move combien de lignes ont été crée en négatif
 
 	//----------------------------Vertices--------------------------------------
 	// remember the vertices added at each step to be able to undo them easily when going back
-	private static ArrayList<int[]> totalNbrNewVerticesBeforeRow = new ArrayList<int[]>();
-	private static ArrayList<Integer> addedRowPerEdgeMoveVertices = new ArrayList<Integer>(); 
-	public static ArrayList<Integer> totalAddedRowsVertices = new ArrayList<Integer>();
-	public static ArrayList<Integer> totalAddedColsVertices = new ArrayList<Integer>();
-	private static ArrayList<Integer> totalAddedVertices = new ArrayList<Integer>(); 
 	
-	private static ArrayList<Integer> rowsNeighborsVertices; 
-	private static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToColsVertices; 
-	private static int[] nbrNewVerticesBeforeRow;
-	private static int[] cumulNbrNewVerticesBeforeRow;
+	private static ArrayList<Integer> rowsNeighborsVertices; // liste de row en position relatif qui ont été ajoutés. Sont dans l'ordre croissant
+	private static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToColsVertices; // clé row ajoutées, valeur liste de col ajoutées pour cette row. Sont dans l'ordre croissant
 	
-	static HashMap<Integer, int[]> xx; 
-	private static HashMap<Integer, HashMap<Integer, Integer>> xxretourne; 
-	static HashMap<Integer, int[]> vertexToCoord; 
-	public static ArrayList<Integer>[] nbAddedColPerRow;
+	private static ArrayList<Integer>[] nbAddedColPerRow; // for each row what column where added. 2 elem en plus, un pour une nouvelle row en bas, et un pour une row en haut // = list de row de liste de col
+	
+	public static boolean vertexAddedLeftCol; // pour le dernier edge move, est ce qu'une colonne en vertex a été créée en négatif ? (pourrait utiliser celui des cells, ça va avec)
 
-	//----------------------------Edges--------------------------------------
-	// remember the vertices added at each step to be able to undo them easily when going back
-	private static ArrayList<int[]> totalNbrNewEdgesBeforeRow = new ArrayList<int[]>();
-	private static ArrayList<Integer> addedRowPerEdgeMoveEdges = new ArrayList<Integer>(); 
-	private static ArrayList<Integer> totalAddedRowsEdges = new ArrayList<Integer>();
-	private static ArrayList<Integer> totalAddedEdges = new ArrayList<Integer>(); 
 	
-	private static ArrayList<Integer> rowsNeighborsEdges; 
-	private static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToColsEdges; 
-	private static int[] nbrNewEdgesBeforeRow;
-	private static int[] cumulNbrNewEdgesBeforeRow;
-	
-	static HashMap<Integer, int[]> xx2; 
-	private static HashMap<Integer, HashMap<Integer, Integer>> mo; 
-	static HashMap<Integer, int[]> edgeToV; 
-	static HashMap<Integer, ArrayList<Integer>> stru; 
-
 	//--------------------------------Getters----------------------------------
 	
 	public static HashMap<Integer, Integer> mappedPrevToNewIndexes()
@@ -149,78 +90,6 @@ public class MappingBoardless
 		return surplusInitIndexes;
 	}
 	
-	private static ArrayList<Integer> rowsNeighbors()
-	{
-		return rowsNeighbors;
-	}
-	
-	public static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToCols()
-	{
-		return rowsNeighborsMapToCols;
-	}
-	
-	private static int[] nbrNewCellsBeforeRow()
-	{
-		return nbrNewCellsBeforeRow;
-	}
-	
-	private static ArrayList<int[]> totalNbrNewCellsBeforeRow()
-	{
-		return totalNbrNewCellsBeforeRow;
-	}
-	
-	private static ArrayList<Integer> addedRowPerEdgeMove()
-	{
-		return addedRowPerEdgeMove;
-	}
-	
-	private static ArrayList<Integer> totalAddedRows()
-	{
-		return totalAddedRows;
-	}
-	
-	private static ArrayList<Integer> totalAddedCells()
-	{
-		return totalAddedCells;
-	}
-	
-	private static int[] cumulNbrNewCellsBeforeRow()
-	{
-		return cumulNbrNewCellsBeforeRow;
-	}
-	
-
-	
-	public static HashMap<Integer, Integer> mappedPrevToNewIndexesVertices()
-	{
-		return mappedPrevToNewIndexesVertices;
-	}
-	
-	public static HashMap<Integer, Integer> mappedNewToPrevIndexesVertices()
-	{
-		return mappedNewToPrevIndexesVertices;
-	}
-	
-	public static HashSet<Integer> surplusIndexesVertices()
-	{
-		return surplusIndexesVertices;
-	}
-	
-	public static HashMap<Integer, Integer> mappedInitToNewIndexesVertices()
-	{
-		return mappedInitToNewIndexesVertices;
-	}
-	
-	public static HashMap<Integer, Integer> mappedNewToInitIndexesVertices()
-	{
-		return mappedNewToInitIndexesVertices;
-	}
-	
-	public static HashSet<Integer> surplusInitIndexesVertices()
-	{
-		return surplusInitIndexesVertices;
-	}
-	
 	private static ArrayList<Integer> rowsNeighborsVertices()
 	{
 		return rowsNeighborsVertices;
@@ -231,123 +100,105 @@ public class MappingBoardless
 		return rowsNeighborsMapToColsVertices;
 	}
 	
-	private static int[] nbrNewVerticesBeforeRow()
+	public static ArrayList<Integer>[] nbAddedColPerRow()
 	{
-		return nbrNewVerticesBeforeRow;
+		return nbAddedColPerRow;
 	}
 	
-	private static ArrayList<int[]> totalNbrNewVerticesBeforeRow()
+	public static int[][] initialHands()
 	{
-		return totalNbrNewVerticesBeforeRow;
+		return initialHands;
 	}
 	
-	private static ArrayList<Integer> addedRowPerEdgeMoveVertices()
+	public static ArrayList<Integer> cellsAddedLeftCols()
 	{
-		return addedRowPerEdgeMoveVertices;
+		return cellsAddedLeftCols;
 	}
 	
-	private static ArrayList<Integer> totalAddedRowsVertices()
+	public static ArrayList<Integer> cellsAddedDownRows()
 	{
-		return totalAddedRowsVertices;
+		return cellsAddedDownRows;
 	}
 	
-	private static ArrayList<Integer> totalAddedVertices()
+	public static ArrayList<int[]> cellsRowsColsAdded()
 	{
-		return totalAddedVertices;
+		return cellsRowsColsAdded;
 	}
 	
-	private static int[] cumulNbrNewVerticesBeforeRow()
+	public static ArrayList<ArrayList<int[]>> cellsRowsColsAddedFromStart()
 	{
-		return cumulNbrNewVerticesBeforeRow;
+		return cellsRowsColsAddedFromStart;
+	}
+	
+	public static int[][] initialCells()
+	{
+		return intialCells;
+	}
+	
+	public static int nbAddedCellsFromStart()
+	{
+		return nbAddedCellsFromStart;
+	}
+	
+	public static boolean vertexAddedLeftCol()
+	{
+		return vertexAddedLeftCol;
 	}
 	
 
-	
-	public static HashMap<Integer, Integer> mappedPrevToNewIndexesEdges()
-	{
-		return mappedPrevToNewIndexesEdges;
-	}
-	
-	public static HashMap<Integer, Integer> mappedNewToPrevIndexesEdges()
-	{
-		return mappedNewToPrevIndexesEdges;
-	}
-	
-	public static HashSet<Integer> surplusIndexesEdges()
-	{
-		return surplusIndexesEdges;
-	}
-	
-	public static HashMap<Integer, Integer> mappedInitToNewIndexesEdges()
-	{
-		return mappedInitToNewIndexesEdges;
-	}
-	
-	public static HashMap<Integer, Integer> mappedNewToInitIndexesEdges()
-	{
-		return mappedNewToInitIndexesEdges;
-	}
-	
-	public static HashSet<Integer> surplusInitIndexesEdges()
-	{
-		return surplusInitIndexesEdges;
-	}
-	
-	private static ArrayList<Integer> rowsNeighborsEdges()
-	{
-		return rowsNeighborsEdges;
-	}
-	
-	public static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToColsEdges()
-	{
-		return rowsNeighborsMapToColsEdges;
-	}
-	
-	private static int[] nbrNewEdgesBeforeRow()
-	{
-		return nbrNewEdgesBeforeRow;
-	}
-	
-	private static ArrayList<int[]> totalNbrNewEdgesBeforeRow()
-	{
-		return totalNbrNewEdgesBeforeRow;
-	}
-	
-	private static ArrayList<Integer> addedRowPerEdgeMoveEdges()
-	{
-		return addedRowPerEdgeMoveEdges;
-	}
-	
-	private static ArrayList<Integer> totalAddedRowsEdges()
-	{
-		return totalAddedRowsEdges;
-	}
-	
-	private static ArrayList<Integer> totalAddedEdges()
-	{
-		return totalAddedEdges;
-	}
-	
-	private static int[] cumulNbrNewEdgesBeforeRow()
-	{
-		return cumulNbrNewEdgesBeforeRow;
-	}
-	
 	//-------------------------------------------------------------------------
 	
-	public static void init()
+	public static void init(Context context)
 	{
-		totalNbrNewCellsBeforeRow = new ArrayList<int[]>();
-		addedRowPerEdgeMove = new ArrayList<Integer>(); 
-		totalAddedRows = new ArrayList<Integer>();
+		initialHands = new int[context.containers().length-1][];
+		for (int i=1; i<context.containers().length; i++)
+		{
+			int[] initialHand = new int[context.containers()[i].topology().cells().size()];
+			for (int j=0; j<context.containers()[i].topology().cells().size(); j++)
+			{
+				Cell c = context.containers()[i].topology().cells().get(j);
+				int prevIndex = c.index();
+				initialHand[j] = prevIndex;
+				
+			}
+			initialHands()[i-1] = initialHand;
+		}
 		
+		intialCells = new int[context.topology().rows().get(SiteType.Cell).size()][]; // TODO : ne pas harcoder la taille
+		for (int i=0; i<context.topology().rows().get(SiteType.Cell).size(); i++)
+		{
+			int nbCol = context.topology().rows().get(SiteType.Cell).get(i).size();
+			intialCells[i] = new int[nbCol];
+		}
+	}
+	
+	public static void clean()
+	{
+
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
-		surplusIndexes = new HashSet<Integer>(); // indexes that are being added from one board to another
+		surplusIndexes = new HashSet<Integer>(); 
+
+		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+		surplusInitIndexes = new HashSet<Integer>(); 
 		
-		rowsNeighbors = new ArrayList<Integer>(); 
-		rowsNeighborsMapToCols = new HashMap<Integer, ArrayList<Integer>>(); 
-		nbrNewCellsBeforeRow = new int[0];
+		initialHands = null;
+		intialCells = null;
+		
+		nbAddedCellsFromStart = 0;
+		
+		cellsRowsColsAddedFromStart = new ArrayList<ArrayList<int[]>>();
+		cellsRowsColsAdded = new ArrayList<int[]>();
+		cellsAddedLeftCols = new ArrayList<Integer>();
+		cellsAddedDownRows = new ArrayList<Integer>();
+
+		rowsNeighborsVertices = new ArrayList<Integer>(); 
+		rowsNeighborsMapToColsVertices = new HashMap<Integer, ArrayList<Integer>>();		
+		nbAddedColPerRow = null;
+		
+		vertexAddedLeftCol = false; 
+		
 	}
 
 	//----------------------------Cells-----------------------------------------
@@ -363,290 +214,189 @@ public class MappingBoardless
 	 */
 	private static void calculateNeighborsCoordinates(Context context, Cell cell)
 	{
+		boolean newColB = false;
+		boolean newRowB = false;
 		int row = cell.row();
 		int col = cell.col();
-		System.out.println("MappingBoardless.java calculateNeighborsCoordinates() vertex cell : "+cell.vertices());
-		System.out.println("MappingBoardless.java calculateNeighborsCoordinates() edges cell : "+cell.edges());
-		rowsNeighborsMapToCols = new HashMap<Integer, ArrayList<Integer>>();
-		rowsNeighbors = new ArrayList<Integer>();
 		for (int r=-1; r<=1; r++)
-		{
 			for (int c=-1; c<=1; c++)
 			{
 				int newRow = row + r;
 				int newCol = col + c;
+				if (newCol < 0 && !newColB)
+					newColB = true;
+				if (newRow < 0 && !newRowB)
+					newRowB = true;
 				Cell newCell = context.topology().getCellWithCoords(newRow, newCol, 0); //TODO : 0 for only flat game?
 				if (newCell == null)
 				{
-					if (rowsNeighborsMapToCols().containsKey(newRow))
-					{
-						rowsNeighborsMapToCols().get(newRow).add(newCol);
-					}
-					else
-					{
-						ArrayList<Integer> set = new ArrayList<Integer>();
-						set.add(newCol);
-						rowsNeighborsMapToCols().put(newRow, set);
-						rowsNeighbors().add(newRow);
-					}
+					cellsRowsColsAdded().add(new int[] {newRow, newCol});
 				}
 			}
-		}
-		Collections.sort(rowsNeighbors());
-	}
-	
+		cellsRowsColsAddedFromStart().add(cellsRowsColsAdded());
+		
 
-	/**
-	 * Calculates the indexes of the neighbors of the cell. They do not exist yet, 
-	 * this mean this will shift the current cells, and though help create the new 
-	 * mapping. At the same time, nbrNewCellsBeforeRow is filled in order to remember 
-	 * the number of cells added before a row.
-	 * @param context
-	 */
-	private static void calculateNeighborsIndexes(Context context)
-	{
-		nbrNewCellsBeforeRow = new int[context.topology().rows().get(SiteType.Cell).size()+3];
-		int lastTotalAddedRows = totalAddedRows().size() > 0 ? totalAddedRows().get(totalAddedRows().size()-1) : 0;
-		int[] inter = new int[context.topology().rows().get(SiteType.Cell).size()+3 + lastTotalAddedRows];
-		boolean newRow = false;
-		for (Integer r : rowsNeighbors())
+		// store if an under row of left column have been created
+		if (cellsAddedLeftCols().size() == 0) 
 		{
-			ArrayList<Integer> colsNeighbors = rowsNeighborsMapToCols().get(r);
-			Collections.sort(colsNeighbors);
-			
-			if (r >= 0) 
+			cellsAddedLeftCols().add(newColB ? 1 : 0); 
+			cellsAddedDownRows().add(newRowB ? 1 : 0); 
+		}
+		else
+		{
+			int last = cellsAddedLeftCols().size()-1; // TODO en faire une variable globale, utilisée à pas mal d'endroit
+			cellsAddedLeftCols().add(cellsAddedLeftCols().get(last) + (newColB ? 1 : 0)); 
+			cellsAddedDownRows().add(cellsAddedDownRows().get(last) + (newRowB ? 1 : 0)); 
+		}
+	}
+
+	private static void prevToNew(Context context, Cell cell)
+	{
+		// prev to new
+		int addedCells = 0;
+		int[] currAddedRowCol = cellsRowsColsAdded().size() > 0 ? cellsRowsColsAdded().get(0) : new int[]{};
+		int rowColIndex = cellsRowsColsAdded().size() > 0 ? 0 : 1;
+		// mapping existing cells
+		for (Cell c : context.topology().cells())
+		{
+			while (rowColIndex < cellsRowsColsAdded().size())
 			{
-				nbrNewCellsBeforeRow()[r+1] += nbrNewCellsBeforeRow()[r]; 
-				inter[r+1+lastTotalAddedRows] += inter[r+lastTotalAddedRows] + cumulNbrNewCellsBeforeRow()[r+1];
-			}
-			for (Integer c : colsNeighbors)
-			{
-				int newIndex;
-				if (r < 0) //TODO
+				if (c.row() == currAddedRowCol[0])
 				{
-					newIndex = nbrNewCellsBeforeRow()[r+2];
-					nbrNewCellsBeforeRow()[r+2] += 1;
-					inter[r+2+lastTotalAddedRows] += 1 + cumulNbrNewCellsBeforeRow()[r+2];
+					if (c.col() > currAddedRowCol[1])
+					{
+						addedCells += 1;
+						rowColIndex ++;
+						if (rowColIndex < cellsRowsColsAdded().size())
+							currAddedRowCol = cellsRowsColsAdded().get(rowColIndex);
+						else
+							break;
+					}
+					else
+						break;
+				}	
+				else if (c.row() > currAddedRowCol[0])
+				{
+					addedCells += 1;
+					rowColIndex ++;
+					if (rowColIndex < cellsRowsColsAdded().size())
+						currAddedRowCol = cellsRowsColsAdded().get(rowColIndex);
+					else
+						break;
 				}
 				else
-				{
-					// check on the right of the cell
-					Cell rightNeighbor = context.topology().getCellWithCoords(r, c+1, 0); // TODO si r < 0 ou r >= size ça sert à rien de looper sur les coord
-					if (rightNeighbor != null)
-					{
-						newIndex = rightNeighbor.index() + nbrNewCellsBeforeRow()[r+1];
-						nbrNewCellsBeforeRow()[r+1] += 1;
-						inter[r+1+lastTotalAddedRows] += 1 + cumulNbrNewCellsBeforeRow()[r+1];
-					}
-					else
-					{
-						// check on the left of the cell
-						Cell leftNeighbor = context.topology().getCellWithCoords(r, c-1, 0);
-						if (leftNeighbor != null)
-						{
-							newIndex = leftNeighbor.index() + nbrNewCellsBeforeRow()[r+1] + 1;
-							nbrNewCellsBeforeRow()[r+2] += 1;
-							inter[r+2+lastTotalAddedRows] += 1 + cumulNbrNewCellsBeforeRow()[r+2];
-						}
-						else
-						{
-							newIndex = context.topology().cells().size() + nbrNewCellsBeforeRow()[r+1];
-							nbrNewCellsBeforeRow()[r+1] += 1;
-							inter[r+1+lastTotalAddedRows] += 1 + cumulNbrNewCellsBeforeRow()[r+1];
-						}
-					}
-				}
-				
-				if (r < 0 || r >= context.topology().rows().get(SiteType.Cell).size())
-				{
-					newRow = true;
-				}
-				surplusIndexes().add(newIndex);
-				surplusInitIndexes().add(newIndex);
+					break;
 			}
-		}
-		int prevTotalAddedCells = 0;
-		if (totalAddedCells().size()>0)
-			prevTotalAddedCells = totalAddedCells().get(totalAddedCells().size()-1);
-		totalAddedCells().add(surplusIndexes().size()+prevTotalAddedCells);
-
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() totalAddedRows : "+totalAddedRows+" - lastTotalAddedRows : "+lastTotalAddedRows);
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() nbrNewCellsBeforeRow 1 : "+Arrays.toString(nbrNewCellsBeforeRow()));
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() i : "+rowsNeighbors().get(rowsNeighbors().size()-1)+2+" - < : "+context.topology().rows().get(SiteType.Cell).size()+3);
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() cumulNbrNewCellsBeforeRow len : "+cumulNbrNewCellsBeforeRow.length+" - inter len : "+inter.length+" - nbrNewCellsBeforeRow len : "+nbrNewCellsBeforeRow.length);
-		for (int i=rowsNeighbors().get(rowsNeighbors().size()-1)+2; i<context.topology().rows().get(SiteType.Cell).size()+3; i++)
-		{
-			System.out.println("MappingBoardless.java calculateNeighborsIndexes() inter["+i+"] += nbrNewCellsBeforeRow()["+(i-1)+"] + cumulNbrNewCellsBeforeRow()["+(i-lastTotalAddedRows)+"];");
-			inter[i] += nbrNewCellsBeforeRow()[i-1] + cumulNbrNewCellsBeforeRow()[i-lastTotalAddedRows];
-			nbrNewCellsBeforeRow()[i] = nbrNewCellsBeforeRow()[i-1] + nbrNewCellsBeforeRow()[i];
-		}
-		totalNbrNewCellsBeforeRow().add(nbrNewCellsBeforeRow());
-		cumulNbrNewCellsBeforeRow = inter;
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() cumulNbrNewCellsBeforeRow : "+Arrays.toString(cumulNbrNewCellsBeforeRow));
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() inter : "+Arrays.toString(inter));
-		
-		if (newRow)
-			addedRowPerEdgeMove().add(1);
-		else
-			addedRowPerEdgeMove().add(0);
-		
-		totalAddedRows().add(lastTotalAddedRows + addedRowPerEdgeMove().get(addedRowPerEdgeMove().size()-1));
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() nbrNewCellsBeforeRow 2 : "+Arrays.toString(nbrNewCellsBeforeRow()));
-		System.out.println("MappingBoardless.java calculateNeighborsIndexes() newRow : "+newRow);
-	}
-	
-	/**
-	 * For each cells of the previous board, calculates the new index.
-	 * @param context
-	 */
-	private static void calculateCurrentCellsIndexes(Context context)
-	{
-		for (Cell c : context.topology().cells())
-		{
-			int prevIndex = c.index();
-			int newIndex = prevIndex + nbrNewCellsBeforeRow()[c.row()+1]; 
-			mappedPrevToNewIndexes().put(prevIndex, newIndex);
-			mappedNewToPrevIndexes().put(newIndex, prevIndex);
+			
+			int newIndex = c.index() + addedCells;
+			mappedPrevToNewIndexes().put(c.index(), newIndex);
+			mappedNewToPrevIndexes().put(newIndex, c.index());
 		}
 		
 
-		
-		int diff = nbrNewCellsBeforeRow()[nbrNewCellsBeforeRow().length-2];
-		System.out.println("MappingBoard.java createInitMapping() diff : "+diff);
-		System.out.println("MappingBoard.java createInitMapping() nbrNewCellsBeforeRow : "+Arrays.toString(nbrNewCellsBeforeRow));
+		// mapping other containers than board
 		for (int i=1; i<context.containers().length; i++)
-		{
-			System.out.println("MappingBoard.java createInitMapping() container : "+context.containers()[i]);
-			for (Cell c : context.containers()[i].topology().cells())
+			for (int j=0; j<context.containers()[i].topology().cells().size(); j++)
 			{
-				System.out.println("MappingBoard.java createInitMapping() c : "+c);
-				int prevIndex = c.index();
-				int newIndex = prevIndex + diff;
+				int prevIndex = context.containers()[i].topology().cells().get(j).index();
+				int newIndex = prevIndex + cellsRowsColsAdded().size();
 				mappedPrevToNewIndexes().put(prevIndex, newIndex);
 				mappedNewToPrevIndexes().put(newIndex, prevIndex);
-				System.out.println("MappingBoard.java createInitMapping() mappedInitToNewIndexes : "+mappedInitToNewIndexes);
 			}
-		}
+		
+		// saving new cells that cannot be mapped from previous board as they are new
+		for (int i=0; i<context.topology().cells().size()+cellsRowsColsAdded().size(); i++)
+			if (!mappedNewToPrevIndexes().containsKey(i))
+				surplusIndexes().add(i);
+		
+		nbAddedCellsFromStart += cellsRowsColsAdded().size();
+		
 	}
-	
-	/**
-	 * Creates mapping between initial board and new board, by summing 
-	 * the number of cells that were added before a row for each edge 
-	 * move done from the start.
-	 * @param context
-	 * @param limit until which edge move the board is redone.
-	 */
-	private static void createInitMapping(Context context, int limit)
-	{
-		nbrNewCellsBeforeRow = new int[context.topology().rows().get(SiteType.Cell).size()+3+totalAddedRows().size()];
-		
-		for (int i=0; i<limit; i++)
-		{
-			int[] currTotalNbrNewCellsBeforeRow = totalNbrNewCellsBeforeRow().get(i);
-			for (int j=0; j<currTotalNbrNewCellsBeforeRow.length; j++)
-			{
-				int offset = addedRowPerEdgeMove().get(i);
-				nbrNewCellsBeforeRow()[j+offset] += currTotalNbrNewCellsBeforeRow[j];
-			}
-		}
-		
 
-		// data structures to map between initial plate and new plate
-		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
-		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
-		//surplusInitIndexes = new HashSet<Integer>();
-		
-		int maxAddedRow = totalAddedRows().get(totalAddedRows.size()-1);
-		System.out.println("MappingBoardless.java cc() cells size : "+context.topology().cells().size());
-		System.out.println("MappingBoardless.java cc() cells initDimension : "+((Boardless) context.game().board()).initDimension());
-		int initAreaBoard = (int) Math.pow(((Boardless) context.game().board()).initDimension(), 2);
-		//for (int prevIndex=0; prevIndex<initAreaBoard; prevIndex++)
-		for (Cell c : context.topology().cells())
-		{
-			int prevIndex = c.index();
-			int newIndex = prevIndex + nbrNewCellsBeforeRow()[c.row()+1+maxAddedRow];
-			
-			mappedInitToNewIndexes().put(prevIndex, newIndex);
-			mappedNewToInitIndexes().put(newIndex, prevIndex);
-		}
-		
-		int diff = nbrNewCellsBeforeRow()[nbrNewCellsBeforeRow().length-2];
-		System.out.println("MappingBoard.java createInitMapping() diff : "+diff);
-		System.out.println("MappingBoard.java createInitMapping() nbrNewCellsBeforeRow : "+Arrays.toString(nbrNewCellsBeforeRow));
-		for (int i=1; i<context.containers().length; i++)
-		{
-			System.out.println("MappingBoard.java createInitMapping() container : "+context.containers()[i]);
-			for (Cell c : context.containers()[i].topology().cells())
+	private static void initToNew(Context context, Cell cell)
+	{
+		// init to new
+		int last = cellsAddedLeftCols().size()-1;
+		int nbAddedCol = cellsAddedLeftCols().get(last);
+		int nbAddedRow = cellsAddedDownRows().get(last);
+		int initAddedCells = 0;
+		int[] currRowCol = cellsRowsColsAdded().size() > 0 ? cellsRowsColsAdded().get(0) : new int[]{};
+		int rowColIndex = cellsRowsColsAdded().size() > 0 ? 0 : 1;
+		int cellIndex = 0;
+		// mapping existing cells
+		for (int r=0; r<initialCells().length; r++)
+			for (int c=0; c<initialCells()[r].length; c++)
 			{
-				System.out.println("MappingBoard.java createInitMapping() c : "+c);
-				int prevIndex = c.index();
-				int newIndex = prevIndex + diff;
+				
+				while (rowColIndex < cellsRowsColsAdded().size())
+				{
+					if (r == (currRowCol[0]-nbAddedRow))
+					{
+						if (c > (currRowCol[1]-nbAddedCol))
+						{
+							initAddedCells += 1;
+							rowColIndex ++;
+							if (rowColIndex < cellsRowsColsAdded().size())
+								currRowCol = cellsRowsColsAdded().get(rowColIndex);
+							else
+								break;
+						}
+						else
+							break;
+					}	
+					else if (r > (currRowCol[0]-nbAddedRow))
+					{
+						initAddedCells += 1;
+						rowColIndex ++;
+						if (rowColIndex < cellsRowsColsAdded().size())
+							currRowCol = cellsRowsColsAdded().get(rowColIndex);
+						else
+							break;
+					}
+					else
+						break;
+				}
+
+				initialCells()[r][c] += initAddedCells;
+				int newIndex = cellIndex + initialCells()[r][c];
+				mappedInitToNewIndexes().put(cellIndex, newIndex);
+				mappedNewToInitIndexes().put(newIndex, cellIndex);
+
+				cellIndex ++;
+			}
+		
+		// mapping other containers than board
+		for (int i=0; i<initialHands().length; i++)
+			for (int j=0; j<initialHands()[i].length; j++)
+			{
+				int prevIndex = initialHands()[i][j];
+				int newIndex = prevIndex + nbAddedCellsFromStart();
 				mappedInitToNewIndexes().put(prevIndex, newIndex);
 				mappedNewToInitIndexes().put(newIndex, prevIndex);
-				System.out.println("MappingBoard.java createInitMapping() mappedInitToNewIndexes : "+mappedInitToNewIndexes);
 			}
-		}	
 		
-		//newIndex = prevIndex + diff();
-		
-		for (int i=0; i<context.topology().cells().size(); i++)
-			if (!mappedInitToNewIndexes().containsKey(i))
+		// saving new cells that cannot be mapped from previous board as they are new
+		for (int i=0; i<cellIndex+nbAddedCellsFromStart(); i++)
+			if (!mappedNewToInitIndexes().containsKey(i))
 				surplusInitIndexes().add(i);
 	}
 	
-	private static void undoLastMoveCells(Context context)
-	{
-		int[] lastNbrNewCellsBeforeRow = totalNbrNewCellsBeforeRow().get(totalNbrNewCellsBeforeRow().size()-1);
-		int[] xx = new int[nbrNewCellsBeforeRow().length];
-		int offset = addedRowPerEdgeMove().get(totalNbrNewCellsBeforeRow().size()-1);
-		int maxAddedRow = totalAddedRows().get(totalAddedRows().size()-1);
-		for (int i=0; i<lastNbrNewCellsBeforeRow.length; i++)
-		{
-			xx[i+offset] = nbrNewCellsBeforeRow()[i+offset] - lastNbrNewCellsBeforeRow[i];
-		}
-		
-		for (Cell c : context.topology().cells())
-		{
-			int prevIndex = c.index();
-			int newIndex = prevIndex + xx[c.row()+1+maxAddedRow];
-			
-			mappedPrevToNewIndexes().put(prevIndex, newIndex);
-			mappedNewToPrevIndexes().put(newIndex, prevIndex);
-		}
-		
-		for (int i=0; i<context.topology().cells().size()+totalAddedCells().get(totalAddedCells().size()-1); i++)
-			if (!mappedPrevToNewIndexes().containsKey(i))
-				surplusIndexes().add(i);
-	}
-
+	
 	//----------------------------Vertices--------------------------------------
 	
-
-	/**
-	 * Calculates the coordinates of the neighbor of a cell, by only keeping the 
-	 * ones that do not exist yet on the current board.
-	 * rowsNeighborsMapToCols is a HashMap, with the keys being the rows of these 
-	 * neighbors, and the value is a list of the columns of these neighbors.
-	 * rowsNeighbors is just a list containing the rows of these neighbors.
-	 * @param context
-	 * @param cell
-	 */
 	private static void calculateVerticesNeighborsCoordinates(Context context, Cell cell)
 	{
-		Vertex vertex = cell.vertices().get(0); //bottom left vertex of the cell
+		Vertex vertex = cell.vertices().get(0); 
+		// make sure to have bottom left vertex of the cell
+		for (Vertex v : cell.vertices())
+			if (v.index() < vertex.index())
+				vertex = v;
 		int row = vertex.row();
 		int col = vertex.col();
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsCoordinates() vertex cell : "+cell.vertices());
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsCoordinates() edges cell : "+cell.edges());
-		for (Edge e : cell.edges())
-		{
-			System.out.println("MappingBoardless.java calculateVerticesNeighborsCoordinates() e row : "+e.row()+" - col : "+e.col());
-		}
 		rowsNeighborsMapToColsVertices = new HashMap<Integer, ArrayList<Integer>>();
 		rowsNeighborsVertices = new ArrayList<Integer>();
 		
 		for (int r=0; r<=1; r++)
-		{
 			for (int c=-1; c<=2; c+=3)
 			{
 				int newRow = row + r;
@@ -655,9 +405,7 @@ public class MappingBoardless
 				if (newVertex == null)
 				{
 					if (rowsNeighborsMapToColsVertices().containsKey(newRow))
-					{
 						rowsNeighborsMapToColsVertices().get(newRow).add(newCol);
-					}
 					else
 					{
 						ArrayList<Integer> set = new ArrayList<Integer>();
@@ -667,10 +415,8 @@ public class MappingBoardless
 					}
 				}
 			}
-		}
 		
 		for (int r=-1; r<=2; r+=3)
-		{
 			for (int c=-1; c<=2; c++)
 			{
 				int newRow = row + r;
@@ -679,9 +425,7 @@ public class MappingBoardless
 				if (newVertex == null)
 				{
 					if (rowsNeighborsMapToColsVertices().containsKey(newRow))
-					{
 						rowsNeighborsMapToColsVertices().get(newRow).add(newCol);
-					}
 					else
 					{
 						ArrayList<Integer> set = new ArrayList<Integer>();
@@ -691,502 +435,56 @@ public class MappingBoardless
 					}
 				}
 			}
-		}
-	
-		Collections.sort(rowsNeighborsVertices());
 	}
 	
-	/**
-	 * Calculates the indexes of the neighbors of the cell. They do not exist yet, 
-	 * this mean this will shift the current cells, and though help create the new 
-	 * mapping. At the same time, nbrNewCellsBeforeRow is filled in order to remember 
-	 * the number of cells added before a row.
-	 * @param context
-	 */
+	
 	private static void calculateVerticesNeighborsIndexes(Context context)
 	{
-		nbrNewVerticesBeforeRow = new int[context.topology().rows().get(SiteType.Vertex).size()+3];
-		int lastTotalAddedRowsVertices = totalAddedRowsVertices().size() > 0 ? totalAddedRowsVertices().get(totalAddedRowsVertices().size()-1) : 0;
-		int lastTotalAddedColsVertices = totalAddedColsVertices.size() > 0 ? totalAddedColsVertices.get(totalAddedColsVertices.size()-1) : 0;
-		int[] inter = new int[context.topology().rows().get(SiteType.Vertex).size()+3 + lastTotalAddedRowsVertices];
-		boolean newRow = false;
-		boolean newCol = false;
+
 		for (Integer r : rowsNeighborsVertices())
 		{
 			ArrayList<Integer> colsNeighbors = rowsNeighborsMapToColsVertices().get(r);
 			Collections.sort(colsNeighbors);
 			
-			if (r >= 0) 
-			{
-				nbrNewVerticesBeforeRow()[r+1] += nbrNewVerticesBeforeRow()[r]; 
-				inter[r+1+lastTotalAddedRowsVertices] += inter[r+lastTotalAddedRowsVertices] + cumulNbrNewVerticesBeforeRow()[r+1];
-			}
 			for (Integer c : colsNeighbors)
-			{
-				int newIndex;
-				if (r < 0) //TODO
-				{
-					newIndex = nbrNewVerticesBeforeRow()[r+2];
-					nbrNewVerticesBeforeRow()[r+2] += 1;
-					inter[r+2+lastTotalAddedRowsVertices] += 1 + cumulNbrNewVerticesBeforeRow()[r+2];
-				}
+			{	
+				if (nbAddedColPerRow()[r+1] != null)
+					nbAddedColPerRow()[r+1].add(c);
 				else
 				{
-					// check on the right of the cell
-					Vertex rightNeighbor = context.topology().getVertexWithCoords(r, c+1, 0); // TODO si r < 0 ou r >= size ça sert à rien de looper sur les coord
-					if (rightNeighbor != null)
-					{
-						newIndex = rightNeighbor.index() + nbrNewVerticesBeforeRow()[r+1];
-						nbrNewVerticesBeforeRow()[r+1] += 1;
-						inter[r+1+lastTotalAddedRowsVertices] += 1 + cumulNbrNewVerticesBeforeRow()[r+1];
-					}
-					else
-					{
-						// check on the left of the cell
-						Vertex leftNeighbor = context.topology().getVertexWithCoords(r, c-1, 0);
-						if (leftNeighbor != null)
-						{
-							newIndex = leftNeighbor.index() + nbrNewVerticesBeforeRow()[r+1] + 1;
-							nbrNewVerticesBeforeRow()[r+2] += 1;
-							inter[r+2+lastTotalAddedRowsVertices] += 1 + cumulNbrNewVerticesBeforeRow()[r+2];
-						}
-						else
-						{
-							newIndex = context.topology().vertices().size() + nbrNewVerticesBeforeRow()[r+1];
-							nbrNewVerticesBeforeRow()[r+1] += 1;
-							inter[r+1+lastTotalAddedRowsVertices] += 1 + cumulNbrNewVerticesBeforeRow()[r+1];
-						}
-					}
+					ArrayList<Integer> arr = new ArrayList<Integer>();
+					arr.add(c);
+					nbAddedColPerRow()[r+1] = arr;
 				}
 				
-
-				Vertex newV = new Vertex(newIndex, r, c, 0);
-				
-				if (r < 0 || r >= context.topology().rows().get(SiteType.Vertex).size())
-				{
-					newRow = true;
-				}
-				if (c < 0 || c >= context.topology().columns().get(SiteType.Vertex).size())
-				{
-					newCol = true;
-					if (nbAddedColPerRow[r+1] != null)
-						nbAddedColPerRow[r+1].add(c);
-					else
-					{
-						ArrayList<Integer> abcd = new ArrayList<Integer>();
-						abcd.add(c);
-						nbAddedColPerRow[r+1] = abcd;
-					}
-				}
-				surplusIndexesVertices().add(newIndex);
-				xx.put(newIndex, new int[]{r, c});
-				
-				if (xxretourne.containsKey(r))
-				{
-					xxretourne.get(r).put(c, newIndex);
-				}
-				else
-				{
-					HashMap<Integer, Integer> pq = new HashMap<Integer, Integer>();
-					pq.put(c, newIndex);
-					xxretourne.put(r, pq);
-				}
-				vertexToCoord.put(newIndex, new int[]{r, c});
+				if (c<0 && !vertexAddedLeftCol())
+					vertexAddedLeftCol = true;
 			}
 		}
-		int prevTotalAddedVertices = 0;
-		if (totalAddedVertices().size()>0)
-			prevTotalAddedVertices = totalAddedVertices().get(totalAddedVertices().size()-1);
-		totalAddedVertices().add(surplusIndexesVertices().size()+prevTotalAddedVertices);
-
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() nbAddedColPerRow : "+Arrays.toString(nbAddedColPerRow));
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() totalAddedRows : "+totalAddedRows+" - lastTotalAddedRows : "+lastTotalAddedRowsVertices);
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() nbrNewCellsBeforeRow 1 : "+Arrays.toString(nbrNewCellsBeforeRow()));
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() i : "+rowsNeighbors().get(rowsNeighbors().size()-1)+2+" - < : "+context.topology().rows().get(SiteType.Cell).size()+3);
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() clem len : "+cumulNbrNewCellsBeforeRow.length+" - inter len : "+inter.length+" - nbrNewCellsBeforeRow len : "+nbrNewCellsBeforeRow.length);
-		for (int i=rowsNeighborsVertices().get(rowsNeighborsVertices().size()-1)+2; i<context.topology().rows().get(SiteType.Vertex).size()+3; i++)
-		{
-			System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() inter["+i+"] += nbrNewVerticesBeforeRow()["+(i-1)+"] + clem()["+(i-lastTotalAddedRowsVertices)+"];");
-			inter[i] += nbrNewVerticesBeforeRow()[i-1] + cumulNbrNewVerticesBeforeRow()[i-lastTotalAddedRowsVertices];
-			nbrNewVerticesBeforeRow()[i] = nbrNewVerticesBeforeRow()[i-1] + nbrNewVerticesBeforeRow()[i];
-		}
-		totalNbrNewVerticesBeforeRow().add(nbrNewVerticesBeforeRow());
-		cumulNbrNewVerticesBeforeRow = inter;
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() clem : "+Arrays.toString(cumulNbrNewVerticesBeforeRow));
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() inter : "+Arrays.toString(inter));
-		
-		if (newRow)
-			addedRowPerEdgeMoveVertices().add(1);
-		else
-			addedRowPerEdgeMoveVertices().add(0);
-		
-		totalAddedRowsVertices().add(lastTotalAddedRowsVertices + addedRowPerEdgeMoveVertices().get(addedRowPerEdgeMoveVertices().size()-1));
-		
-
-		if (newRow)
-			totalAddedColsVertices.add(1);
-		else
-			totalAddedColsVertices.add(0);
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() nbrNewVerticesBeforeRow 2 : "+Arrays.toString(nbrNewVerticesBeforeRow()));
-		System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() newRow : "+newRow);
 	}
-	
-	/**
-	 * For each cells of the previous board, calculates the new index.
-	 * @param context
-	 */
-	private static void calculateCurrentVerticesIndexes(Context context)
-	{
-		for (Vertex v : context.topology().vertices())
-		{
-			int prevIndex = v.index();
-			int newIndex = prevIndex + nbrNewVerticesBeforeRow()[v.row()+1]; 
-			mappedPrevToNewIndexesVertices().put(prevIndex, newIndex);
-			mappedNewToPrevIndexesVertices().put(newIndex, prevIndex);
-		}
-	}
-
-	
-	private static void undoLastMoveVertices(Context context)
-	{
-		int[] lastNbrNewVerticesBeforeRow = totalNbrNewVerticesBeforeRow().get(totalNbrNewVerticesBeforeRow().size()-1);
-		int[] xx = new int[nbrNewVerticesBeforeRow().length];
-		int offset = addedRowPerEdgeMoveVertices().get(totalNbrNewVerticesBeforeRow().size()-1);
-		int maxAddedRow = totalAddedRowsVertices().get(totalAddedRowsVertices().size()-1);
-		for (int i=0; i<lastNbrNewVerticesBeforeRow.length; i++)
-		{
-			xx[i+offset] = nbrNewVerticesBeforeRow()[i+offset] - lastNbrNewVerticesBeforeRow[i];
-		}
 		
-		for (Vertex v : context.topology().vertices())
-		{
-			int prevIndex = v.index();
-			int newIndex = prevIndex + xx[v.row()+1+maxAddedRow];
-			
-			mappedPrevToNewIndexesVertices().put(prevIndex, newIndex);
-			mappedNewToPrevIndexesVertices().put(newIndex, prevIndex);
-		}
-		
-		for (int i=0; i<context.topology().vertices().size()+totalAddedVertices().get(totalAddedVertices().size()-1); i++)
-			if (!mappedPrevToNewIndexesVertices().containsKey(i))
-				surplusIndexesVertices().add(i);
-	}
-	
-	
-
-
-	//----------------------------Edges--------------------------------------
-	
-
-	/**
-	 * Calculates the coordinates of the neighbor of a cell, by only keeping the 
-	 * ones that do not exist yet on the current board.
-	 * rowsNeighborsMapToCols is a HashMap, with the keys being the rows of these 
-	 * neighbors, and the value is a list of the columns of these neighbors.
-	 * rowsNeighbors is just a list containing the rows of these neighbors.
-	 * @param context
-	 * @param cell
-	 */
-	private static void calculateEdgesNeighborsCoordinates(Context context, Cell cell)
-	{
-		Edge edge = cell.edges().get(0); //bottom left vertex of the cell
-		int row = edge.row();
-		int col = edge.col();
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsCoordinates() vertex cell : "+cell.vertices());
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsCoordinates() edges cell : "+cell.edges());
-		rowsNeighborsMapToColsEdges = new HashMap<Integer, ArrayList<Integer>>();
-		rowsNeighborsEdges = new ArrayList<Integer>();
-		
-		int index = 0;
-		for (int[] coords : cc)
-		{
-			int r = coords[0];
-			int c = coords[1];
-				int newRow = row + r;
-				int newCol = col + c;
-				Edge newEdge = context.topology().getEdgeWithCoords(newRow, newCol, 0); //TODO : 0 for only flat game?
-				if (newEdge == null)
-				{
-					if (rowsNeighborsMapToColsEdges().containsKey(newRow))
-					{
-						rowsNeighborsMapToColsEdges().get(newRow).add(newCol);
-						mo.get(newRow).put(newCol, index);
-					}
-					else
-					{
-						ArrayList<Integer> set = new ArrayList<Integer>();
-						set.add(newCol);
-						rowsNeighborsMapToColsEdges().put(newRow, set);
-						rowsNeighborsEdges().add(newRow);
-						
-
-						HashMap<Integer, Integer> pq = new HashMap<Integer, Integer>();
-						pq.put(newCol, index);
-						mo.put(newRow, pq);
-					}
-				}
-				
-				index += 1;
-		}
-	
-		Collections.sort(rowsNeighborsEdges());
-	}
-	
-	/**
-	 * Calculates the indexes of the neighbors of the cell. They do not exist yet, 
-	 * this mean this will shift the current cells, and though help create the new 
-	 * mapping. At the same time, nbrNewCellsBeforeRow is filled in order to remember 
-	 * the number of cells added before a row.
-	 * @param context
-	 */
-	private static void calculateEdgesNeighborsIndexes(Context context, Cell cell)
-	{
-		nbrNewEdgesBeforeRow = new int[context.topology().rows().get(SiteType.Edge).size()+3];
-		int lastTotalAddedRowsEdges = totalAddedRowsEdges().size() > 0 ? totalAddedRowsEdges().get(totalAddedRowsEdges().size()-1) : 0;
-		int[] inter = new int[context.topology().rows().get(SiteType.Edge).size()+3 + lastTotalAddedRowsEdges];
-		boolean newRow = false;
-		for (Integer r : rowsNeighborsEdges())
-		{
-			ArrayList<Integer> colsNeighbors = rowsNeighborsMapToColsEdges().get(r);
-			Collections.sort(colsNeighbors);
-			
-			if (r >= 0) 
-			{
-				nbrNewEdgesBeforeRow()[r+1] += nbrNewEdgesBeforeRow()[r]; 
-				inter[r+1+lastTotalAddedRowsEdges] += inter[r+lastTotalAddedRowsEdges] + cumulNbrNewEdgesBeforeRow()[r+1];
-			}
-			for (Integer c : colsNeighbors)
-			{
-				int newIndex;
-				if (r < 0) //TODO
-				{
-					newIndex = nbrNewEdgesBeforeRow()[r+2];
-					nbrNewEdgesBeforeRow()[r+2] += 1;
-					inter[r+2+lastTotalAddedRowsEdges] += 1 + cumulNbrNewVerticesBeforeRow()[r+2];
-				}
-				else
-				{
-					// check on the right of the cell
-					Edge rightNeighbor = context.topology().getEdgeWithCoords(r, c+2, 0); // TODO si r < 0 ou r >= size ça sert à rien de looper sur les coord
-					if (rightNeighbor != null)
-					{
-						newIndex = rightNeighbor.index() + nbrNewEdgesBeforeRow()[r+1];
-						nbrNewEdgesBeforeRow()[r+1] += 1;
-						inter[r+1+lastTotalAddedRowsEdges] += 1 + cumulNbrNewEdgesBeforeRow()[r+1];
-					}
-					else
-					{
-						// check on the left of the cell
-						Edge leftNeighbor = context.topology().getEdgeWithCoords(r, c-2, 0);
-						if (leftNeighbor != null)
-						{
-							newIndex = leftNeighbor.index() + nbrNewEdgesBeforeRow()[r+1] + 1;
-							nbrNewEdgesBeforeRow()[r+2] += 1;
-							inter[r+2+lastTotalAddedRowsEdges] += 1 + cumulNbrNewEdgesBeforeRow()[r+2];
-						}
-						else
-						{
-							newIndex = context.topology().edges().size() + nbrNewEdgesBeforeRow()[r+1];
-							nbrNewEdgesBeforeRow()[r+1] += 1;
-							inter[r+1+lastTotalAddedRowsEdges] += 1 + cumulNbrNewEdgesBeforeRow()[r+1];
-						}
-					}
-				}
-				
-				if (r < 0 || r >= context.topology().rows().get(SiteType.Edge).size())
-				{
-					newRow = true;
-				}
-				surplusIndexesEdges().add(newIndex);
-				xx.put(newIndex, new int[]{r, c});
-
-				int[][] vs = bb[mo.get(r).get(c)];
-				int[] v1 = vs[0];
-				int[] v2 = vs[1];
-				int rowV1Relative = v1[0];
-				int colV1Relative = v1[1];
-				int rowV2Relative = v2[0];
-				int colV2Relative = v2[1];
-				int rowV1Absolute = rowV1Relative+cell.vertices().get(0).row();
-				int rowV2Absolute = rowV2Relative+cell.vertices().get(0).row();
-				int colV1Absolute = colV1Relative+cell.vertices().get(0).col();
-				int colV2Absolute = colV2Relative+cell.vertices().get(0).col();
-
-				int gh1;
-				if (xxretourne.containsKey(rowV1Absolute) && xxretourne.get(rowV1Absolute).containsKey(colV1Absolute))
-				{
-					gh1 = xxretourne.get(rowV1Absolute).get(colV1Absolute);
-				}
-				else
-				{
-					gh1 = context.topology().getVertexWithCoords(rowV1Absolute, colV1Absolute, 0).index()+nbrNewVerticesBeforeRow[rowV1Absolute+1];
-				}
-				
-				int gh2;
-				if (xxretourne.containsKey(rowV2Absolute) && xxretourne.get(rowV2Absolute).containsKey(colV2Absolute))
-				{
-					gh2 = xxretourne.get(rowV2Absolute).get(colV2Absolute);
-				}
-				else
-				{
-					gh2 = context.topology().getVertexWithCoords(rowV2Absolute, colV2Absolute, 0).index()+nbrNewVerticesBeforeRow[rowV2Absolute+1];
-				}
-				
-				if (stru.containsKey(gh1))
-					stru.get(gh1).add(newIndex);
-				else
-				{
-					ArrayList<Integer> pazlf = new ArrayList<Integer>();
-					pazlf.add(newIndex);
-					stru.put(gh1, pazlf);		
-				}
-				if (stru.containsKey(gh2))
-					stru.get(gh2).add(newIndex);
-				else
-				{
-					ArrayList<Integer> pazlf = new ArrayList<Integer>();
-					pazlf.add(newIndex);
-					stru.put(gh2, pazlf);		
-				}
-
-				edgeToV.put(newIndex, new int[]{gh1, gh2});
-			}
-		}
-		int prevTotalAddedEdges = 0;
-		if (totalAddedEdges().size()>0)
-			prevTotalAddedEdges = totalAddedEdges().get(totalAddedEdges().size()-1);
-		totalAddedEdges().add(surplusIndexesEdges().size()+prevTotalAddedEdges);
-
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() totalAddedRows : "+totalAddedRows+" - lastTotalAddedRowsEdges : "+lastTotalAddedRowsEdges);
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() nbrNewCellsBeforeRow 1 : "+Arrays.toString(nbrNewEdgesBeforeRow()));
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() i : "+rowsNeighborsEdges().get(rowsNeighborsEdges().size()-1)+2+" - < : "+context.topology().rows().get(SiteType.Cell).size()+3);
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() clem len : "+cumulNbrNewCellsBeforeRow.length+" - inter len : "+inter.length+" - nbrNewCellsBeforeRow len : "+nbrNewCellsBeforeRow.length);
-		for (int i=rowsNeighborsEdges().get(rowsNeighborsEdges().size()-1)+2; i<context.topology().rows().get(SiteType.Edge).size()+3; i++)
-		{
-			System.out.println("MappingBoardless.java calculateVerticesNeighborsIndexes() inter["+i+"] += nbrNewVerticesBeforeRow()["+(i-1)+"] + clem()["+(i-lastTotalAddedRowsEdges)+"];");
-			inter[i] += nbrNewEdgesBeforeRow()[i-1] + cumulNbrNewEdgesBeforeRow()[i-lastTotalAddedRowsEdges];
-			nbrNewEdgesBeforeRow()[i] = nbrNewEdgesBeforeRow()[i-1] + nbrNewEdgesBeforeRow()[i];
-		}
-		totalNbrNewEdgesBeforeRow().add(nbrNewEdgesBeforeRow());
-		cumulNbrNewEdgesBeforeRow = inter;
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() clem : "+Arrays.toString(cumulNbrNewEdgesBeforeRow));
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() inter : "+Arrays.toString(inter));
-		
-		if (newRow)
-			addedRowPerEdgeMoveEdges().add(1);
-		else
-			addedRowPerEdgeMoveEdges().add(0);
-		
-		totalAddedRowsEdges().add(lastTotalAddedRowsEdges + addedRowPerEdgeMoveEdges().get(addedRowPerEdgeMoveEdges().size()-1));
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() nbrNewEdgesBeforeRow 2 : "+Arrays.toString(nbrNewEdgesBeforeRow()));
-		System.out.println("MappingBoardless.java calculateEdgesNeighborsIndexes() newRow : "+newRow);
-	}
-	
-	/**
-	 * For each cells of the previous board, calculates the new index.
-	 * @param context
-	 */
-	private static void calculateCurrentEdgesIndexes(Context context)
-	{
-		for (Edge e : context.topology().edges())
-		{
-			int prevIndex = e.index();
-			int newIndex = prevIndex + nbrNewEdgesBeforeRow()[e.row()+1]; 
-			mappedPrevToNewIndexesEdges().put(prevIndex, newIndex);
-			mappedNewToPrevIndexesEdges().put(newIndex, prevIndex);
-		}
-	}
 
 	
-	private static void undoLastMoveEdges(Context context)
-	{
-		int[] lastNbrNewEdgesBeforeRow = totalNbrNewEdgesBeforeRow().get(totalNbrNewEdgesBeforeRow().size()-1);
-		int[] xx2 = new int[nbrNewEdgesBeforeRow().length];
-		int offset = addedRowPerEdgeMoveEdges().get(totalNbrNewEdgesBeforeRow().size()-1);
-		int maxAddedRow = totalAddedRowsEdges().get(totalAddedRowsEdges().size()-1);
-		for (int i=0; i<lastNbrNewEdgesBeforeRow.length; i++)
-		{
-			xx2[i+offset] = nbrNewEdgesBeforeRow()[i+offset] - lastNbrNewEdgesBeforeRow[i];
-		}
-		
-		for (Edge e : context.topology().edges())
-		{
-			int prevIndex = e.index();
-			int newIndex = prevIndex + xx2[e.row()+1+maxAddedRow];
-			
-			mappedPrevToNewIndexesEdges().put(prevIndex, newIndex);
-			mappedNewToPrevIndexesEdges().put(newIndex, prevIndex);
-		}
-		
-		for (int i=0; i<context.topology().edges().size()+totalAddedEdges().get(totalAddedEdges().size()-1); i++)
-			if (!mappedPrevToNewIndexesEdges().containsKey(i))
-				surplusIndexesEdges().add(i);
-	}
 	
 	//--------------------------------------------------------------------------
 	
 	private static void prt()
 	{
-		System.out.print("MappingBoardless.java prt() totalNbrNewCellsBeforeRow : [");
-		for (int[] i : totalNbrNewCellsBeforeRow)
-			System.out.print(Arrays.toString(i)+", ");
-		System.out.println("]");
-		System.out.println("MappingBoardless.java prt() addedRowPerEdgeMove : "+addedRowPerEdgeMove());
-		System.out.println("MappingBoardless.java prt() totalAddedRows : "+totalAddedRows());
-		System.out.println("MappingBoardless.java prt() totalAddedCells : "+totalAddedCells());
 		System.out.println("MappingBoardless.java prt() mappedPrevToNewIndexes : "+mappedPrevToNewIndexes());
 		System.out.println("MappingBoardless.java prt() mappedNewToPrevIndexes : "+mappedNewToPrevIndexes());
 		System.out.println("MappingBoardless.java prt() surplusIndexes : "+surplusIndexes());
 		System.out.println("MappingBoardless.java prt() mappedInitToNewIndexes : "+mappedInitToNewIndexes());
 		System.out.println("MappingBoardless.java prt() mappedNewToInitIndexes : "+mappedNewToInitIndexes());
 		System.out.println("MappingBoardless.java prt() surplusInitIndexes : "+surplusInitIndexes());
-		System.out.println("MappingBoardless.java prt() rowsNeighbors : "+rowsNeighbors());
-		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols : "+rowsNeighborsMapToCols());
-		System.out.println("MappingBoardless.java prt() nbrNewCellsBeforeRow : "+Arrays.toString(nbrNewCellsBeforeRow()));
-		System.out.print("MappingBoardless.java prt() totalNbrNewVerticesBeforeRow : [");
-		for (int[] i : totalNbrNewVerticesBeforeRow)
-			System.out.print(Arrays.toString(i)+", ");
-		System.out.println("]");
-		System.out.println("MappingBoardless.java prt() addedRowPerEdgeMoveVertices : "+addedRowPerEdgeMoveVertices());
-		System.out.println("MappingBoardless.java prt() totalAddedRowsVertices : "+totalAddedRowsVertices());
-		System.out.println("MappingBoardless.java prt() totalAddedVertices : "+totalAddedVertices());
-		System.out.println("MappingBoardless.java prt() mappedPrevToNewIndexesVertices : "+mappedPrevToNewIndexesVertices());
-		System.out.println("MappingBoardless.java prt() mappedNewToPrevIndexesVertices : "+mappedNewToPrevIndexesVertices());
-		System.out.println("MappingBoardless.java prt() surplusIndexesVertices : "+surplusIndexesVertices());
-		System.out.println("MappingBoardless.java prt() mappedInitToNewIndexesVertices : "+mappedInitToNewIndexesVertices());
-		System.out.println("MappingBoardless.java prt() mappedNewToInitIndexesVertices : "+mappedNewToInitIndexesVertices());
-		System.out.println("MappingBoardless.java prt() surplusInitIndexesVertices : "+surplusInitIndexesVertices());
+		
 		System.out.println("MappingBoardless.java prt() rowsNeighborsVertices : "+rowsNeighborsVertices());
 		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols Vertices: "+rowsNeighborsMapToColsVertices());
-		System.out.println("MappingBoardless.java prt() nbrNewVerticesBeforeRow : "+Arrays.toString(nbrNewVerticesBeforeRow()));
-		for (int[] i : totalNbrNewEdgesBeforeRow)
-			System.out.print(Arrays.toString(i)+", ");
-		System.out.println("]");
-		System.out.println("MappingBoardless.java prt() addedRowPerEdgeMoveEdges : "+addedRowPerEdgeMoveEdges());
-		System.out.println("MappingBoardless.java prt() totalAddedRowsEdges : "+totalAddedRowsEdges());
-		System.out.println("MappingBoardless.java prt() totalAddedEdges : "+totalAddedEdges());
-		System.out.println("MappingBoardless.java prt() mappedPrevToNewIndexesEdges : "+mappedPrevToNewIndexesEdges());
-		System.out.println("MappingBoardless.java prt() mappedNewToPrevIndexesEdges : "+mappedNewToPrevIndexesEdges());
-		System.out.println("MappingBoardless.java prt() surplusIndexesEdges : "+surplusIndexesEdges());
-		System.out.println("MappingBoardless.java prt() mappedInitToNewIndexesEdges : "+mappedInitToNewIndexesEdges());
-		System.out.println("MappingBoardless.java prt() mappedNewToInitIndexesEdges : "+mappedNewToInitIndexesEdges());
-		System.out.println("MappingBoardless.java prt() surplusInitIndexesEdges : "+surplusInitIndexesEdges());
-		System.out.println("MappingBoardless.java prt() rowsNeighborsEdges : "+rowsNeighborsEdges());
-		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToColsEdges : "+rowsNeighborsMapToColsEdges());
-		System.out.println("MappingBoardless.java prt() nbrNewEdgesBeforeRow : "+Arrays.toString(nbrNewEdgesBeforeRow()));
+		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols nbAddedColPerRow: "+nbAddedColPerRow());
 	}
 	
 	private static void rollback()
 	{
 		// removing last data TODO : depend until where the rollback is happening
-		addedRowPerEdgeMove().remove(addedRowPerEdgeMove().size() - 1);
-		totalAddedRows().remove(totalAddedRows().size() - 1);
-		totalNbrNewCellsBeforeRow().remove(totalNbrNewCellsBeforeRow().size() - 1);
-		totalAddedCells().remove(totalAddedCells().size() - 1);
-	}
-	
-	public static void createMappingVertex(Context context)
-	{
 		
 	}
 	
@@ -1200,68 +498,43 @@ public class MappingBoardless
 	 * @param toSize
 	 */
 	public static void createMappings(Context context, Move move, final int fromSize, final int toSize)
-	{
-
+	{	
 		// data structures to map cells between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();
-		surplusInitIndexes = new HashSet<Integer>();
-		// data structures to map vertices between current plate and new plate
-		mappedPrevToNewIndexesVertices = new HashMap<Integer, Integer>();
-		mappedNewToPrevIndexesVertices = new HashMap<Integer, Integer>();
-		surplusIndexesVertices = new HashSet<Integer>();
-		xx = new HashMap<Integer, int[]>();
-		xxretourne = new HashMap<Integer, HashMap<Integer, Integer>>();
-		vertexToCoord = new HashMap<Integer, int[]>();
-		nbAddedColPerRow = new ArrayList[context.topology().rows().get(SiteType.Vertex).size()+2];
-		System.out.println("MappingBoardless.java prt() nbAddedColPerRow : "+Arrays.toString(nbAddedColPerRow));
-		// data structures to map edges between current plate and new plate
-		mappedPrevToNewIndexesEdges = new HashMap<Integer, Integer>();
-		mappedNewToPrevIndexesEdges = new HashMap<Integer, Integer>();
-		surplusIndexesEdges = new HashSet<Integer>();
-		xx2 = new HashMap<Integer, int[]>();
-		mo = new HashMap<Integer, HashMap<Integer, Integer>>();
-		stru = new HashMap<Integer, ArrayList<Integer>>();
-		edgeToV = new HashMap<Integer, int[]>();
 		
-		if (initCells == null) 
-		{
-			/*for (Cell obj : context.topology().cells()) {
-				initCells.add(new Cell(obj)); // Copie indépendante
-			}*/
-			initCells = new ArrayList<Cell>();
-			cumulNbrNewCellsBeforeRow = new int[context.topology().rows().get(SiteType.Cell).size()+3];
-			cumulNbrNewVerticesBeforeRow = new int[context.topology().rows().get(SiteType.Vertex).size()+3];
-			cumulNbrNewEdgesBeforeRow = new int[context.topology().rows().get(SiteType.Edge).size()+3];
-		}
+
+		// data structures to map between initial plate and new plate
+		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+		surplusInitIndexes = new HashSet<Integer>();
+
+		// data structures to map vertices between current plate and new plate
+		nbAddedColPerRow = new ArrayList[context.topology().rows().get(SiteType.Vertex).size()+2];
+		
+		vertexAddedLeftCol = false;
+		
+		cellsRowsColsAdded = new ArrayList<int[]>();
+		
+		if (intialCells == null)	
+			init(context);
 		
 		if (fromSize < toSize)
 		{
 			Cell cell = (Cell) context.topology().getGraphElement(SiteType.Cell, move.to());
 			
 			calculateNeighborsCoordinates(context, cell);
-			calculateNeighborsIndexes(context);
-			calculateCurrentCellsIndexes(context); // prev to new
-			createInitMapping(context, totalNbrNewCellsBeforeRow().size()); // init to new
+
+			prevToNew(context, cell);
+			initToNew(context, cell);
 			
 			calculateVerticesNeighborsCoordinates(context, cell);
 			calculateVerticesNeighborsIndexes(context);
-			calculateCurrentVerticesIndexes(context); // prev to new
 			
-			calculateEdgesNeighborsCoordinates(context, cell);
-			calculateEdgesNeighborsIndexes(context, cell);
-			calculateCurrentEdgesIndexes(context); // prev to new
 		}
 		else
-		{
-			createInitMapping(context, totalNbrNewCellsBeforeRow().size()-1); // init to new
-			undoLastMoveCells(context); // prev to new
-			
-			undoLastMoveVertices(context);
-			
-			undoLastMoveEdges(context);
-			
+		{							
 			rollback();
 		}
 

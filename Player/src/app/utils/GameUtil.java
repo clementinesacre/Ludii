@@ -59,7 +59,7 @@ public class GameUtil
 		AIUtil.checkAISupported(app.manager(), context);
 
 		// Useful for boardless games
-		MappingBoardless.init();
+		//MappingBoardless.init();
 		
 		// Web Player settings
 		app.settingsPlayer().setWebGameResultValid(true);

@@ -746,6 +746,7 @@ public class GrowingBoard
 			initInitConstants(context, currDimensionBoard);
 		
 		initMappingIndexes(context);
+
 		
 		mappedPrevToNewIndexes = MappingBoardless.mappedPrevToNewIndexes();
 		mappedNewToPrevIndexes = MappingBoardless.mappedNewToPrevIndexes();
@@ -827,18 +828,21 @@ public class GrowingBoard
 		final int newColsNbr = context.topology().columns().get(SiteType.Vertex).size()+1;
 		final int newRowsNbr = context.topology().rows().get(SiteType.Vertex).size()+1;
 		
-		int offset = MappingBoardless.nbAddedColPerRow[0] == null ? 1 : 0;
-		
-		
-		for (int row = 0; row < MappingBoardless.nbAddedColPerRow.length; row++) {
-			if (row == 0 || row == MappingBoardless.nbAddedColPerRow.length-1)
+		int offset = MappingBoardless.nbAddedColPerRow()[0] == null ? 1 : 0;
+
+		System.out.println("GrowingBoard.java recalculetout() nbAddedColPerRow  : "+Arrays.toString(MappingBoardless.nbAddedColPerRow()));
+		int offsetCol = 0;
+		if (MappingBoardless.vertexAddedLeftCol())
+			offsetCol = 1;
+		for (int row = 0; row < MappingBoardless.nbAddedColPerRow().length; row++) {
+			if (row == 0 || row == MappingBoardless.nbAddedColPerRow().length-1)
 			{
-				if (MappingBoardless.nbAddedColPerRow[row] != null)
+				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow[row].size(); i++)
+					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
 					{
-						int col = MappingBoardless.nbAddedColPerRow[row].get(i);
-						final Point2D pt = new Point2D.Double(col, row-offset);
+						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
+						final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
 						graph.addVertex(pt);
 					}
 				}
@@ -848,17 +852,17 @@ public class GrowingBoard
 				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-1).size(); i++)
 				{
 					int col = context.topology().rows().get(SiteType.Vertex).get(row-1).get(i).col();
-					final Point2D pt = new Point2D.Double(col, row-offset);
+					final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
 					graph.addVertex(pt);
 				}
 				
-				if (MappingBoardless.nbAddedColPerRow[row] != null)
+				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
 					//adding new vertices if new cols
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow[row].size(); i++)
+					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
 					{
-						int col = MappingBoardless.nbAddedColPerRow[row].get(i);
-						final Point2D pt = new Point2D.Double(col, row-offset);
+						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
+						final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
 						graph.addVertex(pt);
 					}
 				}
@@ -866,20 +870,20 @@ public class GrowingBoard
 		}
 		
 		
-		for (int row = 0; row < MappingBoardless.nbAddedColPerRow.length; row++) {
-			if (row == 0 || row == MappingBoardless.nbAddedColPerRow.length-1)
+		for (int row = 0; row < MappingBoardless.nbAddedColPerRow().length; row++) {
+			if (row == 0 || row == MappingBoardless.nbAddedColPerRow().length-1)
 			{
-				if (MappingBoardless.nbAddedColPerRow[row] != null)
+				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow[row].size(); i++)
+					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
 					{
-						int col = MappingBoardless.nbAddedColPerRow[row].get(i);
-						final game.util.graph.Vertex vertexA = graph.findVertex(col, row-offset);
+						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
+						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
 						
 						for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 						{
 							final int rr = row-offset + Square.steps[dirn][0];
-							final int cc = col + Square.steps[dirn][1];
+							final int cc = col+offsetCol + Square.steps[dirn][1];
 							
 							if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
 								continue;
@@ -897,12 +901,12 @@ public class GrowingBoard
 				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-1).size(); i++)
 				{
 					int col = context.topology().rows().get(SiteType.Vertex).get(row-1).get(i).col();
-					final game.util.graph.Vertex vertexA = graph.findVertex(col, row-offset);
+					final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
 					
 					for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 					{
 						final int rr = row-offset + Square.steps[dirn][0];
-						final int cc = col + Square.steps[dirn][1];
+						final int cc = col+offsetCol + Square.steps[dirn][1];
 						
 						if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
 							continue;
@@ -914,17 +918,17 @@ public class GrowingBoard
 					}
 				}
 				
-				if (MappingBoardless.nbAddedColPerRow[row] != null)
+				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow[row].size(); i++)
+					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
 					{
-						int col = MappingBoardless.nbAddedColPerRow[row].get(i);
-						final game.util.graph.Vertex vertexA = graph.findVertex(col, row-offset);
+						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
+						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
 						
 						for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 						{
 							final int rr = row-offset + Square.steps[dirn][0];
-							final int cc = col + Square.steps[dirn][1];
+							final int cc = col+offsetCol + Square.steps[dirn][1];
 							
 							if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
 								continue;
@@ -1077,7 +1081,6 @@ public class GrowingBoard
 		int numSites = newTotalIndexes();
 		ContainerState[] containerStates = context.state().containerStates();
 		
-		System.out.println("GrowingBoard.java updateChunks() containerStates 0 1: "+containerStates[0]);
 		for (int i=0; i<containerStates.length; i++)
 		{
 			ContainerState containerState = containerStates[i];
@@ -1235,10 +1238,7 @@ public class GrowingBoard
 			}
 			else 
 				throw new UnsupportedOperationException("Type " +containerStates[i].getClass().getName() + " not implement regarding growing state of the board.");
-		}
-		
-
-		System.out.println("GrowingBoard.java updateChunks() containerStates 0 2: "+containerStates[0]);
+		}		
 	}
 	
 	/**
@@ -1258,10 +1258,7 @@ public class GrowingBoard
 			int to = newAction.to();
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
-			{
-				System.out.println("GrowingBoard.java generateNewMove() to : "+to+" - mappedPrevToNewIndexes : "+mappedPrevToNewIndexes);
 				newAction.setTo(mappedPrevToNewIndexes().get(to));
-			}
 			if (from != Constants.UNDEFINED)
 				newAction.setFrom(mappedPrevToNewIndexes().get(from));
 			
