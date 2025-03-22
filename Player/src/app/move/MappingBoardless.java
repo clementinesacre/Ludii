@@ -53,10 +53,18 @@ public class MappingBoardless
 	private static ArrayList<Integer> rowsNeighborsVertices; // liste de row en position relatif qui ont été ajoutés. Sont dans l'ordre croissant
 	private static HashMap<Integer, ArrayList<Integer>> rowsNeighborsMapToColsVertices; // clé row ajoutées, valeur liste de col ajoutées pour cette row. Sont dans l'ordre croissant
 	
-	private static ArrayList<Integer>[] nbAddedColPerRow; // for each row what column where added. 2 elem en plus, un pour une nouvelle row en bas, et un pour une row en haut // = list de row de liste de col
+	private static HashSet<Integer>[] nbAddedColPerRow; // for each row what column where added. 2 elem en plus, un pour une nouvelle row en bas, et un pour une row en haut // = list de row de liste de col
 	
 	public static boolean vertexAddedLeftCol; // pour le dernier edge move, est ce qu'une colonne en vertex a été créée en négatif ? (pourrait utiliser celui des cells, ça va avec)
 
+	
+	public static ArrayList<Boolean> vertexAddedLeftColFromStart = new ArrayList<Boolean>();
+	
+	private static ArrayList<HashSet<Integer>[]> nbAddedColPerRowFromStart = new ArrayList<HashSet<Integer>[]>();
+	
+	
+	private static HashSet<Integer>[] lastNbAddedColPerRow;
+	private static boolean lastVertexAddedLeftCol;
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -100,7 +108,7 @@ public class MappingBoardless
 		return rowsNeighborsMapToColsVertices;
 	}
 	
-	public static ArrayList<Integer>[] nbAddedColPerRow()
+	public static HashSet<Integer>[] nbAddedColPerRow()
 	{
 		return nbAddedColPerRow;
 	}
@@ -145,7 +153,26 @@ public class MappingBoardless
 		return vertexAddedLeftCol;
 	}
 	
-
+	public static ArrayList<Boolean> vertexAddedLeftColFromStart()
+	{
+		return vertexAddedLeftColFromStart;
+	}
+	
+	public static ArrayList<HashSet<Integer>[]> nbAddedColPerRowFromStart()
+	{
+		return nbAddedColPerRowFromStart;
+	}
+	
+	public static boolean lastVertexAddedLeftCol()
+	{
+		return lastVertexAddedLeftCol;
+	}
+	
+	public static HashSet<Integer>[] lastNbAddedColPerRow()
+	{
+		return lastNbAddedColPerRow;
+	}
+	
 	//-------------------------------------------------------------------------
 	
 	public static void init(Context context)
@@ -250,7 +277,7 @@ public class MappingBoardless
 		}
 	}
 
-	private static void prevToNew(Context context, Cell cell)
+	private static void prevToNew(Context context)
 	{
 		// prev to new
 		int addedCells = 0;
@@ -313,7 +340,7 @@ public class MappingBoardless
 		
 	}
 
-	private static void initToNew(Context context, Cell cell)
+	private static void initToNew(Context context)
 	{
 		// init to new
 		int last = cellsAddedLeftCols().size()-1;
@@ -381,6 +408,166 @@ public class MappingBoardless
 				surplusInitIndexes().add(i);
 	}
 	
+
+	private static void prevToNewRollBack(Context context)
+	{
+		// prev to new
+		int last = cellsAddedLeftCols().size()-1;
+		int addedCells = 0;
+		ArrayList<int[]> lastCellsRowsColsAdded = cellsRowsColsAddedFromStart().get(last);
+		int[] currAddedRowCol = lastCellsRowsColsAdded.size() > 0 ? lastCellsRowsColsAdded.get(0) : new int[]{};
+		int nbAddedCol = cellsAddedLeftCols().get(last) > 0 ? 1 : 0;
+		int nbAddedRow = cellsAddedDownRows().get(last) > 0 ? 1 : 0;
+		int rowColIndex = lastCellsRowsColsAdded.size() > 0 ? 0 : 1;
+		// mapping existing cells
+		for (Cell c : context.topology().cells())
+		{
+			boolean flag = true;
+			while (rowColIndex < lastCellsRowsColsAdded.size())
+			{
+				if (c.row() == currAddedRowCol[0]+nbAddedRow)
+				{
+					if (c.col() == currAddedRowCol[1]+nbAddedCol)
+					{
+						flag = false;
+						addedCells += 1;
+						rowColIndex ++;
+						if (rowColIndex < lastCellsRowsColsAdded.size())
+							currAddedRowCol = lastCellsRowsColsAdded.get(rowColIndex);
+						break;
+					}
+					else if (c.col() > currAddedRowCol[1]+nbAddedCol)
+					{
+						addedCells += 1;
+						rowColIndex ++;
+						if (rowColIndex < lastCellsRowsColsAdded.size())
+							currAddedRowCol = lastCellsRowsColsAdded.get(rowColIndex);
+						else
+							break;
+					}
+					else
+						break;
+				}	
+				else if (c.row() > currAddedRowCol[0]+nbAddedRow)
+				{
+					addedCells += 1;
+					rowColIndex ++;
+					if (rowColIndex < lastCellsRowsColsAdded.size())
+						currAddedRowCol = lastCellsRowsColsAdded.get(rowColIndex);
+					else
+						break;
+				}
+				else
+					break;
+			}
+			
+			
+			if (flag)
+			{
+				int newIndex = c.index() - addedCells;
+				mappedPrevToNewIndexes().put(c.index(), newIndex);
+				mappedNewToPrevIndexes().put(newIndex, c.index());
+			}
+		}
+		
+
+		// mapping other containers than board
+		for (int i=1; i<context.containers().length; i++)
+			for (int j=0; j<context.containers()[i].topology().cells().size(); j++)
+			{
+				int prevIndex = context.containers()[i].topology().cells().get(j).index();
+				int newIndex = prevIndex - lastCellsRowsColsAdded.size();
+				mappedPrevToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, prevIndex);
+			}
+		
+		// saving new cells that cannot be mapped from previous board as they are new
+		for (int i=0; i<context.topology().cells().size()-lastCellsRowsColsAdded.size(); i++)
+			if (!mappedNewToPrevIndexes().containsKey(i))
+				surplusIndexes().add(i);
+	}
+	
+	private static void initToNewRollBack(Context context)
+	{
+		// init to new
+		int last = cellsAddedLeftCols().size()-1;
+		int nbAddedCol = cellsAddedLeftCols().get(last);
+		int nbAddedRow = cellsAddedDownRows().get(last);
+		int initAddedCells = 0;
+		ArrayList<int[]> lastCellsRowsColsAdded = cellsRowsColsAddedFromStart().get(last);
+		int[] currRowCol = lastCellsRowsColsAdded.size() > 0 ? lastCellsRowsColsAdded.get(0) : new int[]{};
+		int rowColIndex = lastCellsRowsColsAdded.size() > 0 ? 0 : 1;
+		int cellIndex = 0;
+		nbAddedCellsFromStart -= lastCellsRowsColsAdded.size();
+		// mapping existing cells
+		for (int r=0; r<initialCells().length; r++)
+			for (int c=0; c<initialCells()[r].length; c++)
+			{
+				while (rowColIndex < lastCellsRowsColsAdded.size())
+				{
+					if (r == (currRowCol[0]-nbAddedRow))
+					{
+						if (c > (currRowCol[1]-nbAddedCol))
+						{
+							initAddedCells += 1;
+							rowColIndex ++;
+							if (rowColIndex < lastCellsRowsColsAdded.size())
+								currRowCol = lastCellsRowsColsAdded.get(rowColIndex);
+							else
+								break;
+						}
+						else
+							break;
+					}	
+					else if (r > (currRowCol[0]-nbAddedRow))
+					{
+						initAddedCells += 1;
+						rowColIndex ++;
+						if (rowColIndex < lastCellsRowsColsAdded.size())
+							currRowCol = lastCellsRowsColsAdded.get(rowColIndex);
+						else
+							break;
+					}
+					else
+						break;
+				}
+
+				initialCells()[r][c] -= initAddedCells;
+				int newIndex = cellIndex + initialCells()[r][c];
+				mappedInitToNewIndexes().put(cellIndex, newIndex);
+				mappedNewToInitIndexes().put(newIndex, cellIndex);
+
+				cellIndex ++;
+			}
+		
+		// mapping other containers than board
+		for (int i=0; i<initialHands().length; i++)
+			for (int j=0; j<initialHands()[i].length; j++)
+			{
+				int prevIndex = initialHands()[i][j];
+				int newIndex = prevIndex + nbAddedCellsFromStart();
+				mappedInitToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToInitIndexes().put(newIndex, prevIndex);
+			}
+		
+		// saving new cells that cannot be mapped from previous board as they are new
+		for (int i=0; i<cellIndex+nbAddedCellsFromStart(); i++)
+			if (!mappedNewToInitIndexes().containsKey(i))
+				surplusInitIndexes().add(i);
+	}
+	
+	private static void removeLast()
+	{
+		int last = cellsAddedLeftCols().size()-1;
+		cellsRowsColsAddedFromStart().remove(last);
+		cellsAddedLeftCols().remove(last);
+		cellsAddedDownRows().remove(last);
+		
+		lastNbAddedColPerRow = nbAddedColPerRowFromStart().get(last).clone();
+		lastVertexAddedLeftCol = vertexAddedLeftColFromStart().get(last);
+		nbAddedColPerRowFromStart().remove(last);
+		vertexAddedLeftColFromStart().remove(last);
+	}
 	
 	//----------------------------Vertices--------------------------------------
 	
@@ -452,7 +639,7 @@ public class MappingBoardless
 					nbAddedColPerRow()[r+1].add(c);
 				else
 				{
-					ArrayList<Integer> arr = new ArrayList<Integer>();
+					HashSet<Integer> arr = new HashSet<Integer>();
 					arr.add(c);
 					nbAddedColPerRow()[r+1] = arr;
 				}
@@ -461,9 +648,9 @@ public class MappingBoardless
 					vertexAddedLeftCol = true;
 			}
 		}
+		nbAddedColPerRowFromStart().add(nbAddedColPerRow());
+		vertexAddedLeftColFromStart().add(vertexAddedLeftCol());
 	}
-		
-
 	
 	
 	//--------------------------------------------------------------------------
@@ -480,12 +667,18 @@ public class MappingBoardless
 		System.out.println("MappingBoardless.java prt() rowsNeighborsVertices : "+rowsNeighborsVertices());
 		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols Vertices: "+rowsNeighborsMapToColsVertices());
 		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols nbAddedColPerRow: "+nbAddedColPerRow());
+		
+
+		for (HashSet<Integer>[] cc : MappingBoardless.nbAddedColPerRowFromStart())
+			System.out.println("MappingBoardless.java prt() cc : "+Arrays.toString(cc));
 	}
 	
-	private static void rollback()
+	private static void rollback(Context context)
 	{
 		// removing last data TODO : depend until where the rollback is happening
-		
+		prevToNewRollBack(context);
+		initToNewRollBack(context);
+		removeLast();
 	}
 	
 	/**
@@ -499,6 +692,8 @@ public class MappingBoardless
 	 */
 	public static void createMappings(Context context, Move move, final int fromSize, final int toSize)
 	{	
+
+		System.out.println("MappingBoardless.java createMappings() rows: "+context.topology().rows().get(SiteType.Edge));
 		// data structures to map cells between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
@@ -511,7 +706,7 @@ public class MappingBoardless
 		surplusInitIndexes = new HashSet<Integer>();
 
 		// data structures to map vertices between current plate and new plate
-		nbAddedColPerRow = new ArrayList[context.topology().rows().get(SiteType.Vertex).size()+2];
+		nbAddedColPerRow = new HashSet[context.topology().rows().get(SiteType.Vertex).size()+2];
 		
 		vertexAddedLeftCol = false;
 		
@@ -526,16 +721,15 @@ public class MappingBoardless
 			
 			calculateNeighborsCoordinates(context, cell);
 
-			prevToNew(context, cell);
-			initToNew(context, cell);
+			prevToNew(context);
+			initToNew(context);
 			
 			calculateVerticesNeighborsCoordinates(context, cell);
 			calculateVerticesNeighborsIndexes(context);
-			
 		}
 		else
 		{							
-			rollback();
+			rollback(context);
 		}
 
 		prt();

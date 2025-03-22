@@ -29,6 +29,7 @@ import other.concept.Concept;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
+import other.topology.Cell;
 
 //-----------------------------------------------------------------------------
 
@@ -240,13 +241,13 @@ public class ToolView extends View
 				newDim = currDim - GrowingBoardVisual.growingStep(context);
 			else 
 				newDim = currDim;
-			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
 			MappingBoardless.createMappings(context, currMove, currDim, newDim);
+			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
 		}
 				
 		GameUtil.resetGame(app, true, true);
 		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		
+
 		// -------------
 		if (context.game().isBoardless()) 
 		{

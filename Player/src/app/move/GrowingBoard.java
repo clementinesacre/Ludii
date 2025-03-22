@@ -818,9 +818,115 @@ public class GrowingBoard
 		}
 		return max;
 	}
+
+	protected static Graph recalculetoutRollBack(final Context context)
+	{
+		System.out.println("GrowingBoard.java recalculetoutRollBack()");
+		final Graph graph = new Graph();
+
+		// Add 1 if playing on the cells, as the number of cells in each 
+		// direction is 1 less than the number of vertices.
+		final int newColsNbr = context.topology().columns().get(SiteType.Vertex).size()+1;
+		final int newRowsNbr = context.topology().rows().get(SiteType.Vertex).size()+1;
+
+		int offsetRow = MappingBoardless.lastNbAddedColPerRow()[0] == null ? 0 : 1;
+		int last = MappingBoardless.lastNbAddedColPerRow().length-1;
+		int offsetCol = 0;
+		if (MappingBoardless.lastVertexAddedLeftCol())
+			offsetCol = 1;
+		
+		int startRow = MappingBoardless.lastNbAddedColPerRow()[0] == null ? 1 : 0;
+		int offsetEndRow = MappingBoardless.lastNbAddedColPerRow()[last] == null ? 1 : 0;
+		int endRow = MappingBoardless.lastNbAddedColPerRow().length - offsetEndRow;
+		for (int row = startRow; row < endRow; row++) {
+			if (MappingBoardless.lastNbAddedColPerRow()[row] == null)
+			{
+				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-startRow).size(); i++)
+				{
+					int col = context.topology().rows().get(SiteType.Vertex).get(row-startRow).get(i).col();
+					final Point2D pt = new Point2D.Double(col-offsetCol, row-offsetRow);
+					game.util.graph.Vertex v = graph.addVertex(pt);
+				}
+			}
+			else
+			{
+				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-startRow).size(); i++)
+				{
+					int col = context.topology().rows().get(SiteType.Vertex).get(row-startRow).get(i).col();
+					if (!MappingBoardless.lastNbAddedColPerRow()[row].contains(col-offsetCol))
+					{
+						final Point2D pt = new Point2D.Double(col-offsetCol, row-offsetRow);
+						game.util.graph.Vertex v = graph.addVertex(pt);
+					}
+				}
+			}
+		}
+		
+		
+		for (int row = startRow; row < endRow; row++) {
+			
+			if (MappingBoardless.lastNbAddedColPerRow()[row] == null)
+			{
+				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-startRow).size(); i++)
+				{
+					int col = context.topology().rows().get(SiteType.Vertex).get(row-startRow).get(i).col();
+					final game.util.graph.Vertex vertexA = graph.findVertex(col-offsetCol, row-offsetRow);
+					
+					for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
+					{
+						final int rr = row-offsetRow + Square.steps[dirn][0];
+						final int cc = col-offsetCol + Square.steps[dirn][1];
+						
+						if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
+							continue;
+	
+						final game.util.graph.Vertex vertexB = graph.findVertex(cc, rr);
+					
+						if (vertexA != null && vertexB != null)
+							graph.findOrAddEdge(vertexA, vertexB);
+					}
+				}
+			}
+			else
+			{
+				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-startRow).size(); i++)
+				{
+					int col = context.topology().rows().get(SiteType.Vertex).get(row-startRow).get(i).col();
+					if (!MappingBoardless.lastNbAddedColPerRow()[row].contains(col-offsetCol))
+					{
+						final game.util.graph.Vertex vertexA = graph.findVertex(col-offsetCol, row-offsetRow);
+						
+						for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
+						{
+							final int rr = row-offsetRow + Square.steps[dirn][0];
+							final int cc = col-offsetCol + Square.steps[dirn][1];
+							
+							if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
+								continue;
+		
+							final game.util.graph.Vertex vertexB = graph.findVertex(cc, rr);
+						
+							if (vertexA != null && vertexB != null)
+								graph.findOrAddEdge(vertexA, vertexB);
+						}
+					}
+				}
+			}
+		}
+		
+
+		graph.makeFaces(false);
+		
+		//graph.setBasisAndShape(basis, shape);
+		graph.reorder();
+
+
+		return graph; 
+	}
 	
 	protected static Graph recalculetout(final Context context)
 	{
+		System.out.println("GrowingBoard.java recalculetout()");
 		final Graph graph = new Graph();
 
 		// Add 1 if playing on the cells, as the number of cells in each 
@@ -828,9 +934,7 @@ public class GrowingBoard
 		final int newColsNbr = context.topology().columns().get(SiteType.Vertex).size()+1;
 		final int newRowsNbr = context.topology().rows().get(SiteType.Vertex).size()+1;
 		
-		int offset = MappingBoardless.nbAddedColPerRow()[0] == null ? 1 : 0;
-
-		System.out.println("GrowingBoard.java recalculetout() nbAddedColPerRow  : "+Arrays.toString(MappingBoardless.nbAddedColPerRow()));
+		int offsetRow = MappingBoardless.nbAddedColPerRow()[0] == null ? 1 : 0;
 		int offsetCol = 0;
 		if (MappingBoardless.vertexAddedLeftCol())
 			offsetCol = 1;
@@ -839,10 +943,9 @@ public class GrowingBoard
 			{
 				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
+					for (Integer col : MappingBoardless.nbAddedColPerRow()[row])
 					{
-						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
-						final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
+						final Point2D pt = new Point2D.Double(col+offsetCol, row-offsetRow);
 						graph.addVertex(pt);
 					}
 				}
@@ -852,17 +955,16 @@ public class GrowingBoard
 				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-1).size(); i++)
 				{
 					int col = context.topology().rows().get(SiteType.Vertex).get(row-1).get(i).col();
-					final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
+					final Point2D pt = new Point2D.Double(col+offsetCol, row-offsetRow);
 					graph.addVertex(pt);
 				}
 				
 				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
 					//adding new vertices if new cols
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
+					for (Integer col : MappingBoardless.nbAddedColPerRow()[row])
 					{
-						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
-						final Point2D pt = new Point2D.Double(col+offsetCol, row-offset);
+						final Point2D pt = new Point2D.Double(col+offsetCol, row-offsetRow);
 						graph.addVertex(pt);
 					}
 				}
@@ -875,14 +977,13 @@ public class GrowingBoard
 			{
 				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
+					for (Integer col : MappingBoardless.nbAddedColPerRow()[row])
 					{
-						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
-						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
+						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offsetRow);
 						
 						for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 						{
-							final int rr = row-offset + Square.steps[dirn][0];
+							final int rr = row-offsetRow + Square.steps[dirn][0];
 							final int cc = col+offsetCol + Square.steps[dirn][1];
 							
 							if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
@@ -901,11 +1002,11 @@ public class GrowingBoard
 				for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(row-1).size(); i++)
 				{
 					int col = context.topology().rows().get(SiteType.Vertex).get(row-1).get(i).col();
-					final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
+					final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offsetRow);
 					
 					for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 					{
-						final int rr = row-offset + Square.steps[dirn][0];
+						final int rr = row-offsetRow + Square.steps[dirn][0];
 						final int cc = col+offsetCol + Square.steps[dirn][1];
 						
 						if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
@@ -920,14 +1021,13 @@ public class GrowingBoard
 				
 				if (MappingBoardless.nbAddedColPerRow()[row] != null)
 				{
-					for (int i=0; i<MappingBoardless.nbAddedColPerRow()[row].size(); i++)
+					for (Integer col : MappingBoardless.nbAddedColPerRow()[row])
 					{
-						int col = MappingBoardless.nbAddedColPerRow()[row].get(i);
-						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offset);
+						final game.util.graph.Vertex vertexA = graph.findVertex(col+offsetCol, row-offsetRow);
 						
 						for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
 						{
-							final int rr = row-offset + Square.steps[dirn][0];
+							final int rr = row-offsetRow + Square.steps[dirn][0];
 							final int cc = col+offsetCol + Square.steps[dirn][1];
 							
 							if (rr < 0 || rr >= newRowsNbr || cc < 0 || cc >= newColsNbr)
@@ -967,13 +1067,17 @@ public class GrowingBoard
 		GraphFunction newGraphFunction = board.tiling() == TilingBoardlessType.Square
 				? new RectangleOnSquare(new DimConstant(newSize), null, null, null) : board.tiling() == TilingBoardlessType.Hexagonal 
 				? new HexagonOnHex(new DimConstant(newSize)) : new TriangleOnTri(new DimConstant(newSize));
-		
-		
-
-		Graph alz = recalculetout(context);
+				
+		Graph newGraph;
+		if (board.dimension() < newSize)
+			newGraph = recalculetout(context);
+		else
+			newGraph = recalculetoutRollBack(context);
+		//System.out.println("GrowingBoard.java updateBoardDimensions() previous graph : "+board.graph());
+		//System.out.println("GrowingBoard.java updateBoardDimensions() newGraph : "+newGraph);
 		
 		// -----
-		board.setGraphFunction(alz);
+		board.setGraphFunction(newGraph);
 		// -----
 		
 		//board.setGraphFunction(newGraphFunction);
