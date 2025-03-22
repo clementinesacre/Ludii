@@ -1537,7 +1537,8 @@ public class GrowingBoard
 		initMainConstants(context, fromSize, toSize);
 		
 		// TODO check that the move is applied on a board type container
-		updateBoardDimensions(context, board, toSize);
+		if (fromSize != toSize)
+			updateBoardDimensions(context, board, toSize);
 		remakeTrial(context, replayMoves);
 	}
 	

@@ -470,7 +470,6 @@ public class MappingBoardless
 			}
 		}
 		
-
 		// mapping other containers than board
 		for (int i=1; i<context.containers().length; i++)
 			for (int j=0; j<context.containers()[i].topology().cells().size(); j++)
@@ -554,6 +553,25 @@ public class MappingBoardless
 		for (int i=0; i<cellIndex+nbAddedCellsFromStart(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
 				surplusInitIndexes().add(i);
+	}
+	
+	private static void prevToNewSame(Context context)
+	{
+		for (Cell c : context.topology().cells())
+		{			
+			mappedPrevToNewIndexes().put(c.index(), c.index());
+			mappedNewToPrevIndexes().put(c.index(), c.index());
+		}
+		
+
+		// mapping other containers than board
+		for (int i=1; i<context.containers().length; i++)
+			for (int j=0; j<context.containers()[i].topology().cells().size(); j++)
+			{
+				int prevIndex = context.containers()[i].topology().cells().get(j).index();
+				mappedPrevToNewIndexes().put(prevIndex, prevIndex);
+				mappedNewToPrevIndexes().put(prevIndex, prevIndex);
+			}
 	}
 	
 	private static void removeLast()
@@ -670,7 +688,10 @@ public class MappingBoardless
 		
 
 		for (HashSet<Integer>[] cc : MappingBoardless.nbAddedColPerRowFromStart())
-			System.out.println("MappingBoardless.java prt() cc : "+Arrays.toString(cc));
+			System.out.println("MappingBoardless.java prt() nbAddedColPerRowFromStart nb : "+Arrays.toString(cc));
+		
+		for (int[] i : intialCells)
+			System.out.println("MappingBoardless.java prt() intialCells i : "+Arrays.toString(i));
 	}
 	
 	private static void rollback(Context context)
@@ -691,9 +712,7 @@ public class MappingBoardless
 	 * @param toSize
 	 */
 	public static void createMappings(Context context, Move move, final int fromSize, final int toSize)
-	{	
-
-		System.out.println("MappingBoardless.java createMappings() rows: "+context.topology().rows().get(SiteType.Edge));
+	{
 		// data structures to map cells between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
@@ -726,6 +745,11 @@ public class MappingBoardless
 			
 			calculateVerticesNeighborsCoordinates(context, cell);
 			calculateVerticesNeighborsIndexes(context);
+		}
+		else if(fromSize == toSize)
+		{
+			prevToNewSame(context);
+			initToNew(context);
 		}
 		else
 		{							

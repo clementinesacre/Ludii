@@ -110,7 +110,8 @@ public class GrowingBoardVisual extends GrowingBoard
 
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
-		updateBoardDimensions(app, board, toSize);
+		if (fromSize != toSize)
+			updateBoardDimensions(app, board, toSize);
 	}
 	
 	/**
@@ -130,7 +131,8 @@ public class GrowingBoardVisual extends GrowingBoard
 		
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
-		updateBoardDimensions(app, board, toSize);
+		if (fromSize != toSize)
+			updateBoardDimensions(app, board, toSize);
 		remakeTrial(app, replayMoves);
 	}
 	
