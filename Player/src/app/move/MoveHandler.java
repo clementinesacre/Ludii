@@ -131,11 +131,7 @@ public class MoveHandler
 			{
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
 				if (context.game().isBoardless()) 
-				{
-					//int currDim = ((Boardless) context.board()).dimension();
-					//int newDim = currDim + GrowingBoardVisual.growingStep(context);
 					GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), 1, true);
-				}
 				return true; // move found
 			}
 		}

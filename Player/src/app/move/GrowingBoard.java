@@ -77,6 +77,60 @@ public class GrowingBoard
 		}
 		return max;
 	}
+	
+
+
+	protected static Graph recalculetoutInit(final Context context)
+	{
+		System.out.println("GrowingBoard.java recalculetoutInit()");
+		final Graph graph = new Graph();
+
+		int[][] initialVertices = MappingBoardless.initialVertices();
+		for (int row = 0; row < initialVertices.length; row++) 
+		{
+			for (int col = 0; col < initialVertices[row].length; col++)
+			{
+				if (initialVertices[row][col] == 1)
+				{
+					final Point2D pt = new Point2D.Double(col, row);
+					graph.addVertex(pt);
+				}
+			}
+		}
+		
+		for (int row = 0; row < initialVertices.length; row++) 
+		{
+			for (int col = 0; col < initialVertices[row].length; col++)
+			{
+				if (initialVertices[row][col] == 1)
+				{
+					final game.util.graph.Vertex vertexA = graph.findVertex(col, row);
+					
+					for (int dirn = 0; dirn < Square.steps.length / 2; dirn++)
+					{
+						final int rr = row + Square.steps[dirn][0];
+						final int cc = col + Square.steps[dirn][1];
+						
+						if (rr < 0 || rr >= initialVertices.length || cc < 0 || cc >= initialVertices[row].length)
+							continue;
+
+						final game.util.graph.Vertex vertexB = graph.findVertex(cc, rr);
+					
+						if (vertexA != null && vertexB != null)
+							graph.findOrAddEdge(vertexA, vertexB);
+					}
+				}
+			}
+		}
+
+		graph.makeFaces(false);
+		
+		//graph.setBasisAndShape(basis, shape);
+		graph.reorder();
+
+
+		return graph; 
+	}
 
 	protected static Graph recalculetoutRollBack(final Context context)
 	{
@@ -334,9 +388,10 @@ public class GrowingBoard
 				newGraph = recalculetoutRollBack(context);
 				break;
 			default:
-				//newGraph = board.graph();
-				newGraph = recalculetoutRollBack(context);
-		}		
+				// Board is re-initialize / go back from all steps
+				newGraph = recalculetoutInit(context);
+		}
+		//System.out.println("GrowingBoardless.java updateBoardDimensions() newGraph : "+newGraph);
 		board.setGraphFunction(newGraph);
 		
 		//board.setGraphFunction(newGraphFunction);

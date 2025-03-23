@@ -33,7 +33,8 @@ public class MappingBoardless
 
 	private static int nbAddedCellsFromStart = 0; // total number  of row/col (=cell) added since the beginning
 	private static int[][] initialHands; // id initiaux des éléments qui ne sont pas sur le plateau (les mains des joueurs et autres)
-	private static int[][] intialCells; // matrice du plateau initial pour suivre combien de cellules ont été rajoutées à chaque edge move pour chaque cellule bien précis
+	private static int[][] initialCells; // matrice du plateau initial pour suivre combien de cellules ont été rajoutées à chaque edge move pour chaque cellule bien précis
+	private static int[][] initialVertices; // 0 if no vertex at this position on initial board, 1 else
 
 	private static ArrayList<ArrayList<int[]>> cellsRowsColsAddedFromStart = new ArrayList<ArrayList<int[]>>(); // liste de listes de row,col relatives au plateau courant ajoutées pour un edge move
 	private static ArrayList<int[]> cellsRowsColsAdded; // liste de row,col relatives au plateau courant ajoutées pour un edge move rowsColsAdded
@@ -135,7 +136,7 @@ public class MappingBoardless
 	
 	public static int[][] initialCells()
 	{
-		return intialCells;
+		return initialCells;
 	}
 	
 	public static int nbAddedCellsFromStart()
@@ -173,6 +174,11 @@ public class MappingBoardless
 		return newTotalIndexesCells;
 	}
 	
+	public static int[][] initialVertices()
+	{
+		return initialVertices;
+	}
+	
 	//-------------------------------------------------------------------------
 	
 	public static void init(Context context)
@@ -191,12 +197,19 @@ public class MappingBoardless
 			initialHands()[i-1] = initialHand;
 		}
 		
-		intialCells = new int[context.topology().rows().get(SiteType.Cell).size()][];
+		initialCells = new int[context.topology().rows().get(SiteType.Cell).size()][];
 		for (int i=0; i<context.topology().rows().get(SiteType.Cell).size(); i++)
 		{
 			int nbCol = context.topology().rows().get(SiteType.Cell).get(i).size();
-			intialCells[i] = new int[nbCol];
+			initialCells[i] = new int[nbCol];
 		}
+		
+		initialVertices = new int[context.topology().rows().get(SiteType.Vertex).size()][context.topology().columns().get(SiteType.Vertex).size()];
+		for (Vertex v : context.topology().vertices())
+		{
+			initialVertices[v.row()][v.col()] = 1;
+		}
+		
 	}
 	
 	public static void clean()
@@ -211,7 +224,7 @@ public class MappingBoardless
 		surplusInitIndexes = new HashSet<Integer>(); 
 		
 		initialHands = null;
-		intialCells = null;
+		initialCells = null;
 		
 		nbAddedCellsFromStart = 0;
 		
@@ -586,6 +599,65 @@ public class MappingBoardless
 		vertexAddedLeftColFromStart().remove(last);
 	}
 	
+	
+	private static void prevToNewInit(Context context)
+	{	
+		for (Cell c : context.topology().cells())
+		{
+			int row = c.row();
+			int col = c.col();
+			if (row >= 0 && row < initialCells().length)
+			{
+				if (col >= 0 && col < initialCells()[row].length)
+				{
+					int prevIndex = c.index();
+					int newIndex = prevIndex - initialCells()[row][col];
+					mappedPrevToNewIndexes().put(prevIndex, newIndex);
+					mappedNewToPrevIndexes().put(newIndex, prevIndex);
+				}
+				else
+					surplusIndexes().add(c.index());
+			}
+			else
+				surplusIndexes().add(c.index());
+		}
+		
+		for (int i=0; i<initialHands().length; i++)
+			for (int j=0; j<initialHands()[i].length; j++)
+			{
+				int newIndex = initialHands()[i][j];
+				int prevIndex = newIndex + nbAddedCellsFromStart();
+				mappedPrevToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, prevIndex);
+			}
+	}
+	
+	private static void initToNewInit(Context context)
+	{
+		int cellIndex = 0;
+		nbAddedCellsFromStart = 0;
+		// mapping existing cells
+		for (int r=0; r<initialCells().length; r++)
+			for (int c=0; c<initialCells()[r].length; c++)
+			{
+				initialCells()[r][c] = 0;
+				mappedInitToNewIndexes().put(cellIndex, cellIndex);
+				mappedNewToInitIndexes().put(cellIndex, cellIndex);
+
+				cellIndex ++;
+			}
+		
+		// mapping other containers than board
+		for (int i=0; i<initialHands().length; i++)
+			for (int j=0; j<initialHands()[i].length; j++)
+			{
+				int prevIndex = initialHands()[i][j];
+				mappedInitToNewIndexes().put(prevIndex, prevIndex);
+				mappedNewToInitIndexes().put(prevIndex, prevIndex);
+			}
+	}
+	
+	
 	//----------------------------Vertices--------------------------------------
 	
 	private static void calculateVerticesNeighborsCoordinates(Context context, Cell cell)
@@ -689,8 +761,9 @@ public class MappingBoardless
 		for (HashSet<Integer>[] cc : MappingBoardless.nbAddedColPerRowFromStart())
 			System.out.println("MappingBoardless.java prt() nbAddedColPerRowFromStart nb : "+Arrays.toString(cc));
 		
-		for (int[] i : intialCells)
-			System.out.println("MappingBoardless.java prt() intialCells i : "+Arrays.toString(i));
+		if (initialCells != null)
+			for (int[] i : initialCells)
+				System.out.println("MappingBoardless.java prt() intialCells i : "+Arrays.toString(i));
 	}
 	
 	private static void rollback(Context context)
@@ -699,6 +772,13 @@ public class MappingBoardless
 		prevToNewRollBack(context);
 		initToNewRollBack(context);
 		removeLast();
+	}
+	
+	private static void rollbackToInit(Context context)
+	{
+		prevToNewInit(context);
+		initToNewInit(context);
+		initialCells = null;
 	}
 	
 	/**
@@ -731,7 +811,7 @@ public class MappingBoardless
 		
 		cellsRowsColsAdded = new ArrayList<int[]>();
 		
-		if (intialCells == null)	
+		if (initialCells == null)	
 			init(context);
 		
 		switch(boardSizeChange) {
@@ -758,7 +838,7 @@ public class MappingBoardless
 			    break;
 			case -2:
 			    // Board is re-initialize / go back from all steps
-				rollback(context);
+				rollbackToInit(context);
 			    break;
 			default:
 				// code block
