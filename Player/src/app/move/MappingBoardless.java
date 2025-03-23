@@ -5,18 +5,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Stack;
-import java.util.stream.Collectors;
 
-import game.equipment.container.board.Boardless;
 import game.types.board.SiteType;
 import other.context.Context;
 import other.move.Move;
 import other.topology.Cell;
-import other.topology.Edge;
 import other.topology.Vertex;
 
 /**
@@ -65,6 +58,8 @@ public class MappingBoardless
 	
 	private static HashSet<Integer>[] lastNbAddedColPerRow;
 	private static boolean lastVertexAddedLeftCol;
+	
+	private static int newTotalIndexesCells;
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -173,6 +168,11 @@ public class MappingBoardless
 		return lastNbAddedColPerRow;
 	}
 	
+	public static int newTotalIndexesCells()
+	{
+		return newTotalIndexesCells;
+	}
+	
 	//-------------------------------------------------------------------------
 	
 	public static void init(Context context)
@@ -191,7 +191,7 @@ public class MappingBoardless
 			initialHands()[i-1] = initialHand;
 		}
 		
-		intialCells = new int[context.topology().rows().get(SiteType.Cell).size()][]; // TODO : ne pas harcoder la taille
+		intialCells = new int[context.topology().rows().get(SiteType.Cell).size()][];
 		for (int i=0; i<context.topology().rows().get(SiteType.Cell).size(); i++)
 		{
 			int nbCol = context.topology().rows().get(SiteType.Cell).get(i).size();
@@ -562,7 +562,6 @@ public class MappingBoardless
 			mappedPrevToNewIndexes().put(c.index(), c.index());
 			mappedNewToPrevIndexes().put(c.index(), c.index());
 		}
-		
 
 		// mapping other containers than board
 		for (int i=1; i<context.containers().length; i++)
@@ -708,10 +707,11 @@ public class MappingBoardless
 	 * @param context
 	 * @param move edge move just applied that will help telling what cells 
 	 * will be added and so what is going to be the new mapping.
-	 * @param fromSize
-	 * @param toSize
+	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
+	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
+	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	public static void createMappings(Context context, Move move, final int fromSize, final int toSize)
+	public static void createMappings(Context context, Move move, final int boardSizeChange)
 	{
 		// data structures to map cells between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
@@ -734,27 +734,37 @@ public class MappingBoardless
 		if (intialCells == null)	
 			init(context);
 		
-		if (fromSize < toSize)
-		{
-			Cell cell = (Cell) context.topology().getGraphElement(SiteType.Cell, move.to());
-			
-			calculateNeighborsCoordinates(context, cell);
+		switch(boardSizeChange) {
+			case 1:
+			    // Board needs to grow
+				Cell cell = (Cell) context.topology().getGraphElement(SiteType.Cell, move.to());
+				
+				calculateNeighborsCoordinates(context, cell);
+		
+				prevToNew(context);
+				initToNew(context);
+				
+				calculateVerticesNeighborsCoordinates(context, cell);
+				calculateVerticesNeighborsIndexes(context);
+			    break;
+			case 0:
+			    // Board keeps same size
+				prevToNewSame(context);
+				initToNew(context);
+			    break;
+			case -1:
+			    // Board needs to shrink / go back from 1 step
+				rollback(context);
+			    break;
+			case -2:
+			    // Board is re-initialize / go back from all steps
+				rollback(context);
+			    break;
+			default:
+				// code block
+		}
 
-			prevToNew(context);
-			initToNew(context);
-			
-			calculateVerticesNeighborsCoordinates(context, cell);
-			calculateVerticesNeighborsIndexes(context);
-		}
-		else if(fromSize == toSize)
-		{
-			prevToNewSame(context);
-			initToNew(context);
-		}
-		else
-		{							
-			rollback(context);
-		}
+		newTotalIndexesCells = mappedPrevToNewIndexes().size() + surplusIndexes.size();
 
 		prt();
 	}

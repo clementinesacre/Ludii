@@ -24,6 +24,7 @@ import app.views.tools.buttons.ButtonSettings;
 import app.views.tools.buttons.ButtonShow;
 import app.views.tools.buttons.ButtonStart;
 import game.equipment.container.board.Boardless;
+import game.types.board.SiteType;
 import main.Constants;
 import other.concept.Concept;
 import other.context.Context;
@@ -233,16 +234,15 @@ public class ToolView extends View
 
 		// Topology must be updated before state is reset as when it is boardless, it will refer at the center of the board to start over
 		if (context.game().isBoardless()) {
-			int currDim = ((Boardless) context.board()).dimension();
-			int newDim;
+			int boardSizeChange;
 			if (moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
-				newDim = ((Boardless) context.board()).initDimension();
+				boardSizeChange = -2;
 			else if (currMove.isOnEdge())
-				newDim = currDim - GrowingBoardVisual.growingStep(context);
+				boardSizeChange = -1;
 			else 
-				newDim = currDim;
-			MappingBoardless.createMappings(context, currMove, currDim, newDim);
-			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
+				boardSizeChange = 0;
+		
+			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currMove, boardSizeChange);
 		}
 				
 		GameUtil.resetGame(app, true, true);

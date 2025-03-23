@@ -1,7 +1,6 @@
 package app.move;
 
 import java.awt.EventQueue;
-import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
@@ -16,8 +15,6 @@ import other.location.FullLocation;
 import other.move.Move;
 import other.topology.TopologyElement;
 import other.trial.Trial;
-import other.state.container.ContainerFlatState;
-import other.state.owned.FlatCellOnlyOwned;
 
 public class GrowingBoardVisual extends GrowingBoard
 {
@@ -27,11 +24,13 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param board
-	 * @param newSize new size of the board.
+	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
+	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
+	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int newSize) 
+	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange) 
 	{
-		updateBoardDimensions(app.manager().ref().context(), board, newSize);
+		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange);
 
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -98,20 +97,22 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param context
-	 * @param fromSize TODO
-	 * @param toSize TODO
-	 * @param replayMoves TODO
+	 * @param move
+	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
+	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
+	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	public static void updateBoardWithoutRemakeTrial(final PlayerApp app, Context context, int fromSize, int toSize)
+	public static void updateBoardWithoutRemakeTrial(final PlayerApp app, Context context, Move move, int boardSizeChange)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, fromSize, toSize);
-
+		initMainConstants(context, move, boardSizeChange);
+		
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
-		if (fromSize != toSize)
-			updateBoardDimensions(app, board, toSize);
+		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
+		// update dimensions only if board change size
+		if (boardSizeChange != 0)
+			updateBoardDimensions(app, board, boardSizeChange);
 	}
 	
 	/**
@@ -119,35 +120,24 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param context
-	 * @param fromSize TODO
-	 * @param toSize TODO
+	 * @param move
+	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
+	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
+	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 * @param replayMoves TODO
 	 */
-	public static void updateBoard(final PlayerApp app, Context context, int fromSize, int toSize, final boolean replayMoves)
+	public static void updateBoard(final PlayerApp app, Context context, Move move, int boardSizeChange, final boolean replayMoves)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, fromSize, toSize);
+		initMainConstants(context, move, boardSizeChange);
 		
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
-		if (fromSize != toSize)
-			updateBoardDimensions(app, board, toSize);
+		// update dimensions only if board change size
+		if (boardSizeChange != 0)
+			updateBoardDimensions(app, board, boardSizeChange);
 		remakeTrial(app, replayMoves);
-	}
-	
-	public static void displayInfo(Context context)
-	{
-		System.out.println("\n\n");
-		System.out.println("GrowingBoardVisual.java displayInfo() containerStates 0 : "+(ContainerFlatState) context.state().containerStates()[0]);
-		System.out.println("GrowingBoardVisual.java displayInfo() offset : "+Arrays.toString(context.game().equipment().offset()));
-		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.game().equipment().containerId()));
-		System.out.println("GrowingBoardVisual.java displayInfo() sitesFrom : "+Arrays.toString(context.game().equipment().sitesFrom()));
-		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
-		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
-		for (int i=0; i<((FlatCellOnlyOwned) context.state().owned()).locations().length; i++)
-			System.out.println("GrowingBoard.java updateOwnedPrevToNew() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
-		System.out.println("\n\n");
 	}
 	
 	/** 
@@ -156,11 +146,12 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 * @param move
-	 * @param fromSize
-	 * @param toSize
+	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
+	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
+	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 * @param replayMoves if wee need to re-apply the moves 
 	 */
-	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int boardSizeChange, final boolean replayMoves) 
 	{
 		final Context context = app.manager().ref().context();
 
@@ -168,16 +159,9 @@ public class GrowingBoardVisual extends GrowingBoard
 		{
 			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to())+" - move : "+move);
-			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() fromSize : "+fromSize+" - toSize : "+toSize);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			if (isTouchingEdge(perimeter, move.to())) 
 			{
-				MappingBoardless.createMappings(context, move, fromSize, toSize);
-				updateBoard(app, context, fromSize, toSize, replayMoves);
-				
-				//displayInfo(context); //TODO : to remove once code is ready
+				updateBoard(app, context, move, boardSizeChange, replayMoves);				
 			}
 		}
 	}
