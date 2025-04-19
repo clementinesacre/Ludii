@@ -11,6 +11,7 @@ import game.equipment.container.board.Boardless;
 import game.functions.graph.generators.basis.square.Square;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
+import game.types.board.TilingBoardlessType;
 import game.util.equipment.Region;
 import game.util.graph.Graph;
 import gnu.trove.list.array.TIntArrayList;
@@ -78,8 +79,6 @@ public class GrowingBoard
 		return max;
 	}
 	
-
-
 	protected static Graph recalculetoutInit(final Context context)
 	{
 		System.out.println("GrowingBoard.java recalculetoutInit()");
@@ -366,6 +365,7 @@ public class GrowingBoard
 		
 		return graph; 
 	}
+	
 	/** 
 	 * Updates the board dimensions.
 	 * 
@@ -378,20 +378,39 @@ public class GrowingBoard
 	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange) 
 	{			
 		Graph newGraph;
-		switch(boardSizeChange) {
+		System.out.println("GrowingBoard.java updateBoardDimensions() boardSizeChange : "+boardSizeChange);
+		if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square)
+		{
+			switch(boardSizeChange) {
+				case 1:
+					// Board needs to grow
+					newGraph = recalculetout(context);
+				    break;
+				case -1:
+					// Board needs to shrink / go back from 1 step
+					newGraph = recalculetoutRollBack(context);
+					break;
+				default:
+					// Board is re-initialize / go back from all steps
+					newGraph = recalculetoutInit(context);
+			}
+		}
+		else
+		{
+			switch(boardSizeChange) {
 			case 1:
 				// Board needs to grow
-				newGraph = recalculetout(context);
+				newGraph = GrowingBoardHexagonal.recalculetoutHexagonal(context);
 			    break;
 			case -1:
 				// Board needs to shrink / go back from 1 step
-				newGraph = recalculetoutRollBack(context);
+				newGraph = GrowingBoardHexagonal.recalculetoutRollBackHexagonal(context);
 				break;
 			default:
 				// Board is re-initialize / go back from all steps
-				newGraph = recalculetoutInit(context);
+				newGraph = GrowingBoardHexagonal.recalculetoutInitHexagonal(context);
+			}
 		}
-		//System.out.println("GrowingBoardless.java updateBoardDimensions() newGraph : "+newGraph);
 		board.setGraphFunction(newGraph);
 		
 		//board.setGraphFunction(newGraphFunction);
@@ -669,7 +688,6 @@ public class GrowingBoard
 	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge)
 	{		
 		List<Action> actions = prevMove.actions();
-		
 		if (actions.size() == 1)
 		{
 			Action newAction = actions.get(0);

@@ -75,7 +75,7 @@
 (game "TestClementine"
     (players 2)
         (equipment {
-            (boardless <Tiling:type> 5)
+            (boardless <Tiling:type> <Tiling:size>)
             //(board (square 5))
             (piece "Disc" Neutral (flips 1 2))
             (piece "Ring" Each "RingMovements")
@@ -107,12 +107,12 @@
 
 //------------------------------------------------------------------------------
 
-(option "Tiling" <Tiling> args:{ <type> <tile> <numSides> <piece0> }
+(option "Tiling" <Tiling> args:{ <type> <tile> <numSides> <piece0> <size> }
 {
-    (item "Hexagonal" <Hexagonal> <"Hex"> <numSides:6> <"Hex0"> "The game uses hexagonal tiles.")
-    (item "Square" <Square>  <"Square"> <numSides:4> <"Square0"> "The game uses square tiles")**
-    (item "Triangle" <Triangular> <"Triangle"> <numSides:3> <"Triangle0"> "The game uses triangle tiles")
-    //(item "Rectangle" <Rectangle> <"Rectangle"> <numSides:4> <"Rectangle0"> "The game uses rectangle tiles")
+    (item "Hexagonal" <Hexagonal> <"Hex"> <numSides:6> <"Hex0"> <3> "The game uses hexagonal tiles.")**
+    (item "Square" <Square>  <"Square"> <numSides:4> <"Square0"> <5> "The game uses square tiles")
+    (item "Triangle" <Triangular> <"Triangle"> <numSides:3> <"Triangle0"> <5> "The game uses triangle tiles")
+    //(item "Rectangle" <Rectangle> <"Rectangle"> <numSides:4> <"Rectangle0"> <5> "The game uses rectangle tiles")
 })
 
 //------------------------------------------------------------------------------
