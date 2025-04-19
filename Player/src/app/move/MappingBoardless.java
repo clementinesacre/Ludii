@@ -132,7 +132,7 @@ public class MappingBoardless
 	 */
 	public static void createMappings(Context context, Move move, final int boardSizeChange)
 	{
-		if (mappingBoardlessBoard == null)
+		if (mappingBoardlessBoard() == null)
 			switch(((Boardless) context.game().board()).tiling()) {
 				case Square:
 					mappingBoardlessBoard = new MappingBoardlessSquare();
@@ -145,32 +145,32 @@ public class MappingBoardless
 			}
 		
 
-		mappingBoardlessBoard.initForNewBoard(context);
+		mappingBoardlessBoard().initForNewBoard(context);
 
 
 		switch(boardSizeChange) {
 			case 1:
 			    // Board needs to grow
 				Cell cell = (Cell) context.topology().getGraphElement(SiteType.Cell, move.to());
-				mappingBoardlessBoard.forward(context, cell);
+				mappingBoardlessBoard().forward(context, cell);
 			    break;
 			case 0:
 			    // Board keeps same size
-				mappingBoardlessBoard.keepSameSize(context);
+				mappingBoardlessBoard().keepSameSize(context);
 			    break;
 			case -1:
 			    // Board needs to shrink / go back from 1 step
-				mappingBoardlessBoard.rollback(context);
+				mappingBoardlessBoard().rollback(context);
 			    break;
 			case -2:
 			    // Board is re-initialize / go back from all steps
-				mappingBoardlessBoard.rollbackToInit(context);
+				mappingBoardlessBoard().rollbackToInit(context);
 			    break;
 			default:
 				// code block
 		}
 
-		mappingBoardlessBoard.updateNewTotalIndexesCells();
+		mappingBoardlessBoard().updateNewTotalIndexesCells();
 		
 		prt();
 	}

@@ -21,11 +21,11 @@ import other.topology.TopologyElement;
  * 
  * @author Clémentine.Sacré
  */
-public class GrowingBoardHexagonal
+public class GrowingBoardHexagonal extends GrowingBoardAbstract
 {	
 	
-	
-	protected static Graph recalculetoutInitHexagonal(final Context context)
+	@Override
+	protected Graph recalculetoutInit(final Context context)
 	{
 		System.out.println("GrowingBoard.java recalculetoutInitHexagonal()");
 		final Graph graph = new Graph();
@@ -96,8 +96,6 @@ public class GrowingBoardHexagonal
 			
 		}
 		
-		
-
 		graph.makeFaces(false);
 		
 		//graph.setBasisAndShape(basis, shape);
@@ -109,7 +107,8 @@ public class GrowingBoardHexagonal
 		return graph; 
 	}
 
-	protected static Graph recalculetoutRollBackHexagonal(final Context context)
+	@Override
+	protected Graph recalculetoutRollBack(final Context context)
 	{
 		System.out.println("GrowingBoard.java recalculetoutRollBackHexagonal()");
 		final Graph graph = new Graph();	
@@ -445,7 +444,8 @@ public class GrowingBoardHexagonal
 		}
 	}
 	
-	protected static Graph recalculetoutHexagonal(final Context context)
+	@Override
+	protected Graph recalculetout(final Context context)
 	{
 		System.out.println("GrowingBoard.java recalculetoutHexagonal()");
 		final Graph graph = new Graph();	
