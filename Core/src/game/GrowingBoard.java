@@ -1,4 +1,4 @@
-package app.move;
+package game;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import game.Game;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
@@ -77,6 +76,10 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMaxColPerRow;
 	private static HashMap<Integer, Integer> initMaxRowPerCol;
 	
+	protected static List<TopologyElement> perimeter;
+	protected static boolean isVisual;
+	
+	protected static List<Move> movesDone;
 	//--------------------------------Getters----------------------------------
 	
 	public static HashMap<Integer, Integer> mappedPrevToNewIndexes()
@@ -740,7 +743,7 @@ public class GrowingBoard
 		
 		initMappingIndexes(context);
 		
-		System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
+		/*System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() mappedPrevToNewIndexes() : "+mappedPrevToNewIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() surplusIndexes() : "+surplusIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() prevDimensionBoard() : "+prevDimensionBoard());
@@ -757,7 +760,7 @@ public class GrowingBoard
 		System.out.println("GrowingBoard.java initMainConstants() mappedNewToInitIndexes() : "+mappedNewToInitIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() mappedInitToNewIndexes() : "+mappedInitToNewIndexes());
 		System.out.println("GrowingBoard.java initMainConstants() surplusInitIndexes() : "+surplusInitIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() growingStep() : "+growingStep(context));
+		System.out.println("GrowingBoard.java initMainConstants() growingStep() : "+growingStep(context));*/
 	}
 	
 	//-------------------------------------------------------------------------
@@ -805,7 +808,6 @@ public class GrowingBoard
 						
 		board.setGraphFunction(newGraphFunction);
 		board.setDimension(newSize);
-		updateTopology(context);
 	}
 	
 	/** 
@@ -815,15 +817,15 @@ public class GrowingBoard
 	 * @param target Value we are looking for into the list.
 	 * @return Index of the element in the list if found, -1 otherwise.
 	 */
-	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
+	public static boolean isTouchingEdge(int target) {
 		if (target == Constants.UNDEFINED) return false;
 		
         int start = 0;
-        int end = topologyElements.size() - 1;
+        int end = perimeter.size() - 1;
 
         while (start <= end) {
             int midIndex = start + (end - start) / 2;
-            int midValue = topologyElements.get(midIndex).index();
+            int midValue = perimeter.get(midIndex).index();
 
             if (midValue == target) {
                 return true;
@@ -1137,12 +1139,13 @@ public class GrowingBoard
 		
 		for (int i = 0; i < movesDone.size(); i++)
 		{
-			move = movesDone.get(i);	
-			generateNewMove(move, i == movesDone.size()-1);
+			move = movesDone.get(i);
+			generateNewMove(move, false);
 			
 			if (i>=numInitialPlacementMoves)
 			{
-				context.game().apply(context, move);
+				//context.game().apply(context, move);
+				context.game().apply(context, move, false);
 			}
 		}
 	}
@@ -1205,7 +1208,36 @@ public class GrowingBoard
 		updateOwned(context);
 		
 		if (replayMoves)
+		{
 			replayMoves(context, movesDone);
+		}
+	}
+	
+	protected static void cc(Context context) 
+	{
+		updateChunks(context, prevDimensionBoard(), newDimensionBoard());
+		updateOwned(context);		
+	}
+	
+	protected static void redoneAllButLast(Context context)
+	{
+		
+		/*for (int i=0; i<movesDone.size(); i++) 
+			movesDone.set(i, generateNewMove(movesDone.get(i), false));*/
+		
+		Move move = null;
+		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
+		
+		for (int i = 0; i < movesDone.size(); i++)
+		{
+			move = movesDone.get(i);
+			generateNewMove(move, false);
+			
+			if (i>=numInitialPlacementMoves)
+			{
+				context.game().apply(context, move, false);
+			}
+		}
 	}
 	
 	/**
@@ -1229,6 +1261,14 @@ public class GrowingBoard
 		context.trial().setStatus(null);
 		
 		resetState(context);
+		
+		
+		
+		/*//context.rng().restoreState(rngState);
+		context.reset();
+		context.state().initialise(context.currentInstanceContext().game());
+		//game.start(context, true);
+		context.trial().setStatus(null);*/
 	}
 	
 	/** 
@@ -1278,11 +1318,73 @@ public class GrowingBoard
 	{
 		if (context.game().isBoardless()) 
 		{
-			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());			
-			if (isTouchingEdge(perimeter, move.to())) 
+			if (!isVisual)
+				perimeter = context.topology().perimeter(context.board().defaultSite());			
+			if (isTouchingEdge(move.to())) 
 			{
 				updateBoard(context, fromSize, toSize, replayMoves);
 			}
 		}
+	}	
+	
+	public static void checkMoveImpactOnBoard3(Context context, final Move move, List<Move> movesDone, int fromSize, final int toSize, final boolean replayMoves) 
+	{
+		
+		if (context.game().isBoardless()) 
+		{
+			if (!isVisual)
+				perimeter = context.topology().perimeter(context.board().defaultSite());
+			
+			System.out.println("GrowingBoard.java checkMoveImpactOnBoard3() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
+			System.out.println("GrowingBoard.java checkMoveImpactOnBoard3() fromSize : "+fromSize+" - toSize : "+toSize);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
+			if (isTouchingEdge(move.to())) 
+			{
+				Game game = context.game();
+				Boardless board = (Boardless) game.board();
+				
+				if (!isVisual)
+				{
+					initMainConstants(context, fromSize, toSize);
+					updateBoardDimensions(context, board, toSize);
+					updateTopology(context);
+				}
+				
+			}
+		}
+		System.out.println("\n\n\n");
 	}
+	
+	
+	public static void checkMoveImpactOnBoard2(final Context context, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	{
+		if (context.game().isBoardless()) 
+		{
+			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
+			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() fromSize : "+fromSize+" - toSize : "+toSize);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
+			if (isTouchingEdge(move.to())) 
+			{
+				Game game = context.game();
+				Boardless board = (Boardless) game.board();
+				initMainConstants(context, fromSize, toSize);
+				
+				// TODO check that the move is applied on a board type container
+				updateBoardDimensions(context, board, toSize);
+
+				Trial trial = context.trial();
+				movesDone = trial.generateCompleteMovesList();
+				if (replayMoves) // TODO does not change if we call it or not - test that
+					resetMoves(context);
+				
+				//remakeTrial(context, movesDone, legalMoves, replayMoves);
+			}
+		}
+	}
+	
 }

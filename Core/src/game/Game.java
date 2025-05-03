@@ -2985,7 +2985,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	@Override
 	public Move apply(final Context context, final Move move)
 	{		
-		return apply(context, move, false);		// By default false --> don't skip computing end rules
+		return apply(context, move, false, true);		// By default false --> don't skip computing end rules
 	}
 	
 	/**
@@ -3064,7 +3064,52 @@ public class Game extends BaseLudeme implements API, Serializable
 			if (context.state().isDecided() != Constants.UNDEFINED)
 				context.state().setIsDecided(Constants.UNDEFINED);
 			
-			return applyInternal(context, move, skipEndRules);
+			
+			Move moveDone = applyInternal(context, move, skipEndRules);
+			
+			return moveDone;
+		}
+		finally
+		{
+			context.getLock().unlock();
+		}
+	}
+	
+	public Move apply(final Context context, final Move move, final boolean skipEndRules, final boolean cc)
+	{	        
+		context.getLock().lock();
+		
+		try
+		{
+			// Save data before applying end rules (for undo).
+			context.storeCurrentData();
+			
+			// If a decision was done previously we reset it.
+			if (context.state().isDecided() != Constants.UNDEFINED)
+				context.state().setIsDecided(Constants.UNDEFINED);
+			
+			List<Move> movesDone = context.trial().generateCompleteMovesList();
+			
+			if (!GrowingBoard.isVisual)
+				GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+
+			if (cc && GrowingBoard.isTouchingEdge(move.to()))
+			{
+				if (!GrowingBoard.isVisual)
+				{
+					int currDim = ((Boardless) context.board()).dimension();
+					int newDim = currDim + GrowingBoard.growingStep(context);
+					
+					GrowingBoard.checkMoveImpactOnBoard2(context, move, currDim, newDim, true);
+				}
+				GrowingBoard.cc(context);
+				GrowingBoard.redoneAllButLast(context);
+				GrowingBoard.generateNewMove(move, true); //TODO seulement si sur le bord
+			}
+			
+			Move moveDone = applyInternal(context, move, skipEndRules);
+			
+			return moveDone;
 		}
 		finally
 		{
