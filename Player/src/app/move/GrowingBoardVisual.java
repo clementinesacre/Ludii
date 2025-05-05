@@ -35,8 +35,6 @@ public class GrowingBoardVisual extends GrowingBoard
 	{
 		updateBoardDimensions(app.manager().ref().context(), board, newSize);
 
-		updateTopology(app.manager().ref().context());
-
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
 		MVCSetup.setMVC(app);

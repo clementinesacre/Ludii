@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import app.PlayerApp;
-import app.move.GrowingBoard;
+import game.GrowingBoard;
 import app.move.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.views.tools.ToolView;
@@ -175,23 +175,23 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+		GrowingBoard.perimeter = context.topology().perimeter(context.board().defaultSite());
 		
 		// test
 		for (int i=0; i<6; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=6; i<8; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=9; i<11; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=11; i<14; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=14; i<16; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=16; i<19; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 		for (int i=19; i<=24; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
 	}
 	
 	/**
@@ -1374,39 +1374,39 @@ public class GrowingBoardTest {
 		updateBoard(context);
 		applyMove(context, 50, 21, 1, 0);
 		updateBoard(context);		
-		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
+		GrowingBoard.perimeter = context.topology().perimeter(context.board().defaultSite());
 		
 		// test
 		for (int i=0; i<10; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=10; i<17; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=17; i<19; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=19; i<26; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=26; i<28; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=28; i<35; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=35; i<37; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=37; i<44; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=44; i<46; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=46; i<53; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=53; i<55; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=55; i<62; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=62; i<64; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=64; i<71; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 		for (int i=71; i<=80; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(perimeter, getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
 	}
 	
 	/**
@@ -3310,5 +3310,84 @@ public class GrowingBoardTest {
 		assertEquals(151, moves.get(0).to());
 		assertEquals(ActionType.Add, moves.get(0).actionType());
 		assertEquals(2, moves.get(0).state());
+	}
+	
+	@Test
+	public void testTimeRandomPlayouts()
+	{
+		// init
+		final List<String> options = new ArrayList<String>();
+		options.add("Tiling/Square");
+		final Game game = GameLoader.loadGameFromName("Andantino.lud", options);
+		
+		final Context context = new Context(game, new Trial(game));
+		game.start(context, true);
+		
+		
+		applyMove(context, 7, 7, 1, 1);
+		applyMove(context, 8, 8, 2, 1);
+		applyMove(context, 9, 9, 1, 1);
+		updateBoard(context);
+		
+		applyMove(context, 11, 11, 2, 1);
+		applyMove(context, 26, 26, 1, 1);
+		applyMove(context, 32, 32, 2, 1);
+		applyMove(context, 12, 12, 1, 1);
+		applyMove(context, 13, 13, 2, 1);
+		updateBoard(context);
+		
+		applyMove(context, 15, 15, 1, 1);
+		applyMove(context, 34, 34, 2, 1);
+		applyMove(context, 43, 43, 1, 1);
+		applyMove(context, 35, 35, 2, 1);
+		updateBoard(context);
+		
+		applyMove(context, 48, 48, 1, 1);
+		applyMove(context, 59, 59, 2, 1);
+		applyMove(context, 70, 70, 1, 1);
+		applyMove(context, 64, 64, 2, 1);
+		applyMove(context, 42, 42, 1, 1);
+		applyMove(context, 71, 71, 2, 1);
+		applyMove(context, 43, 43, 1, 1);
+		updateBoard(context);
+		
+		applyMove(context, 82, 82, 2, 1);
+		applyMove(context, 101, 101, 1, 1);
+		applyMove(context, 50, 50, 2, 1);
+		applyMove(context, 46, 46, 1, 1);
+		applyMove(context, 99, 99, 2, 1);
+		applyMove(context, 58, 58, 1, 1);
+		applyMove(context, 51, 51, 2, 1);
+		updateBoard(context);
+		
+		applyMove(context, 70, 70, 1, 1);
+		applyMove(context, 130, 130, 2, 1);
+		applyMove(context, 81, 81, 1, 1);
+		applyMove(context, 145, 145, 2, 1);
+		applyMove(context, 57, 57, 1, 1);
+		applyMove(context, 55, 55, 2, 1);
+		applyMove(context, 143, 143, 1, 1);
+		applyMove(context, 53, 53, 2, 1);
+		applyMove(context, 88, 88, 1, 1);
+		applyMove(context, 67, 67, 2, 1);
+		applyMove(context, 142, 142, 1, 1);
+		applyMove(context, 74, 74, 2, 1);
+		updateBoard(context);
+		
+		applyMove(context, 159, 159, 1, 1);
+		applyMove(context, 197, 197, 2, 1);
+		applyMove(context, 61, 61, 1, 1);
+		applyMove(context, 132, 132, 2, 1);
+		applyMove(context, 182, 182, 1, 1);
+		applyMove(context, 177, 177, 2, 1);
+		applyMove(context, 195, 195, 1, 1);
+		applyMove(context, 80, 80, 2, 1);
+		applyMove(context, 82, 82, 1, 1);
+		System.out.println("GrowingBoardTest.java testTimeRandomPlayouts() moves 1: "+game.moves(context));
+		applyMove(context, 199, 199, 2, 1);
+
+		System.out.println("GrowingBoardTest.java testTimeRandomPlayouts() moves 2: "+game.moves(context));
+		
+		// End -> If -> Equals (CountMoves, Mul)
 	}
 }

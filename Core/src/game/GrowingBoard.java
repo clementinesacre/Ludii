@@ -14,6 +14,7 @@ import game.functions.graph.generators.basis.hex.HexagonOnHex;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.functions.graph.generators.basis.tri.TriangleOnTri;
 import game.rules.play.moves.Moves;
+import game.types.board.SiteType;
 import game.types.board.TilingBoardlessType;
 import game.util.equipment.Region;
 import gnu.trove.list.array.TIntArrayList;
@@ -76,7 +77,7 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMaxColPerRow;
 	private static HashMap<Integer, Integer> initMaxRowPerCol;
 	
-	protected static List<TopologyElement> perimeter;
+	public static List<TopologyElement> perimeter;
 	protected static boolean isVisual;
 	
 	protected static List<Move> movesDone;
@@ -211,7 +212,6 @@ public class GrowingBoard
 	{
 		return initMaxRowPerCol;
 	}
-	
 	
 	public static int growingStep(Context context)
 	{
@@ -808,6 +808,7 @@ public class GrowingBoard
 						
 		board.setGraphFunction(newGraphFunction);
 		board.setDimension(newSize);
+		updateTopology(context);
 	}
 	
 	/** 
@@ -1072,13 +1073,16 @@ public class GrowingBoard
 	}
 	
 	/**
-	 * Generates the new move based on a move, which means with the new indexes of the board
-	 * (which means updating to() and from().
+	 * Generates the new move based on a move, which means with the new 
+	 * indexes of the board (which means updating to() and from()).
 	 * 
 	 * @param prevMove previous move to copy, except for the indexes.
+	 * @param isMoveDoneOnEdge is the move done on an edge of board which 
+	 * lead to an increase of the board size. 
+	 * @param mapping Mapping to use to map move from previous to new board.
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge)
+	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge, HashMap<Integer, Integer> mapping)
 	{		
 		List<Action> actions = prevMove.actions();
 		
@@ -1088,9 +1092,11 @@ public class GrowingBoard
 			int to = newAction.to();
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
-				newAction.setTo(mappedPrevToNewIndexes().get(to));
+			{
+				newAction.setTo(mapping.get(to));
+			}
 			if (from != Constants.UNDEFINED)
-				newAction.setFrom(mappedPrevToNewIndexes().get(from));
+				newAction.setFrom(mapping.get(from));
 			
 			prevMove.setTo(prevMove.to());
 			prevMove.setFrom(prevMove.from());
@@ -1104,9 +1110,9 @@ public class GrowingBoard
 				int to = action.to();
 				int from = action.from();
 				if (to != Constants.UNDEFINED)
-					action.setTo(mappedPrevToNewIndexes().get(to));
+					action.setTo(mapping.get(to));
 				if (from != Constants.UNDEFINED)
-					action.setFrom(mappedPrevToNewIndexes().get(from));
+					action.setFrom(mapping.get(from));
 				
 				newActions.add(action);
 			}
@@ -1121,9 +1127,24 @@ public class GrowingBoard
 				}
 		}
 
-		if (isLastMoveDoneOnEdge)
+		if (isMoveDoneOnEdge)
 			prevMove.setOnEdge(prevDimensionBoard());
 		return prevMove;
+	}
+	
+	/**
+	 * Generates the new move based on a move, which means with the new indexes 
+	 * of the board (which means updating to() and from()), by using the default 
+	 * mapping which is between the current board and the new board.
+	 * 
+	 * @param prevMove previous move to copy, except for the indexes.
+	 * @param isMoveDoneOnEdge is the move done on an edge of board which 
+	 * lead to an increase of the board size. 
+	 * @return the new move.
+	 */
+	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge)
+	{
+		return generateNewMove(prevMove, isMoveDoneOnEdge, mappedPrevToNewIndexes());
 	}
 	
 	/** 
@@ -1144,7 +1165,6 @@ public class GrowingBoard
 			
 			if (i>=numInitialPlacementMoves)
 			{
-				//context.game().apply(context, move);
 				context.game().apply(context, move, false);
 			}
 		}
@@ -1195,7 +1215,8 @@ public class GrowingBoard
 	}
 	
 	/** 
-	 * Start over the game on the new board and apply the historic of move mapped to the new board.
+	 * Update the chunks and the owned based on the new board. 
+	 * Also apply the historic of move mapped to the new board.
 	 * 
 	 * @param app
 	 * @param movesDone
@@ -1213,10 +1234,14 @@ public class GrowingBoard
 		}
 	}
 	
-	protected static void cc(Context context) 
-	{
-		updateChunks(context, prevDimensionBoard(), newDimensionBoard());
-		updateOwned(context);		
+	/** 
+	 * Update the chunks and the owned based on the new board.
+	 * 
+	 * @param context
+	 */
+	protected static void updateChunksAndOwned(Context context) 
+	{	
+		remakeTrial(context, null, null, false);
 	}
 	
 	protected static void redoneAllButLast(Context context)
@@ -1255,20 +1280,9 @@ public class GrowingBoard
 	 */
 	protected static void resetMoves(Context context)
 	{
-		// TODO - how reset moves properly? problem with legal moves when doing this
 		context.reset();
-		context.state().initialise(context.currentInstanceContext().game());
-		context.trial().setStatus(null);
-		
-		resetState(context);
-		
-		
-		
-		/*//context.rng().restoreState(rngState);
-		context.reset();
-		context.state().initialise(context.currentInstanceContext().game());
-		//game.start(context, true);
-		context.trial().setStatus(null);*/
+		context.game().start(context, true);
+		context.game().incrementGameStartCount();
 	}
 	
 	/** 
@@ -1363,11 +1377,11 @@ public class GrowingBoard
 		if (context.game().isBoardless()) 
 		{
 			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
-			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() fromSize : "+fromSize+" - toSize : "+toSize);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
+			System.out.println("GrowingBoard.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
+			System.out.println("GrowingBoard.java checkMoveImpactOnBoard2() fromSize : "+fromSize+" - toSize : "+toSize);
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
+			//System.out.println("GrowingBoard.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			if (isTouchingEdge(move.to())) 
 			{
 				Game game = context.game();

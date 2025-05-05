@@ -11,7 +11,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.JSONObject;
 
 import game.Game;
+import game.GrowingBoard;
+import game.equipment.container.board.Boardless;
+import game.functions.dim.DimConstant;
+import game.functions.graph.GraphFunction;
+import game.functions.graph.generators.basis.hex.HexagonOnHex;
+import game.functions.graph.generators.basis.square.RectangleOnSquare;
+import game.functions.graph.generators.basis.tri.TriangleOnTri;
 import game.rules.play.moves.Moves;
+import game.types.board.TilingBoardlessType;
 import game.types.play.ModeType;
 import main.Constants;
 import manager.ai.AIDetails;
@@ -247,6 +255,94 @@ public class Referee
 			stopAt = System.nanoTime();
 			moveDone += timingContext.trial().numMoves();
 			playouts++;
+		}
+
+		final double secs = (stopAt - start) / 1000000000.0;
+		final double rate = (playouts / secs);
+		final double rateMove = (moveDone / secs);
+
+		System.out.println(String.format(Locale.US, "%.2f", Double.valueOf(rate)) + "p/s");
+		System.out.println(String.format(Locale.US, "%.2f", Double.valueOf(rateMove)) + "m/s");
+
+		return rate;
+	}
+	
+	/**
+	 * Reset the Board, the Graph and the Topology to the 
+	 * specified size. Also re-initialize the initial moves 
+	 * that had their to/from attributes adapted to fit the 
+	 * bigger board.
+	 * 
+	 * @param size size of the board to which we want to
+	 * go back to.
+	 */
+	public void resetBoardless(final int size)
+	{
+		Boardless board = (Boardless) context.game().board();
+		GraphFunction newGraphFunction = board.tiling() == TilingBoardlessType.Square
+				? new RectangleOnSquare(new DimConstant(size), null, null, null) : board.tiling() == TilingBoardlessType.Hexagonal 
+				? new HexagonOnHex(new DimConstant(size)) : new TriangleOnTri(new DimConstant(size));
+
+		board.setGraphFunction(newGraphFunction);
+		board.setDimension(size);
+
+		context.game().update();
+		
+		// also reset initial moves to the initial plate
+		List<Move> moves = context.trial().generateCompleteMovesList();
+		for (Move m : moves)
+			GrowingBoard.generateNewMove(m, false, GrowingBoard.mappedNewToInitIndexes());
+	}
+	
+	/**
+	 * Time random playouts for boardless games. 
+	 * This need a specific function, the current implementation 
+	 * to make the board grow will impact the Graph, the Board and 
+	 * the Topology of the context. Even when copying a context, it 
+	 * will point to the same instance of these three elements. One 
+	 * solution is to re-initialise all three of them using the 
+	 * same as in the class used to make grow the board. Another 
+	 * solution could be to make a deep copy of these elements. 
+	 *
+	 * @return Average number of playouts per second.
+	 */
+	public double timeRandomPlayoutsBoardless()
+	{
+		// Use a copy of our context for all the playouts
+		final Context timingContext = new Context(context);
+		final Game game = timingContext.game();
+		
+		int initialBoardSize = ((Boardless) game.board()).dimension();
+
+		// Warming
+		long stopAt = 0;
+		long start = System.nanoTime();
+		double abortAt = start + 10 * 1000000000.0;
+
+		while (stopAt < abortAt)
+		{
+			game.start(timingContext, true);
+			game.playout(timingContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
+			stopAt = System.nanoTime();
+			
+			resetBoardless(initialBoardSize);
+		}
+
+		stopAt = 0;
+		System.gc();
+		start = System.nanoTime();
+		abortAt = start + 30 * 1000000000.0;
+		int playouts = 0;
+		int moveDone = 0;
+		while (stopAt < abortAt)
+		{
+			game.start(timingContext, true);
+			game.playout(timingContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
+			stopAt = System.nanoTime();
+			moveDone += timingContext.trial().numMoves();
+			playouts++;
+			
+			resetBoardless(initialBoardSize);
 		}
 
 		final double secs = (stopAt - start) / 1000000000.0;
