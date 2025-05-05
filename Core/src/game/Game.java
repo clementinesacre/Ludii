@@ -3075,7 +3075,6 @@ public class Game extends BaseLudeme implements API, Serializable
 		}
 	}
 	
-	public Move apply(final Context context, final Move move, final boolean skipEndRules, final boolean cc)
 	/**
 	 * Applies a move to the current context
 	 * 
