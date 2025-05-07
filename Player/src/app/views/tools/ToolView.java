@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.PlayerApp;
-import app.move.GrowingBoardVisual;
-import app.move.MappingBoardless;
 import app.utils.GameUtil;
 import app.utils.SettingsExhibition;
 import app.views.View;
@@ -23,14 +21,12 @@ import app.views.tools.buttons.ButtonQuit;
 import app.views.tools.buttons.ButtonSettings;
 import app.views.tools.buttons.ButtonShow;
 import app.views.tools.buttons.ButtonStart;
-import game.equipment.container.board.Boardless;
-import game.types.board.SiteType;
+import boardless.GrowingBoardVisual;
 import main.Constants;
 import other.concept.Concept;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
-import other.topology.Cell;
 
 //-----------------------------------------------------------------------------
 

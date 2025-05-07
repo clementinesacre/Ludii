@@ -1,4 +1,4 @@
-package app.move;
+package boardless;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -38,20 +38,6 @@ import other.trial.Trial;
  */
 public class GrowingBoard
 {	
-	//----------------------------Initialization-------------------------------
-	
-	/** 
-	 * Initializes the main constants.
-	 * 
-	 * @param context
-	 * @param move
-	 * @param boardSizeChange Determines how the board size should be adjusted based on the last move.
-	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
-	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
-	 */
-	public static void initMainConstants(Context context, Move move, final int boardSizeChange) {
-		MappingBoardless.createMappings(context, move, boardSizeChange);
-	}
 	
 	//-------------------------------------------------------------------------
 	
@@ -89,12 +75,15 @@ public class GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange, Cell c) 
+	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange, Move move) 
 	{			
 		System.out.println("GrowingBoard.java updateBoardDimensions() boardSizeChange : "+boardSizeChange);
 		
-		Graph newGraph = GrowingBoardInterface.generateGraph(context, boardSizeChange, c);
-		board.setGraphFunction(newGraph);
+		
+		//Graph newGraph = GrowingBoardInterface.generateGraph(context, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
+		//board.setGraphFunction(newGraph);
+		
+		UpdateBoard.createMappings(context, move, boardSizeChange);
 		
 		//board.setGraphFunction(newGraphFunction);
 		//board.setDimension(newSize);
@@ -149,7 +138,7 @@ public class GrowingBoard
 			ChunkSet newCS = (ChunkSet) newHCS.internalState();
 			TIntArrayList nonzeroChunks = previousCS.getNonzeroChunks();
 			for (int prevVal : nonzeroChunks.toArray()) { 
-				newCS.setChunk(MappingBoardless.mappedInitToNewIndexes().get(prevVal), previousCS.getChunk(prevVal));
+				newCS.setChunk(UpdateBoard.mappedInitToNewIndexes().get(prevVal), previousCS.getChunk(prevVal));
 			}
 		}
 		else
@@ -199,7 +188,7 @@ public class GrowingBoard
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
-		int numSites = MappingBoardless.newTotalIndexesCells();
+		int numSites = UpdateBoard.newTotalIndexesCells();
 		ContainerState[] containerStates = context.state().containerStates();
 		
 		for (int i=0; i<containerStates.length; i++)
@@ -236,14 +225,14 @@ public class GrowingBoard
 					int[] newEmptySites;
 					if (emptySites.length > 0)
 					{
-						newEmptySites = new int[emptySites.length + MappingBoardless.surplusInitIndexes().size()];
+						newEmptySites = new int[emptySites.length + UpdateBoard.surplusInitIndexes().size()];
 						int index = 0;
 						for (int j=0; j<emptySites.length; j++)
 						{
-							newEmptySites[index] = MappingBoardless.mappedInitToNewIndexes().get(emptySites[index]);
+							newEmptySites[index] = UpdateBoard.mappedInitToNewIndexes().get(emptySites[index]);
 							index++;
 						}
-						for (Integer prevVal : MappingBoardless.surplusInitIndexes()) 
+						for (Integer prevVal : UpdateBoard.surplusInitIndexes()) 
 						{
 				            newEmptySites[index] = prevVal;
 				            index++;
@@ -273,7 +262,7 @@ public class GrowingBoard
 			            }
 			        }
 					for (Integer prevVal : prevPlayableSites)
-						playableBS.flip(MappingBoardless.mappedInitToNewIndexes().get(prevVal));
+						playableBS.flip(UpdateBoard.mappedInitToNewIndexes().get(prevVal));
 				}
 				else 
 				{
@@ -292,14 +281,14 @@ public class GrowingBoard
 					int[] newEmptySites;
 					if (emptySites.length > 0)
 					{
-						newEmptySites = new int[emptySites.length + MappingBoardless.surplusIndexes().size()];
+						newEmptySites = new int[emptySites.length + UpdateBoard.surplusIndexes().size()];
 						int index = 0;
 						for (int j=0; j<emptySites.length; j++)
 						{
 							newEmptySites[index] = emptySites[index];
 							index++;
 						}
-						for (Integer prevVal : MappingBoardless.surplusIndexes()) 
+						for (Integer prevVal : UpdateBoard.surplusIndexes()) 
 						{
 				            newEmptySites[index] = prevVal;
 				            index++;
@@ -378,9 +367,9 @@ public class GrowingBoard
 			int to = newAction.to();
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
-				newAction.setTo(MappingBoardless.mappedPrevToNewIndexes().get(to));
+				newAction.setTo(UpdateBoard.mappedPrevToNewIndexes().get(to));
 			if (from != Constants.UNDEFINED)
-				newAction.setFrom(MappingBoardless.mappedPrevToNewIndexes().get(from));
+				newAction.setFrom(UpdateBoard.mappedPrevToNewIndexes().get(from));
 			
 			prevMove.setTo(prevMove.to());
 			prevMove.setFrom(prevMove.from());
@@ -394,9 +383,9 @@ public class GrowingBoard
 				int to = action.to();
 				int from = action.from();
 				if (to != Constants.UNDEFINED)
-					action.setTo(MappingBoardless.mappedPrevToNewIndexes().get(to));
+					action.setTo(UpdateBoard.mappedPrevToNewIndexes().get(to));
 				if (from != Constants.UNDEFINED)
-					action.setFrom(MappingBoardless.mappedPrevToNewIndexes().get(from));
+					action.setFrom(UpdateBoard.mappedPrevToNewIndexes().get(from));
 				
 				newActions.add(action);
 			}
@@ -458,8 +447,8 @@ public class GrowingBoard
 			{
 				FastTIntArrayList newFastTIntArrayList = new FastTIntArrayList();
 				for (int k=0; k<locations[i][j].size(); k++)
-					if (MappingBoardless.mappedInitToNewIndexes().containsKey(locations[i][j].get(k)))
-						newFastTIntArrayList.add(MappingBoardless.mappedInitToNewIndexes().get(locations[i][j].get(k)));
+					if (UpdateBoard.mappedInitToNewIndexes().containsKey(locations[i][j].get(k)))
+						newFastTIntArrayList.add(UpdateBoard.mappedInitToNewIndexes().get(locations[i][j].get(k)));
 				locations[i][j] = newFastTIntArrayList;
 			}
 	}
@@ -549,12 +538,10 @@ public class GrowingBoard
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, move, boardSizeChange);
 		
 		// TODO check that the move is applied on a board type container
 		// update dimensions only if board change size
-		if (boardSizeChange != 0)
-			updateBoardDimensions(context, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
+		updateBoardDimensions(context, board, boardSizeChange, move);
 		remakeTrial(context, replayMoves);
 	}
 	

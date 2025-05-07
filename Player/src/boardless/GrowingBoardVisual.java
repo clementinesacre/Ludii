@@ -1,4 +1,4 @@
-package app.move;
+package boardless;
 
 import java.awt.EventQueue;
 import java.util.List;
@@ -30,9 +30,9 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange, Cell c) 
+	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange, Move move) 
 	{
-		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange, c);
+		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange, move);
 
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -108,13 +108,11 @@ public class GrowingBoardVisual extends GrowingBoard
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, move, boardSizeChange);
 		
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
 		// update dimensions only if board change size
-		if (boardSizeChange != 0)
-			updateBoardDimensions(app, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
+		updateBoardDimensions(app, board, boardSizeChange, move);
 	}
 	
 	/**
@@ -132,13 +130,12 @@ public class GrowingBoardVisual extends GrowingBoard
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		initMainConstants(context, move, boardSizeChange);
 		
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
 		// update dimensions only if board change size
-		if (boardSizeChange != 0)
-			updateBoardDimensions(app, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
+		updateBoardDimensions(app, board, boardSizeChange, move);
+		
 		remakeTrial(app, replayMoves);
 	}
 	

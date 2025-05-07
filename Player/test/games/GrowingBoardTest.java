@@ -16,10 +16,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import app.PlayerApp;
-import app.move.GrowingBoard;
-import app.move.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.views.tools.ToolView;
+import boardless.GrowingBoard;
+import boardless.GrowingBoardVisual;
 import game.Game;
 import game.equipment.Equipment;
 import game.equipment.container.board.Boardless;

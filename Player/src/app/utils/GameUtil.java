@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import app.PlayerApp;
-import app.move.MappingBoardless;
 import app.move.MoveHandler;
 import app.move.animation.MoveAnimation;
 import compiler.Compiler;

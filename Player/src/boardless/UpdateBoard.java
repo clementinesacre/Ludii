@@ -1,7 +1,6 @@
-package app.move;
+package boardless;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -16,11 +15,11 @@ import other.topology.Cell;
  * 
  * @author Clémentine.Sacré
  */
-public class MappingBoardless
+public class UpdateBoard
 {
-	private static MappingBoardlessAbstract mappingBoardlessBoard;
+	private static BoardlessAbstract mappingBoardlessBoard;
 	
-	public static MappingBoardlessAbstract mappingBoardlessBoard()
+	public static BoardlessAbstract mappingBoardlessBoard()
 	{
 		return mappingBoardlessBoard;
 	}
@@ -75,20 +74,20 @@ public class MappingBoardless
 		return mappingBoardlessBoard().initialVertices();
 	}
 	
-	public static int lastNbRowAddedCells()
+	/*public static int lastNbRowAddedCells()
 	{
 		return mappingBoardlessBoard().lastNbRowAddedCells();
-	}
+	}*/
 
 	public static ArrayList<int[]> cellsRowsColsAdded()
 	{
 		return mappingBoardlessBoard().cellsRowsColsAdded();
 	}
 	
-	public static int lastNbColAddedCells()
+	/*public static int lastNbColAddedCells()
 	{
 		return mappingBoardlessBoard().lastNbColAddedCells();
-	}
+	}*/
 	
 	public static int[][] initialCells2()
 	{
@@ -97,28 +96,6 @@ public class MappingBoardless
 	
 	
 	//--------------------------------------------------------------------------
-	
-	private static void prt()
-	{
-		System.out.println("MappingBoardless.java prt() mappedPrevToNewIndexes : "+mappingBoardlessBoard().mappedPrevToNewIndexes());
-		System.out.println("MappingBoardless.java prt() mappedNewToPrevIndexes : "+mappingBoardlessBoard().mappedNewToPrevIndexes());
-		System.out.println("MappingBoardless.java prt() surplusIndexes : "+mappingBoardlessBoard().surplusIndexes());
-		System.out.println("MappingBoardless.java prt() mappedInitToNewIndexes : "+mappingBoardlessBoard().mappedInitToNewIndexes());
-		System.out.println("MappingBoardless.java prt() mappedNewToInitIndexes : "+mappingBoardlessBoard().mappedNewToInitIndexes());
-		System.out.println("MappingBoardless.java prt() surplusInitIndexes : "+mappingBoardlessBoard().surplusInitIndexes());
-		
-		System.out.println("MappingBoardless.java prt() rowsNeighborsVertices : "+mappingBoardlessBoard().rowsNeighborsVertices());
-		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols Vertices: "+mappingBoardlessBoard().rowsNeighborsMapToColsVertices());
-		System.out.println("MappingBoardless.java prt() rowsNeighborsMapToCols nbAddedColPerRow: "+mappingBoardlessBoard().nbAddedColPerRow());
-		
-
-		for (HashSet<Integer>[] cc : mappingBoardlessBoard().nbAddedColPerRowFromStart())
-			System.out.println("MappingBoardless.java prt() nbAddedColPerRowFromStart nb : "+Arrays.toString(cc));
-		
-		if (mappingBoardlessBoard().initialCells() != null)
-			for (int[] i : mappingBoardlessBoard().initialCells())
-				System.out.println("MappingBoardless.java prt() intialCells i : "+Arrays.toString(i));
-	}
 	
 	/**
 	 * Creates a mapping between the indexes of the previous board and the 
@@ -135,15 +112,14 @@ public class MappingBoardless
 		if (mappingBoardlessBoard() == null)
 			switch(((Boardless) context.game().board()).tiling()) {
 				case Square:
-					mappingBoardlessBoard = new MappingBoardlessSquare();
+					mappingBoardlessBoard = new BoardlessSquare();
 					break;
 				case Hexagonal:
-					mappingBoardlessBoard = new MappingBoardlessHexagonal();
+					mappingBoardlessBoard = new BoardlessHexagonal();
 					break;
 				default:
 					throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 			}
-		
 
 		mappingBoardlessBoard().initForNewBoard(context);
 
@@ -171,7 +147,5 @@ public class MappingBoardless
 		}
 
 		mappingBoardlessBoard().updateNewTotalIndexesCells();
-		
-		prt();
 	}
 }
