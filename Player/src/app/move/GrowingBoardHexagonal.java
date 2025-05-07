@@ -1342,7 +1342,7 @@ public class GrowingBoardHexagonal extends GrowingBoardAbstract
 		// faces
 		HashMap<Point3D, game.util.graph.Vertex[]> linkVerticestoFaces = new HashMap<Point3D, game.util.graph.Vertex[]>();
 		linkVerticestoFaces.put(pointCellA, new game.util.graph.Vertex[] {pointToVertex.get(pointA), pointToVertex.get(pointG), sw, s, pointToVertex.get(pointC), pointToVertex.get(pointB)});
-		linkVerticestoFaces.put(pointCellB, new game.util.graph.Vertex[] {pointToVertex.get(pointC), s, sw, pointToVertex.get(pointH), pointToVertex.get(pointE), pointToVertex.get(pointD)});
+		linkVerticestoFaces.put(pointCellB, new game.util.graph.Vertex[] {pointToVertex.get(pointC), s, se, pointToVertex.get(pointH), pointToVertex.get(pointE), pointToVertex.get(pointD)});
 		linkVerticestoFaces.put(pointCellC, new game.util.graph.Vertex[] {pointToVertex.get(pointF), pointToVertex.get(pointJ), pointToVertex.get(pointK), nw, sw, pointToVertex.get(pointG)});
 		linkVerticestoFaces.put(pointCellD, new game.util.graph.Vertex[] {se, ne, pointToVertex.get(pointL), pointToVertex.get(pointM), pointToVertex.get(pointI), pointToVertex.get(pointH)});
 		linkVerticestoFaces.put(pointCellE, new game.util.graph.Vertex[] {pointToVertex.get(pointK), pointToVertex.get(pointN), pointToVertex.get(pointO), pointToVertex.get(pointP), n, nw});
