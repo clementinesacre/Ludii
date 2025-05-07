@@ -6,6 +6,7 @@ import game.functions.graph.generators.basis.square.Square;
 import game.types.board.SiteType;
 import game.util.graph.Graph;
 import other.context.Context;
+import other.topology.Cell;
 
 /**
  * Functions for handling the board growing regarding boardless game.
@@ -171,7 +172,7 @@ public class GrowingBoardSquare extends GrowingBoardAbstract
 		return graph; 
 	}
 	
-	protected Graph recalculetout(final Context context)
+	protected Graph recalculetout(final Context context, final Cell c)
 	{
 		System.out.println("GrowingBoard.java recalculetout()");
 		final Graph graph = new Graph();

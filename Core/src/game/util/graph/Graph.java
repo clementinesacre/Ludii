@@ -769,6 +769,21 @@ public class Graph extends BaseGraphFunction
 		}
 		return findFace(vertIds);
 	}
+	
+	/**
+	 * @param x         The x position.
+	 * @param y         The y position.
+	 * @param z         The z position.
+	 * 
+	 * @return Face at same location within specified tolerance.
+	 */
+	public Face findFace(final double x, final double y, final double z)
+	{
+		for (final Face face : faces)
+			if (face.coincident(x, y, z, tolerance))
+				return face;
+		return null;
+	}
 
 	//-------------------------------------------------------------------------
 
@@ -1159,7 +1174,74 @@ public class Graph extends BaseGraphFunction
 	}	
 
 	//-------------------------------------------------------------------------
+	
+	/**
+	 * @param vs The list of the Vertex vertices.
+	 * @return The face added.
+	 */
+	public Face addFace(Vertex[] vs)
+	{
+		final Face newFace = new Face(faces.size());
+		
+		final BasisType refBasis = vertices.isEmpty() ? null : vertices.get(0).basis();
+		final ShapeType refShape = vertices.isEmpty() ? null : vertices.get(0).shape();
+		
+		boolean allSameBasis = true;
+		final boolean allSameShape = true;
+		
+		for (int v=0; v<vs.length; v++)
+		{
+			game.util.graph.Vertex vm = vs[v];
+			game.util.graph.Vertex vn = vs[(v + 1) % vs.length];
+			
+			Edge edge = null;
+			for (int q=0; q<vm.edges().size(); q++)
+			{
+				for (int l=0; l<vn.edges().size(); l++)
+				{
+					if (vm.edges().get(q) == vm.edges().get(l))
+					{
+						edge = vm.edges().get(q);
+						break;
+					}
+				}
+				if (edge != null)
+					break;
+			}
+			
+			if (edge == null)
+			{
+				throw new UnsupportedOperationException("Problem"); //TODO : correct description of the error
+			}
+			
+			if (v > 0 && vm.basis() != refBasis)
+				allSameBasis = false;
 
+			if (v > 0 && vm.shape() != refShape)
+				allSameBasis = false;
+
+			if (edge.vertexA().id() == vm.id())
+				edge.setRight(newFace);  // edge facing direction of travel
+			else
+				edge.setLeft(newFace);   // edge is backwards
+			
+			newFace.addVertexAndEdge(vm, edge);  // also updates face midpoint
+		}
+		
+		// Add new face to incident vertex lists
+		for (final game.util.graph.Vertex vertex : newFace.vertices())
+			vertex.addFace(newFace);
+		
+		final BasisType basisF = (allSameBasis) ? refBasis : BasisType.NoBasis;
+		final ShapeType shapeF = (allSameShape) ? refShape : ShapeType.NoShape;
+		
+		newFace.setTilingAndShape(basisF, shapeF);
+				
+		faces.add(newFace);
+		
+		return newFace;
+	}
+	
 	/**
 	 * @param vertIds The list of the indices of the vertices.
 	 * @return The face added or found.

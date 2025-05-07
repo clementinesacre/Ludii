@@ -27,6 +27,7 @@ import other.state.owned.FlatCellOnlyOwned;
 import other.state.zhash.HashedBitSet;
 import other.state.zhash.HashedChunkSet;
 import other.state.zhash.ZobristHashGenerator;
+import other.topology.Cell;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 
@@ -88,12 +89,13 @@ public class GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange) 
+	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange, Cell c) 
 	{			
 		System.out.println("GrowingBoard.java updateBoardDimensions() boardSizeChange : "+boardSizeChange);
 		
-		Graph newGraph = GrowingBoardInterface.generateGraph(context, boardSizeChange);
+		Graph newGraph = GrowingBoardInterface.generateGraph(context, boardSizeChange, c);
 		board.setGraphFunction(newGraph);
+		
 		//board.setGraphFunction(newGraphFunction);
 		//board.setDimension(newSize);
 		
@@ -552,7 +554,7 @@ public class GrowingBoard
 		// TODO check that the move is applied on a board type container
 		// update dimensions only if board change size
 		if (boardSizeChange != 0)
-			updateBoardDimensions(context, board, boardSizeChange);
+			updateBoardDimensions(context, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
 		remakeTrial(context, replayMoves);
 	}
 	

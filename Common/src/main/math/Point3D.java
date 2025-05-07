@@ -1,6 +1,7 @@
 package main.math;
 
 import java.awt.geom.Point2D;
+import java.util.Objects;
 
 /**
  * 3D point.
@@ -11,6 +12,7 @@ public class Point3D
 	private double x;
 	private double y;
 	private double z;
+	private double tolerance = 0.0001;
 	
 	//-------------------------------------------------------------------------
 	
@@ -144,4 +146,18 @@ public class Point3D
 	
 	//-------------------------------------------------------------------------
 	
+	@Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Point3D other = (Point3D) obj;
+        return Double.compare(x, other.x) < tolerance &&
+               Double.compare(y, other.y) < tolerance &&
+               Double.compare(z, other.z) < tolerance;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z);
+    }
 }

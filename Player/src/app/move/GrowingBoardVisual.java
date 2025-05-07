@@ -9,10 +9,12 @@ import app.utils.MVCSetup;
 import game.Game;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
+import game.types.board.SiteType;
 import main.Constants;
 import other.context.Context;
 import other.location.FullLocation;
 import other.move.Move;
+import other.topology.Cell;
 import other.topology.TopologyElement;
 import other.trial.Trial;
 
@@ -28,9 +30,9 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange) 
+	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange, Cell c) 
 	{
-		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange);
+		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange, c);
 
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -112,7 +114,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
 		// update dimensions only if board change size
 		if (boardSizeChange != 0)
-			updateBoardDimensions(app, board, boardSizeChange);
+			updateBoardDimensions(app, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
 	}
 	
 	/**
@@ -136,7 +138,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
 		// update dimensions only if board change size
 		if (boardSizeChange != 0)
-			updateBoardDimensions(app, board, boardSizeChange);
+			updateBoardDimensions(app, board, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
 		remakeTrial(app, replayMoves);
 	}
 	

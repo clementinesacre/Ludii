@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.List;
 
 import game.functions.graph.generators.basis.hex.Hex;
 import game.types.board.SiteType;
+import game.util.graph.Edge;
+import game.util.graph.Face;
 import game.util.graph.Graph;
 import game.util.graph.Vertex;
+import main.math.Point3D;
 import other.context.Context;
 import other.topology.Cell;
 import other.topology.TopologyElement;
@@ -444,8 +447,8 @@ public class GrowingBoardHexagonal extends GrowingBoardAbstract
 		}
 	}
 	
-	@Override
-	protected Graph recalculetout(final Context context)
+	//@Override
+	protected Graph recalculetout2(final Context context)
 	{
 		System.out.println("GrowingBoard.java recalculetoutHexagonal()");
 		final Graph graph = new Graph();	
@@ -1149,6 +1152,212 @@ public class GrowingBoardHexagonal extends GrowingBoardAbstract
 
 		
 		return graph; 
+	}
+	
+	public static String point3dToString(Point3D p)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(p.x());
+		sb.append("-");
+		sb.append(p.y());
+		sb.append("-");
+		sb.append(p.z());
+		
+		String result = sb.toString();
+		return result;
+	}
+	
+	@Override
+	protected Graph recalculetout(final Context context, final Cell cell)
+	{
+		List<game.util.graph.Vertex> allo = context.board().graph().faces().get(cell.index()).vertices();
+
+		// vertices
+		game.util.graph.Vertex n = allo.get(2);
+		game.util.graph.Vertex ne = allo.get(3);
+		game.util.graph.Vertex se = allo.get(4);
+		game.util.graph.Vertex s = allo.get(5);
+		game.util.graph.Vertex sw = allo.get(0);
+		game.util.graph.Vertex nw = allo.get(1);
+		HashSet<game.util.graph.Vertex> initVertex = new HashSet<game.util.graph.Vertex>();
+		initVertex.add(n);
+		initVertex.add(ne);
+		initVertex.add(ne);
+		initVertex.add(s);
+		initVertex.add(sw);
+		initVertex.add(nw);
+		
+		double verticalSide = ne.pt().y() - se.pt().y();
+		double verticalCenter = n.pt().y() - s.pt().y();
+		double horizontalSide = se.pt().x() - sw.pt().x();
+		
+		Point3D pointA = new Point3D(s.pt().x() - (ne.pt().x() - sw.pt().x()), s.pt().y() - verticalSide, 0);
+		Point3D pointB = new Point3D(sw.pt().x(), sw.pt().y() - verticalCenter, 0);
+		Point3D pointC = new Point3D(s.pt().x(), s.pt().y() - verticalSide, 0);
+		Point3D pointD = new Point3D(se.pt().x(), se.pt().y() - verticalCenter, 0);
+		Point3D pointE = new Point3D(s.pt().x() + (se.pt().x() - nw.pt().x()), s.pt().y() - verticalSide, 0);
+		Point3D pointF = new Point3D(sw.pt().x() - horizontalSide, sw.pt().y(), 0);
+		Point3D pointG = new Point3D(s.pt().x() - horizontalSide, s.pt().y(), 0);
+		Point3D pointH = new Point3D(s.pt().x() + horizontalSide, s.pt().y(), 0);
+		Point3D pointI = new Point3D(se.pt().x() + horizontalSide, se.pt().y(), 0);
+		Point3D pointJ = new Point3D(nw.pt().x() - horizontalSide, nw.pt().y(), 0);
+		Point3D pointK = new Point3D(n.pt().x() - horizontalSide, n.pt().y(), 0);
+		Point3D pointL = new Point3D(n.pt().x() + horizontalSide, n.pt().y(), 0);
+		Point3D pointM = new Point3D(ne.pt().x() + horizontalSide, ne.pt().y(), 0);
+		Point3D pointN = new Point3D(n.pt().x() - horizontalSide, n.pt().y() + verticalSide, 0);
+		Point3D pointO = new Point3D(nw.pt().x(), nw.pt().y() + verticalCenter, 0);
+		Point3D pointP = new Point3D(n.pt().x(), n.pt().y() + verticalSide, 0);
+		Point3D pointQ = new Point3D(ne.pt().x(), nw.pt().y() + verticalCenter, 0);
+		Point3D pointR = new Point3D(n.pt().x() + horizontalSide, n.pt().y() + verticalSide, 0);
+		
+		// faces
+
+		game.util.graph.Face currCell = context.board().graph().faces().get(cell.index());
+
+		double vertical = currCell.pt().y() - s.pt().y();
+		double diagonalX = currCell.pt().x() - sw.pt().x();
+		double diagonalY = currCell.pt().y() - sw.pt().y();
+		
+		Point3D pointCellA = new Point3D(currCell.pt().x() - diagonalX, currCell.pt().y() - vertical - diagonalY, 0);
+		Point3D pointCellB = new Point3D(currCell.pt().x() + diagonalX, currCell.pt().y() - vertical - diagonalY, 0);
+		Point3D pointCellC = new Point3D(currCell.pt().x() - (2*diagonalX), currCell.pt().y(), 0);
+		Point3D pointCellD = new Point3D(currCell.pt().x() + (2*diagonalX), currCell.pt().y(), 0);
+		Point3D pointCellE = new Point3D(currCell.pt().x() - diagonalX, currCell.pt().y() + vertical + diagonalY, 0);
+		Point3D pointCellF = new Point3D(currCell.pt().x() + diagonalX, currCell.pt().y() + vertical + diagonalY, 0);
+		
+		
+		// calculation
+		Point3D[] newVertices = new Point3D[] {pointA, pointB, pointC, pointD, pointE, pointF, pointG, pointH, pointI, pointJ, pointK, pointL, pointM, pointN, pointO, pointP, pointQ, pointR};
+		
+		HashMap<Point3D, game.util.graph.Vertex> pointToVertex = new HashMap<Point3D, game.util.graph.Vertex>();
+		pointToVertex.put(n.pt(), n);
+		pointToVertex.put(ne.pt(), ne);
+		pointToVertex.put(se.pt(), se);
+		pointToVertex.put(s.pt(), s);
+		pointToVertex.put(sw.pt(), sw);
+		pointToVertex.put(nw.pt(), nw);
+		HashMap<String, game.util.graph.Vertex> pointToVertexS = new HashMap<String, game.util.graph.Vertex>();
+		pointToVertexS.put(point3dToString(n.pt()), n);
+		pointToVertexS.put(point3dToString(ne.pt()), ne);
+		pointToVertexS.put(point3dToString(se.pt()), se);
+		pointToVertexS.put(point3dToString(s.pt()), s);
+		pointToVertexS.put(point3dToString(sw.pt()), sw);
+		pointToVertexS.put(point3dToString(nw.pt()), nw);
+		
+		HashMap<Integer, game.util.graph.Vertex> pointToVertexPre = new HashMap<Integer, game.util.graph.Vertex>();
+		pointToVertexPre.put(n.id(), n);
+		pointToVertexPre.put(ne.id(), ne);
+		pointToVertexPre.put(se.id(), se);
+		pointToVertexPre.put(s.id(), s);
+		pointToVertexPre.put(sw.id(), sw);
+		pointToVertexPre.put(nw.id(), nw);
+
+		
+		for (int p3d=0; p3d<newVertices.length; p3d++)
+		{
+			Point3D curr = newVertices[p3d];
+			game.util.graph.Vertex isV = context.game().board().graph().findVertex(curr.x(), curr.y(), curr.z());
+			if (isV != null)
+			{
+				pointToVertex.put(curr, isV);
+				pointToVertexS.put(point3dToString(curr), isV);
+				pointToVertexPre.put(isV.id(), isV);
+			}	
+		}		
+		
+		HashMap<Point3D, Point3D[]> linkVerticesWithEdges = new HashMap<Point3D, Point3D[]>();
+		linkVerticesWithEdges.put(pointA, new Point3D[] {pointB, pointG});
+		linkVerticesWithEdges.put(pointB, new Point3D[] {pointA, pointC});
+		linkVerticesWithEdges.put(pointC, new Point3D[] {pointB, pointD, s.pt()});
+		linkVerticesWithEdges.put(pointD, new Point3D[] {pointC, pointE});
+		linkVerticesWithEdges.put(pointE, new Point3D[] {pointD, pointH});
+		linkVerticesWithEdges.put(pointF, new Point3D[] {pointG, pointJ});
+		linkVerticesWithEdges.put(pointG, new Point3D[] {pointA, pointF, sw.pt()});
+		linkVerticesWithEdges.put(pointH, new Point3D[] {pointE, pointI, se.pt()});
+		linkVerticesWithEdges.put(pointI, new Point3D[] {pointH, pointM});
+		linkVerticesWithEdges.put(pointJ, new Point3D[] {pointF, pointK});
+		linkVerticesWithEdges.put(pointK, new Point3D[] {pointJ, pointN, nw.pt()});
+		linkVerticesWithEdges.put(pointL, new Point3D[] {pointM, pointR, ne.pt()});
+		linkVerticesWithEdges.put(pointM, new Point3D[] {pointI, pointL});
+		linkVerticesWithEdges.put(pointN, new Point3D[] {pointK, pointO});
+		linkVerticesWithEdges.put(pointO, new Point3D[] {pointN, pointP});
+		linkVerticesWithEdges.put(pointP, new Point3D[] {pointO, pointQ, n.pt()});
+		linkVerticesWithEdges.put(pointQ, new Point3D[] {pointP, pointR});
+		linkVerticesWithEdges.put(pointR, new Point3D[] {pointQ, pointL});
+		
+		HashSet<Point3D> addedEdges = new HashSet<Point3D>();
+		for (Point3D p3d : linkVerticesWithEdges.keySet()) {
+			// vertice does not exist yet
+			if (!pointToVertexS.containsKey(point3dToString(p3d)))
+            {
+            	// create vertex
+            	game.util.graph.Vertex newV = context.board().graph().addVertex(p3d);
+				pointToVertex.put(p3d, newV);
+				pointToVertexS.put(point3dToString(p3d), newV);
+				
+				// check for the neighbor vertices to create edge - creates also vertex if needed
+            	for (Point3D p3dNeighbor : linkVerticesWithEdges.get(p3d)) {
+            		if (!pointToVertexS.containsKey(point3dToString(p3dNeighbor)))
+                    {
+            			game.util.graph.Vertex newVNeighbor = context.board().graph().addVertex(p3dNeighbor);
+            			Edge newEdge = context.board().graph().addEdge(newV, newVNeighbor);
+            			addedEdges.add(newEdge.pt());
+        				pointToVertex.put(p3dNeighbor, newVNeighbor);
+        				pointToVertexS.put(point3dToString(p3dNeighbor), newVNeighbor);
+                    }
+            		else
+            		{
+            			Edge newEdge = context.board().graph().addEdge(newV, pointToVertex.get(p3dNeighbor));
+            			addedEdges.add(newEdge.pt());
+            		}
+            	}
+            }
+            else
+            {
+            	game.util.graph.Vertex newV = pointToVertex.get(p3d);
+				
+				// check for the neighbor vertices to create edge - creates also vertex if needed
+            	for (Point3D p3dNeighbor : linkVerticesWithEdges.get(p3d)) {
+            		if (!pointToVertex.containsKey(p3dNeighbor))
+                    {
+            			game.util.graph.Vertex newVNeighbor = context.board().graph().addVertex(p3dNeighbor);
+            			Edge newEdge = context.board().graph().addEdge(newV, newVNeighbor);
+            			addedEdges.add(newEdge.pt());
+        				pointToVertex.put(p3dNeighbor, newVNeighbor);
+        				pointToVertexS.put(point3dToString(p3dNeighbor), newVNeighbor);
+                    }
+            		else 
+            		{
+            			Edge newEdgeX = new Edge(0, newV, pointToVertex.get(p3dNeighbor));
+            			if (!addedEdges.contains(newEdgeX.pt()) && !(pointToVertexPre.containsKey(newV.id()) && pointToVertexPre.containsKey(pointToVertex.get(p3dNeighbor).id())))
+            			{
+            				Edge newEdge = context.board().graph().addEdge(newV, pointToVertex.get(p3dNeighbor));
+                			addedEdges.add(newEdge.pt());
+            			}
+            		}
+            	}
+            }
+        }
+		
+		// faces
+		HashMap<Point3D, game.util.graph.Vertex[]> linkVerticestoFaces = new HashMap<Point3D, game.util.graph.Vertex[]>();
+		linkVerticestoFaces.put(pointCellA, new game.util.graph.Vertex[] {pointToVertex.get(pointA), pointToVertex.get(pointG), sw, s, pointToVertex.get(pointC), pointToVertex.get(pointB)});
+		linkVerticestoFaces.put(pointCellB, new game.util.graph.Vertex[] {pointToVertex.get(pointC), s, sw, pointToVertex.get(pointH), pointToVertex.get(pointE), pointToVertex.get(pointD)});
+		linkVerticestoFaces.put(pointCellC, new game.util.graph.Vertex[] {pointToVertex.get(pointF), pointToVertex.get(pointJ), pointToVertex.get(pointK), nw, sw, pointToVertex.get(pointG)});
+		linkVerticestoFaces.put(pointCellD, new game.util.graph.Vertex[] {se, ne, pointToVertex.get(pointL), pointToVertex.get(pointM), pointToVertex.get(pointI), pointToVertex.get(pointH)});
+		linkVerticestoFaces.put(pointCellE, new game.util.graph.Vertex[] {pointToVertex.get(pointK), pointToVertex.get(pointN), pointToVertex.get(pointO), pointToVertex.get(pointP), n, nw});
+		linkVerticestoFaces.put(pointCellF, new game.util.graph.Vertex[] {n, pointToVertex.get(pointP), pointToVertex.get(pointQ), pointToVertex.get(pointR), pointToVertex.get(pointL), ne});
+				
+		for (Point3D p3dCell : linkVerticestoFaces.keySet())
+		{
+			Face f = context.board().graph().findFace(p3dCell.x(), p3dCell.y(), p3dCell.z());
+			if (f == null)
+				context.board().graph().addFace(linkVerticestoFaces.get(p3dCell));
+		}
+
+		context.board().graph().reorder();
+
+		return context.board().graph();
 	}
 	
 	/*protected static Graph recalculetoutHexagonal2(final Context context)
