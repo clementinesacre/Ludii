@@ -453,26 +453,12 @@ public class BoardlessTriangular extends BoardlessAbstract
 	
 	@Override
 	protected Graph forward(final Context context, final Cell cell)
-	{		
-		for (int i=0; i<context.board().graph().faces().size(); i++)
-		{
-			System.out.println("BoardlessTriangular.java forward() face : "+context.board().graph().faces().get(i).id()+" - coord : "+context.board().graph().faces().get(i).pt());
-		}
+	{
 		Graph newGraph = cc(context, cell);
 		context.board().setGraphFunction(newGraph);
 		
 		return newGraph;
 	}
 	
-	@Override
-	public void keepSameSize(Context context)
-	{}
 	
-	@Override
-	public void rollback(Context context)
-	{}
-	
-	@Override
-	public void rollbackToInit(Context context)
-	{}
 }

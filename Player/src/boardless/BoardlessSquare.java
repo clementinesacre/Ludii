@@ -20,16 +20,4 @@ public class BoardlessSquare extends BoardlessAbstract
 	{
 		return null;
 	}
-	
-	@Override
-	public void keepSameSize(Context context)
-	{}
-	
-	@Override
-	public void rollback(Context context)
-	{}
-	
-	@Override
-	public void rollbackToInit(Context context)
-	{}
 }

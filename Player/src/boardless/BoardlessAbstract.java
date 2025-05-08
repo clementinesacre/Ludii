@@ -378,8 +378,151 @@ public abstract class BoardlessAbstract
 	//--------------------------------------------------------------------
 	
 	protected abstract Graph forward(final Context context, final Cell cell);
-	public abstract void keepSameSize(Context context);
-	public abstract void rollback(Context context);
-	public abstract void rollbackToInit(Context context);
+	
+	public void keepSameSize(Context context)
+	{
+		int nbFaces = context.board().graph().faces().size();
+		for (int i=0; i<nbFaces; i++)
+		{
+			mappedPrevToNewIndexes().put(i, i);
+			mappedNewToPrevIndexes().put(i, i);
+		}
+		
+		int otherContainer = context.containers().length-1;
+		for (int i=nbFaces; i<nbFaces+otherContainer; i++)
+		{
+			mappedPrevToNewIndexes().put(i, i);
+			mappedNewToPrevIndexes().put(i, i);
+		}
+		context.board().setGraphFunction(context.board().graph());
+	}
+	
+	public void rollback(Context context)
+	{
+		List<Integer> lastFacesAdded = addedFacesSinceBeginning().get(addedFacesSinceBeginning().size()-1);
+		
+		// create mapping prev to new
+		int lastIndex = lastFacesAdded.size()-1;
+		int count = 0;
+		for (int i=0; i<context.board().graph().faces().size(); i++)
+		{
+			if (lastIndex >= 0 && i == lastFacesAdded.get(lastIndex))
+			{
+		        count += 1;
+		        lastIndex -= 1;
+		        surplusIndexes().add(i);
+			}
+		    else
+		    {
+				mappedPrevToNewIndexes().put(i, (i-count));
+				mappedNewToPrevIndexes().put((i-count), i);
+		    }
+		}
+		
+		// surplus cell above the rest
+		while (lastIndex >= 0)
+		{
+	        surplusIndexes().add(lastFacesAdded.get(lastIndex));
+		    lastIndex -= 1;
+		}
+		
+		int otherContainer = context.containers().length-1;
+		int addedIndexes = surplusIndexes().size();
+		int initFace = mappedPrevToNewIndexes().size();
+		for (int i=0; i<otherContainer; i++)
+		{
+			int containerId = initFace+i;
+			mappedPrevToNewIndexes().put(containerId+addedIndexes, containerId);
+			mappedNewToPrevIndexes().put(containerId, containerId+addedIndexes);
+		}
+		    
+		// remove face from the graph 
+		for (Integer faceId : lastFacesAdded)
+		{
+			context.board().graph().removeFace(faceId, false);
+		}
+		context.board().setGraphFunction(context.board().graph());
+
+		addedFacesSinceBeginning.remove(addedFacesSinceBeginning.size()-1);
+		currentCopy -= 1;
+
+		if (currentCopy >= 0)
+		{
+			mappedInitToNewIndexes = listCopieMappedInitToNewIndexes.get(currentCopy);
+			mappedNewToInitIndexes = listCopieMappedNewToInitIndexes.get(currentCopy);
+			surplusInitIndexes = listCopieSurplusInitIndexes.get(currentCopy);
+		}
+		else
+		{
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			for (int i=0; i<context.board().graph().faces().size(); i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+		}
+		
+	}
+	
+	public void rollbackToInit(Context context)
+	{
+		if (addedFacesSinceBeginning().size() == 1)
+		{
+			// means the first move done on the board was done on an edge
+			rollback(context);
+		}
+		else if(addedFacesSinceBeginning().size() == 0)
+		{
+			// means the first move done on the board was not done on an edge
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			int otherContainer = context.containers().length-1;
+			for (int i=0; i<context.board().graph().faces().size()+otherContainer; i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+				mappedPrevToNewIndexes().put(i, i);
+				mappedNewToPrevIndexes().put(i, i);
+			}
+			context.board().setGraphFunction(context.board().graph());
+		}
+		else
+		{
+			// means we are rolling back after doing multiple moves, with some done on edges
+			
+			// prev to new part
+			mappedPrevToNewIndexes = listCopieMappedNewToInitIndexes.get(currentCopy);
+			mappedNewToPrevIndexes = listCopieMappedInitToNewIndexes.get(currentCopy);
+			surplusIndexes = listCopieSurplusInitIndexes.get(currentCopy);
+			
+			// TODO : reset graph
+			for (int i=addedFacesSinceBeginning().size()-1; i>= 0; i--)
+			{
+				List<Integer> lastFacesAdded = addedFacesSinceBeginning().get(i);
+				for (Integer faceId : lastFacesAdded)
+				{
+					context.board().graph().removeFace(faceId, false);
+				}
+			}
+			context.board().setGraphFunction(context.board().graph());
+			
+			// init part
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			int otherContainer = context.containers().length-1;
+			for (int i=0; i<context.board().graph().faces().size()+otherContainer; i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+			
+			// réinitialiser les autres structures de données pour qu'elles soient vides TODO : vérifier que ça fonctionne
+			init(context);
+		}
+	}
 	
 }
