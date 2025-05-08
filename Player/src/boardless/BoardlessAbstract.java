@@ -307,9 +307,6 @@ public abstract class BoardlessAbstract
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();
 		
-		// data structures to map between initial plate and new plate
-		surplusInitIndexes = new HashSet<Integer>();
-		
 		// data structures to map vertices between current plate and new plate
 		nbAddedColPerRow = new HashSet[context.topology().rows().get(SiteType.Vertex).size()+2];
 		

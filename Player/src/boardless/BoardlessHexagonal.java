@@ -239,9 +239,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 			}
 		}
 
-		//System.out.println("GrowingBoardHexagonal.java recalulteTout() addedFaces before : "+addedFaces);
 		context.board().graph().reorder();
-		//System.out.println("GrowingBoardHexagonal.java recalulteTout() addedFaces after : "+addedFaces);
 		
 		// save face for going back if needed
 		List<Integer> addedF = new ArrayList<Integer>();
@@ -330,7 +328,22 @@ public class BoardlessHexagonal extends BoardlessAbstract
 	
 	@Override
 	public void keepSameSize(Context context)
-	{}
+	{
+		int nbFaces = context.board().graph().faces().size();
+		for (int i=0; i<nbFaces; i++)
+		{
+			mappedPrevToNewIndexes().put(i, i);
+			mappedNewToPrevIndexes().put(i, i);
+		}
+		
+		int otherContainer = context.containers().length-1;
+		for (int i=nbFaces; i<nbFaces+otherContainer; i++)
+		{
+			mappedPrevToNewIndexes().put(i, i);
+			mappedNewToPrevIndexes().put(i, i);
+		}
+		context.board().setGraphFunction(context.board().graph());
+	}
 	
 	@Override
 	public void rollback(Context context)
@@ -364,7 +377,6 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		
 		int otherContainer = context.containers().length-1;
 		int addedIndexes = surplusIndexes().size();
-		int addedIndexesSinceBeginning = surplusInitIndexes().size();
 		int initFace = mappedPrevToNewIndexes().size();
 		for (int i=0; i<otherContainer; i++)
 		{
