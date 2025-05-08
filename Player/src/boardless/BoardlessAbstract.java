@@ -34,6 +34,7 @@ public abstract class BoardlessAbstract
 	protected List<HashMap<Integer, Integer>> listCopieMappedInitToNewIndexes = new ArrayList<HashMap<Integer, Integer>>();
 	protected List<HashMap<Integer, Integer>> listCopieMappedNewToInitIndexes = new ArrayList<HashMap<Integer, Integer>>();
 	protected List<HashSet<Integer>> listCopieSurplusInitIndexes = new ArrayList<HashSet<Integer>>();
+	protected int currentCopy = -1;
 	
 	//----------------------------Cells-----------------------------------------
 	// remember the cells added at each step to be able to undo them easily when going back
@@ -281,6 +282,7 @@ public abstract class BoardlessAbstract
 				System.out.println("MappingBoardless.java init() initialCells i : "+Arrays.toString(i));
 		
 		addedFacesSinceBeginning = new ArrayList<List<Integer>>();
+		currentCopy = -1;
 		
 		// initialize TODO
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
@@ -298,6 +300,10 @@ public abstract class BoardlessAbstract
 			mappedNewToInitIndexes().put(i, i);
 		}
 		
+		listCopieMappedInitToNewIndexes = new ArrayList<HashMap<Integer, Integer>>();
+		listCopieMappedNewToInitIndexes = new ArrayList<HashMap<Integer, Integer>>();
+		listCopieSurplusInitIndexes = new ArrayList<HashSet<Integer>>();
+		
 	}
 	
 	public void initForNewBoard(Context context)
@@ -307,6 +313,8 @@ public abstract class BoardlessAbstract
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();
 		
+		surplusInitIndexes = new HashSet<Integer>();
+        
 		// data structures to map vertices between current plate and new plate
 		nbAddedColPerRow = new HashSet[context.topology().rows().get(SiteType.Vertex).size()+2];
 		

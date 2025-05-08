@@ -249,6 +249,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
         Collections.sort(addedF, Comparator.reverseOrder());
         addedFacesSinceBeginning().add(addedF);
 		
+		
         // Mappings current to new
         HashMap<Integer, Integer> mappedNewToInitIndexes2 = new HashMap<Integer, Integer>();
 		int addedCells = 0;
@@ -299,9 +300,10 @@ public class BoardlessHexagonal extends BoardlessAbstract
 			mappedPrevToNewIndexes().put(containerId, containerId+addedIndexes);
 			mappedNewToPrevIndexes().put(containerId+addedIndexes, containerId);
 		}
+		
 		for (int i=0; i<otherContainer; i++)
 		{
-			int containerId = mappedInitToNewIndexes.size()-otherContainer+i;
+			int containerId = mappedNewToInitIndexes().size()-otherContainer+i;
 			mappedNewToInitIndexes2.put(containerId+addedIndexesSinceBeginning, containerId);
 			mappedInitToNewIndexes().put(containerId, containerId+addedIndexesSinceBeginning);
 		}
@@ -311,6 +313,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		HashMap<Integer, Integer> copieMappedNewToInitIndexes = new HashMap<>(mappedNewToInitIndexes());
 		listCopieMappedInitToNewIndexes.add(copieMappedInitToNewIndexes);
 		listCopieMappedNewToInitIndexes.add(copieMappedNewToInitIndexes);
+        currentCopy += 1;
 		
 		HashSet<Integer> copiesurplusInitIndexes = new HashSet<>(surplusInitIndexes());
 		listCopieSurplusInitIndexes.add(copiesurplusInitIndexes);
@@ -323,6 +326,8 @@ public class BoardlessHexagonal extends BoardlessAbstract
 	{
 		Graph newGraph = cc(context, cell);
 		context.board().setGraphFunction(newGraph);
+		
+		
 		return newGraph;
 	}
 	
@@ -392,18 +397,87 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		}
 		context.board().setGraphFunction(context.board().graph());
 
-		listCopieMappedInitToNewIndexes.remove(listCopieMappedInitToNewIndexes.size()-1);
-		listCopieMappedNewToInitIndexes.remove(listCopieMappedNewToInitIndexes.size()-1);
-		listCopieSurplusInitIndexes.remove(listCopieSurplusInitIndexes.size()-1);
 		addedFacesSinceBeginning.remove(addedFacesSinceBeginning.size()-1);
-		
-		mappedInitToNewIndexes = listCopieMappedInitToNewIndexes.get(listCopieMappedInitToNewIndexes.size()-1);
-		mappedNewToInitIndexes = listCopieMappedNewToInitIndexes.get(listCopieMappedNewToInitIndexes.size()-1);
-		surplusInitIndexes = listCopieSurplusInitIndexes.get(listCopieSurplusInitIndexes.size()-1);
+		currentCopy -= 1;
+
+		if (currentCopy >= 0)
+		{
+			mappedInitToNewIndexes = listCopieMappedInitToNewIndexes.get(currentCopy);
+			mappedNewToInitIndexes = listCopieMappedNewToInitIndexes.get(currentCopy);
+			surplusInitIndexes = listCopieSurplusInitIndexes.get(currentCopy);
+		}
+		else
+		{
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			for (int i=0; i<context.board().graph().faces().size(); i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+		}
 		
 	}
 	
+	
 	@Override
 	public void rollbackToInit(Context context)
-	{}
+	{
+		if (addedFacesSinceBeginning().size() == 1)
+		{
+			// means the first move done on the board was done on an edge
+			rollback(context);
+		}
+		else if(addedFacesSinceBeginning().size() == 0)
+		{
+			// means the first move done on the board was not done on an edge
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			int otherContainer = context.containers().length-1;
+			for (int i=0; i<context.board().graph().faces().size()+otherContainer; i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+				mappedPrevToNewIndexes().put(i, i);
+				mappedNewToPrevIndexes().put(i, i);
+			}
+			context.board().setGraphFunction(context.board().graph());
+		}
+		else
+		{
+			// means we are rolling back after doing multiple moves, with some done on edges
+			
+			// prev to new part
+			mappedPrevToNewIndexes = listCopieMappedNewToInitIndexes.get(currentCopy);
+			mappedNewToPrevIndexes = listCopieMappedInitToNewIndexes.get(currentCopy);
+			surplusIndexes = listCopieSurplusInitIndexes.get(currentCopy);
+			
+			// TODO : reset graph
+			for (int i=addedFacesSinceBeginning().size()-1; i>= 0; i--)
+			{
+				List<Integer> lastFacesAdded = addedFacesSinceBeginning().get(i);
+				for (Integer faceId : lastFacesAdded)
+				{
+					context.board().graph().removeFace(faceId, false);
+				}
+			}
+			context.board().setGraphFunction(context.board().graph());
+			
+			// init part
+			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
+			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
+			surplusInitIndexes = new HashSet<Integer>();
+			int otherContainer = context.containers().length-1;
+			for (int i=0; i<context.board().graph().faces().size()+otherContainer; i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+			
+			// réinitialiser les autres structures de données pour qu'elles soient vides TODO : vérifier que ça fonctionne
+			init(context);
+		}
+	}
 }
