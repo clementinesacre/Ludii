@@ -31,6 +31,10 @@ public abstract class BoardlessAbstract
 	protected HashMap<Integer, Integer> mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 	protected HashSet<Integer> surplusInitIndexes = new HashSet<Integer>(); // cells indexes that are being added from init board to new one
 	
+	protected List<HashMap<Integer, Integer>> listCopieMappedInitToNewIndexes = new ArrayList<HashMap<Integer, Integer>>();
+	protected List<HashMap<Integer, Integer>> listCopieMappedNewToInitIndexes = new ArrayList<HashMap<Integer, Integer>>();
+	protected List<HashSet<Integer>> listCopieSurplusInitIndexes = new ArrayList<HashSet<Integer>>();
+	
 	//----------------------------Cells-----------------------------------------
 	// remember the cells added at each step to be able to undo them easily when going back
 
@@ -281,7 +285,14 @@ public abstract class BoardlessAbstract
 		// initialize TODO
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
-		for (int i=0; i<context.board().graph().faces().size(); i++)
+		int nbFaces = context.board().graph().faces().size();
+		for (int i=0; i<nbFaces; i++)
+		{
+			mappedInitToNewIndexes().put(i, i);
+			mappedNewToInitIndexes().put(i, i);
+		}
+		// adding ids for the other containers than the board
+		for (int i=nbFaces; i<nbFaces+context.containers().length-1; i++)
 		{
 			mappedInitToNewIndexes().put(i, i);
 			mappedNewToInitIndexes().put(i, i);

@@ -50,6 +50,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		List<game.util.graph.Vertex> allo = context.board().graph().faces().get(cell.index()).vertices();
 		//System.out.println("GrowingBoardHexagonal.java recalulteTout() graph before : "+context.board().graph());
 		int initFace = context.board().graph().faces().size();
+				
 		// vertices
 		game.util.graph.Vertex n = allo.get(2);
 		game.util.graph.Vertex ne = allo.get(3);
@@ -259,24 +260,20 @@ public class BoardlessHexagonal extends BoardlessAbstract
 			{
 				if (i > initFace)
 				{
-					//System.out.println("GrowingBoardHexagonal.java recalulteTout() surplus : "+i);
 					surplusIndexes().add(i);
 					surplusInitIndexes().add(i);
 				}
 				else
 				{
-					//System.out.println("GrowingBoardHexagonal.java recalulteTout() surplus : "+i);
 					surplusIndexes().add(i);
 					surplusInitIndexes().add(i);
 					addedCells += 1;
 				}
-				
 			}
 			else
 			{
 				if ((i-addedCells) <= initFace)
 				{	
-					//System.out.println("GrowingBoardHexagonal.java recalulteTout() new : "+(i)+" - previous : "+(i-addedCells));
 					mappedPrevToNewIndexes().put((i-addedCells), i);
 					mappedNewToPrevIndexes().put(i, (i-addedCells));
 					
@@ -292,27 +289,33 @@ public class BoardlessHexagonal extends BoardlessAbstract
 				}
 			}
 		}
-		mappedNewToInitIndexes = mappedNewToInitIndexes2;
-		
-		
+
 		// map other containers that board TODO what if multiple cells inside a hand ? 
 		int otherContainer = context.containers().length-1;
 		int addedIndexes = surplusIndexes().size();
 		int addedIndexesSinceBeginning = surplusInitIndexes().size();
+		
 		for (int i=0; i<otherContainer; i++)
 		{
 			int containerId = initFace+i;
 			mappedPrevToNewIndexes().put(containerId, containerId+addedIndexes);
 			mappedNewToPrevIndexes().put(containerId+addedIndexes, containerId);
-
+		}
+		for (int i=0; i<otherContainer; i++)
+		{
+			int containerId = mappedInitToNewIndexes.size()-otherContainer+i;
+			mappedNewToInitIndexes2.put(containerId+addedIndexesSinceBeginning, containerId);
 			mappedInitToNewIndexes().put(containerId, containerId+addedIndexesSinceBeginning);
-			mappedNewToInitIndexes().put(containerId+addedIndexesSinceBeginning, containerId);
-		}		
+		}
+		mappedNewToInitIndexes = mappedNewToInitIndexes2;
 		
-		// test
-		//System.out.println("GrowingBoard.java cc() graph before : "+context.board().graph());
-		//context.board().graph().removeFace(20, false);
-		//System.out.println("GrowingBoard.java cc() graph after : "+context.board().graph());
+		HashMap<Integer, Integer> copieMappedInitToNewIndexes = new HashMap<>(mappedInitToNewIndexes());
+		HashMap<Integer, Integer> copieMappedNewToInitIndexes = new HashMap<>(mappedNewToInitIndexes());
+		listCopieMappedInitToNewIndexes.add(copieMappedInitToNewIndexes);
+		listCopieMappedNewToInitIndexes.add(copieMappedNewToInitIndexes);
+		
+		HashSet<Integer> copiesurplusInitIndexes = new HashSet<>(surplusInitIndexes());
+		listCopieSurplusInitIndexes.add(copiesurplusInitIndexes);
 
 		return context.board().graph();
 	}
@@ -331,7 +334,62 @@ public class BoardlessHexagonal extends BoardlessAbstract
 	
 	@Override
 	public void rollback(Context context)
-	{}
+	{
+		List<Integer> lastFacesAdded = addedFacesSinceBeginning().get(addedFacesSinceBeginning().size()-1);
+		
+		// create mapping prev to new
+		int lastIndex = lastFacesAdded.size()-1;
+		int count = 0;
+		for (int i=0; i<context.board().graph().faces().size(); i++)
+		{
+			if (lastIndex >= 0 && i == lastFacesAdded.get(lastIndex))
+			{
+		        count += 1;
+		        lastIndex -= 1;
+		        surplusIndexes().add(i);
+			}
+		    else
+		    {
+				mappedPrevToNewIndexes().put(i, (i-count));
+				mappedNewToPrevIndexes().put((i-count), i);
+		    }
+		}
+		
+		// surplus cell above the rest
+		while (lastIndex >= 0)
+		{
+	        surplusIndexes().add(lastFacesAdded.get(lastIndex));
+		    lastIndex -= 1;
+		}
+		
+		int otherContainer = context.containers().length-1;
+		int addedIndexes = surplusIndexes().size();
+		int addedIndexesSinceBeginning = surplusInitIndexes().size();
+		int initFace = mappedPrevToNewIndexes().size();
+		for (int i=0; i<otherContainer; i++)
+		{
+			int containerId = initFace+i;
+			mappedPrevToNewIndexes().put(containerId+addedIndexes, containerId);
+			mappedNewToPrevIndexes().put(containerId, containerId+addedIndexes);
+		}
+		    
+		// remove face from the graph 
+		for (Integer faceId : lastFacesAdded)
+		{
+			context.board().graph().removeFace(faceId, false);
+		}
+		context.board().setGraphFunction(context.board().graph());
+
+		listCopieMappedInitToNewIndexes.remove(listCopieMappedInitToNewIndexes.size()-1);
+		listCopieMappedNewToInitIndexes.remove(listCopieMappedNewToInitIndexes.size()-1);
+		listCopieSurplusInitIndexes.remove(listCopieSurplusInitIndexes.size()-1);
+		addedFacesSinceBeginning.remove(addedFacesSinceBeginning.size()-1);
+		
+		mappedInitToNewIndexes = listCopieMappedInitToNewIndexes.get(listCopieMappedInitToNewIndexes.size()-1);
+		mappedNewToInitIndexes = listCopieMappedNewToInitIndexes.get(listCopieMappedNewToInitIndexes.size()-1);
+		surplusInitIndexes = listCopieSurplusInitIndexes.get(listCopieSurplusInitIndexes.size()-1);
+		
+	}
 	
 	@Override
 	public void rollbackToInit(Context context)
