@@ -1,25 +1,18 @@
 package boardless;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import game.equipment.container.board.Boardless;
-import game.types.board.SiteType;
-import game.types.board.TilingBoardlessType;
 import game.util.graph.Edge;
 import game.util.graph.Face;
 import game.util.graph.Graph;
 import main.math.Point3D;
 import other.context.Context;
-import other.move.Move;
 import other.topology.Cell;
-import other.topology.TopologyElement;
-import other.topology.Vertex;
 
 /**
  * Methods to create the mapping that will tell the board how to grow, specific for hexagonal tiles.
@@ -31,19 +24,6 @@ public class BoardlessHexagonal extends BoardlessAbstract
 	public BoardlessHexagonal() {
         super();
     }
-
-	public static String point3dToString(Point3D p)
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(p.x());
-		sb.append("-");
-		sb.append(p.y());
-		sb.append("-");
-		sb.append(p.z());
-		
-		String result = sb.toString();
-		return result;
-	}
 	
 	private Graph cc(final Context context, final Cell cell)
 	{
@@ -261,6 +241,11 @@ public class BoardlessHexagonal extends BoardlessAbstract
 				{
 					surplusIndexes().add(i);
 					surplusInitIndexes().add(i);
+					
+					if (mappedNewToInitIndexes().containsKey(i-addedCells))
+					{
+		                addedCells += 1;
+					}
 				}
 				else
 				{

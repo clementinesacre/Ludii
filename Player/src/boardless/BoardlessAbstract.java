@@ -11,6 +11,7 @@ import game.equipment.container.board.Boardless;
 import game.types.board.SiteType;
 import game.types.board.TilingBoardlessType;
 import game.util.graph.Graph;
+import main.math.Point3D;
 import other.context.Context;
 import other.move.Move;
 import other.topology.Cell;
@@ -277,10 +278,6 @@ public abstract class BoardlessAbstract
 		}
 		
 		
-		if (initialCells != null)
-			for (int[] i : initialCells)
-				System.out.println("MappingBoardless.java init() initialCells i : "+Arrays.toString(i));
-		
 		addedFacesSinceBeginning = new ArrayList<List<Integer>>();
 		currentCopy = -1;
 		
@@ -363,8 +360,26 @@ public abstract class BoardlessAbstract
 		newTotalIndexesCells = mappedPrevToNewIndexes().size() + surplusIndexes.size();
 	}
 	
+	//------------------------------ Utilities --------------------------------------
+
+	public static String point3dToString(Point3D p)
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(p.x());
+		sb.append("-");
+		sb.append(p.y());
+		sb.append("-");
+		sb.append(p.z());
+		
+		String result = sb.toString();
+		return result;
+	}
+
+	//--------------------------------------------------------------------
+	
 	protected abstract Graph forward(final Context context, final Cell cell);
 	public abstract void keepSameSize(Context context);
 	public abstract void rollback(Context context);
 	public abstract void rollbackToInit(Context context);
+	
 }

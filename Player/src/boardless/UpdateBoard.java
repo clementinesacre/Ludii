@@ -117,6 +117,9 @@ public class UpdateBoard
 				case Hexagonal:
 					mappingBoardlessBoard = new BoardlessHexagonal();
 					break;
+				case Triangular:
+					mappingBoardlessBoard = new BoardlessTriangular();
+					break;
 				default:
 					throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 			}
