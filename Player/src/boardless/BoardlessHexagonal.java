@@ -41,7 +41,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		HashSet<game.util.graph.Vertex> initVertex = new HashSet<game.util.graph.Vertex>();
 		initVertex.add(n);
 		initVertex.add(ne);
-		initVertex.add(ne);
+		initVertex.add(se);
 		initVertex.add(s);
 		initVertex.add(sw);
 		initVertex.add(nw);
