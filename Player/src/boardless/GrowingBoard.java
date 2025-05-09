@@ -52,20 +52,6 @@ public class GrowingBoard
 		context.game().update();
 	}
 	
-	public static int calculateMinimum(Context context, int m)
-	{
-		int max = 0;
-		for (int i=0; i<context.topology().rows().get(SiteType.Vertex).get(m).size(); i++)
-		{
-			int curr = context.topology().rows().get(SiteType.Vertex).get(m).get(i).col();
-			if (curr > max)
-			{
-				max = curr;
-			}
-		}
-		return max;
-	}
-	
 	/** 
 	 * Updates the board dimensions.
 	 * 

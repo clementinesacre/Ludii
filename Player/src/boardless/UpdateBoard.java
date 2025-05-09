@@ -1,11 +1,9 @@
 package boardless;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import game.equipment.container.board.Boardless;
-import game.types.board.SiteType;
 import other.context.Context;
 import other.move.Move;
 import other.topology.Cell;
@@ -49,52 +47,6 @@ public class UpdateBoard
 		return mappingBoardlessBoard().newTotalIndexesCells();
 	}
 	
-	public static HashSet<Integer>[] nbAddedColPerRow()
-	{
-		return mappingBoardlessBoard().nbAddedColPerRow();
-	}
-	
-	public static boolean vertexAddedLeftCol()
-	{
-		return mappingBoardlessBoard().vertexAddedLeftCol();
-	}
-	
-	public static HashSet<Integer>[] lastNbAddedColPerRow()
-	{
-		return mappingBoardlessBoard().lastNbAddedColPerRow();
-	}
-	
-	public static boolean lastVertexAddedLeftCol()
-	{
-		return mappingBoardlessBoard().lastVertexAddedLeftCol();
-	}
-	
-	public static int[][] initialVertices()
-	{
-		return mappingBoardlessBoard().initialVertices();
-	}
-	
-	/*public static int lastNbRowAddedCells()
-	{
-		return mappingBoardlessBoard().lastNbRowAddedCells();
-	}*/
-
-	public static ArrayList<int[]> cellsRowsColsAdded()
-	{
-		return mappingBoardlessBoard().cellsRowsColsAdded();
-	}
-	
-	/*public static int lastNbColAddedCells()
-	{
-		return mappingBoardlessBoard().lastNbColAddedCells();
-	}*/
-	
-	public static int[][] initialCells2()
-	{
-		return mappingBoardlessBoard().initialCells2();
-	}
-	
-	
 	//--------------------------------------------------------------------------
 	
 	/**
@@ -110,7 +62,8 @@ public class UpdateBoard
 	public static void createMappings(Context context, Move move, final int boardSizeChange)
 	{
 		if (mappingBoardlessBoard() == null)
-			switch(((Boardless) context.game().board()).tiling()) {
+			switch(((Boardless) context.game().board()).tiling()) 
+			{
 				case Square:
 					mappingBoardlessBoard = new BoardlessSquare();
 					break;
@@ -124,13 +77,11 @@ public class UpdateBoard
 					throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 			}
 
-		mappingBoardlessBoard().initForNewBoard(context);
-
-
-		switch(boardSizeChange) {
+		switch(boardSizeChange) 
+		{
 			case 1:
 			    // Board needs to grow
-				Cell cell = (Cell) context.topology().getGraphElement(SiteType.Cell, move.to());
+				Cell cell = (Cell) context.topology().getGraphElement(context.board().defaultSite(), move.to());
 				mappingBoardlessBoard().forward(context, cell);
 			    break;
 			case 0:
