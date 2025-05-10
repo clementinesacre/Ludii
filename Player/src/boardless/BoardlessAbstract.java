@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import game.equipment.container.Container;
+import game.equipment.container.board.Board;
 import game.util.graph.Edge;
 import game.util.graph.Face;
 import game.util.graph.Graph;
@@ -39,19 +41,26 @@ public abstract class BoardlessAbstract
 	protected List<game.util.graph.Vertex> verticesOfCellEdgeMove;
 	
 	protected List<List<Integer>> addedCellsSinceInit;
+	protected List<List<Integer>> addedVerticesSinceInit;
+	protected List<List<Integer>> addedEdgesSinceInit;
 	
 	protected HashMap<String, game.util.graph.Vertex> point3dToVertex;
 	protected HashMap<Integer, game.util.graph.Vertex> indexToVertex;
 	protected HashMap<Point3D, game.util.graph.Vertex[]> cellPointToVerticesPoint;
 	protected HashMap<Point3D, Point3D[]> vertexPointToNeighborsPoint;
 
-	protected Point3D[] newVertices;
+	protected Point3D[] newPoint3dVertices;
 	
 	// first time the class is called - this will allow initializing some specific data structures
 	protected boolean firsTime = true;
 
 	protected int newTotalIndexesCells;
 	protected int initialNbCells;
+	
+	// the new graph element created for the current board
+	HashSet<game.util.graph.Vertex> newVertices;
+	HashSet<Edge> newEdges;
+	HashSet<Face> newCells;
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -90,6 +99,8 @@ public abstract class BoardlessAbstract
 	public void initFromScratch(Context context)
 	{	
 		addedCellsSinceInit = new ArrayList<List<Integer>>();
+		addedVerticesSinceInit = new ArrayList<List<Integer>>();
+		addedEdgesSinceInit = new ArrayList<List<Integer>>();
 		
 		// initialize TODO
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
@@ -158,6 +169,11 @@ public abstract class BoardlessAbstract
 		String result = sb.toString();
 		return result;
 	}
+	
+	public void updateGraph(Board board)
+	{
+		board.setGraphFunction(board.graph());
+	}
 
 	//--------------------------------------------------------------------
 	
@@ -166,31 +182,37 @@ public abstract class BoardlessAbstract
 	 * containing each vertices that might need to be created as key, 
 	 * and the neighbors vertices as value.
 	 * 
-	 * @param context
+	 * @param graph
 	 */
-	protected void createVandE(Context context)
+	protected void createVandE(Graph graph)
 	{
-		HashSet<Point3D> newEdges = new HashSet<Point3D>();
+		HashSet<Point3D> newPoint3dEdges = new HashSet<Point3D>();
+		newVertices = new HashSet<game.util.graph.Vertex>();
+		newEdges = new HashSet<Edge>();
 		for (Point3D p3dVertex : vertexPointToNeighborsPoint.keySet()) {
 			// vertice does not exist yet
 			if (!point3dToVertex.containsKey(point3dToString(p3dVertex)))
             {
-            	game.util.graph.Vertex newVertex = context.board().graph().addVertex(p3dVertex);
+            	game.util.graph.Vertex newVertex = graph.addVertex(p3dVertex);
 				point3dToVertex.put(point3dToString(p3dVertex), newVertex);
+				newVertices.add(newVertex);
 				
 				// check for the neighbor vertices to create edge - creates also neighbor vertices if needed
             	for (Point3D p3dVertexNeighbor : vertexPointToNeighborsPoint.get(p3dVertex)) {
             		if (!point3dToVertex.containsKey(point3dToString(p3dVertexNeighbor)))
                     {
-            			game.util.graph.Vertex newVertexNeighbor = context.board().graph().addVertex(p3dVertexNeighbor);
-            			Edge newEdge = context.board().graph().addEdge(newVertex, newVertexNeighbor);
-            			newEdges.add(newEdge.pt());
+            			game.util.graph.Vertex newVertexNeighbor = graph.addVertex(p3dVertexNeighbor);
+            			Edge newEdge = graph.addEdge(newVertex, newVertexNeighbor);
+            			newPoint3dEdges.add(newEdge.pt());
         				point3dToVertex.put(point3dToString(p3dVertexNeighbor), newVertexNeighbor);
+        				newVertices.add(newVertexNeighbor);
+        				newEdges.add(newEdge);
                     }
             		else
             		{
-            			Edge newEdge = context.board().graph().addEdge(newVertex, point3dToVertex.get(point3dToString(p3dVertexNeighbor)));
-            			newEdges.add(newEdge.pt());
+            			Edge newEdge = graph.addEdge(newVertex, point3dToVertex.get(point3dToString(p3dVertexNeighbor)));
+            			newPoint3dEdges.add(newEdge.pt());
+        				newEdges.add(newEdge);
             		}
             	}
             }
@@ -203,19 +225,22 @@ public abstract class BoardlessAbstract
             	{
                 	if (!point3dToVertex.containsKey(point3dToString(p3dNeighbor)))
                     {
-            			game.util.graph.Vertex newVertexNeighbor = context.board().graph().addVertex(p3dNeighbor);
-            			Edge newEdge = context.board().graph().addEdge(newVertex, newVertexNeighbor);
-            			newEdges.add(newEdge.pt());
+            			game.util.graph.Vertex newVertexNeighbor = graph.addVertex(p3dNeighbor);
+            			Edge newEdge = graph.addEdge(newVertex, newVertexNeighbor);
+            			newPoint3dEdges.add(newEdge.pt());
         				point3dToVertex.put(point3dToString(p3dNeighbor), newVertexNeighbor);
+        				newVertices.add(newVertexNeighbor);
+        				newEdges.add(newEdge);
                     }
             		else 
             		{
-            			Edge newEdgeX = new Edge(0, newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
+            			Edge newEdge = new Edge(0, newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
             			// if edge does not exist yet and both of the vertices do not exist yet
-                		if (!newEdges.contains(newEdgeX.pt()) && !(indexToVertex.containsKey(newVertex.id()) && indexToVertex.containsKey(point3dToVertex.get(point3dToString(p3dNeighbor)).id())))
+                		if (!newPoint3dEdges.contains(newEdge.pt()) && !(indexToVertex.containsKey(newVertex.id()) && indexToVertex.containsKey(point3dToVertex.get(point3dToString(p3dNeighbor)).id())))
             			{
-            				Edge newEdge = context.board().graph().addEdge(newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
-                			newEdges.add(newEdge.pt());
+            				newEdge = graph.addEdge(newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
+                			newPoint3dEdges.add(newEdge.pt());
+            				newEdges.add(newEdge);
             			}
             		}
             	}
@@ -226,14 +251,14 @@ public abstract class BoardlessAbstract
 	/**
 	 * Check which vertices in the ones that should exist already exists.
 	 * 
-	 * @param context
+	 * @param graph
 	 */
-	protected void detectNewVertices(Context context)
+	protected void detectNewVertices(Graph graph)
 	{
-		for (int i=0; i<newVertices.length; i++)
+		for (int i=0; i<newPoint3dVertices.length; i++)
 		{
-			Point3D point3dVertex = newVertices[i];
-			game.util.graph.Vertex vertex = context.game().board().graph().findVertex(point3dVertex.x(), point3dVertex.y(), point3dVertex.z());
+			Point3D point3dVertex = newPoint3dVertices[i];
+			game.util.graph.Vertex vertex = graph.findVertex(point3dVertex.x(), point3dVertex.y(), point3dVertex.z());
 			if (vertex != null)
 			{
 				point3dToVertex.put(point3dToString(point3dVertex), vertex);
@@ -243,44 +268,69 @@ public abstract class BoardlessAbstract
 	}
 	
 	/**
+	 * Save the ids of the graph element that are being 
+	 * created to make the graph grow.
+	 */
+	protected void saveNewGraphElements()
+	{	
+		List<Integer> newCellsIndex = new ArrayList<Integer>();
+		for(Face c: newCells)
+			newCellsIndex.add(c.id());
+        
+        List<Integer> newVerticesIndex = new ArrayList<Integer>();
+		for(game.util.graph.Vertex v: newVertices)
+			newVerticesIndex.add(v.id());
+
+        List<Integer> newEdgesIndex = new ArrayList<Integer>();
+		for(Edge e: newEdges)
+			newEdgesIndex.add(e.id());
+
+		// descending order as if these cells need to be deleting, we want to delete the one with the highest id first
+        Collections.sort(newCellsIndex, Comparator.reverseOrder());
+        Collections.sort(newVerticesIndex, Comparator.reverseOrder());
+        Collections.sort(newEdgesIndex, Comparator.reverseOrder());
+        
+        addedCellsSinceInit.add(newCellsIndex);
+        addedVerticesSinceInit.add(newVerticesIndex);
+        addedEdgesSinceInit.add(newEdgesIndex);
+	}
+	
+	/**
 	 * Update the graph and the board by creating the required cells, edges and vertices.
 	 * 
 	 * @param context
-	 * @return the new graph
 	 */
-	protected Graph updateBoard(Context context)
+	protected void updateBoard(Context context)
 	{
-		calculateNewGraphElements(context);
+		Board board = context.board();
+		Graph graph = board.graph();
+		Container[] containers = context.containers();
 		
-		HashSet<Face> newCells = new HashSet<Face>();
+		calculateNewGraphElements(graph);
+		
+		newCells = new HashSet<Face>();
 		for (Point3D p3dCell : cellPointToVerticesPoint.keySet())
 		{
-			Face cell = context.board().graph().findFace(p3dCell.x(), p3dCell.y(), p3dCell.z());
+			Face cell = graph.findFace(p3dCell.x(), p3dCell.y(), p3dCell.z());
 			if (cell == null)
 			{	
-				Face newCell = context.board().graph().addFace(cellPointToVerticesPoint.get(p3dCell));
+				Face newCell = graph.addFace(cellPointToVerticesPoint.get(p3dCell));
 				newCells.add(newCell);
 			}
 		}
 		
-		context.board().graph().reorder();
+		graph.reorder();
 		
-		// save cells for going back if needed
-		List<Integer> newCellsIndex = new ArrayList<Integer>();
-		for(Face f: newCells)
-			newCellsIndex.add(f.id());
-
-		// descending order as if these cells need to be deleting, we want to delete the one with the highest id first
-        Collections.sort(newCellsIndex, Comparator.reverseOrder());
-        addedCellsSinceInit.add(newCellsIndex);
+		// save graph elements for going back if needed --> AFTER REORDERING the graph so we have the correct id
+		saveNewGraphElements();
 		
         // Mappings current to new
         HashMap<Integer, Integer> mappedNewToInitIndexesTmp = new HashMap<Integer, Integer>();
 		int nbAddedCells = 0;
-		for (int i=0; i<context.board().graph().faces().size(); i++)
+		for (int i=0; i<graph.faces().size(); i++)
 		{
 			int prevCellId = i-nbAddedCells;
-			if (newCells.contains(context.board().graph().faces().get(i)))
+			if (newCells.contains(graph.faces().get(i)))
 			{
 				if (i > initialNbCells)
 				{
@@ -313,7 +363,7 @@ public abstract class BoardlessAbstract
 		}
 
 		// map other containers that board TODO what if multiple cells inside a hand ? 
-		int nbContainers = context.containers().length-1;
+		int nbContainers = containers.length-1;
 		int nbNewIndexes = surplusIndexes.size();
 		int nbNewIndexesSinceInit = surplusInitIndexes.size();
 		
@@ -336,27 +386,25 @@ public abstract class BoardlessAbstract
 		HashSet<Integer> copiesurplusInitIndexes = new HashSet<>(surplusInitIndexes);
 		surplusInitIndexesHistory.add(copiesurplusInitIndexes);
 
-		return context.board().graph();
+		updateGraph(board);
 	}
 	
 	/**
 	 * Handles the impact of a move made on an edge, by making the board grow accordingly.
 	 * 
 	 * @param context
-	 * @return the new graph
+	 * @param cell cell on which the edge move was done
 	 */
-	protected Graph forward(final Context context, final Cell cell)
+	protected void forward(final Context context, final Cell cell)
 	{
+		Graph graph = context.board().graph();
 		init(context);
 		
-		cellEdgeMove = context.board().graph().faces().get(cell.index());
-		verticesOfCellEdgeMove = context.board().graph().faces().get(cell.index()).vertices();
-		initialNbCells = context.board().graph().faces().size();
+		cellEdgeMove = graph.faces().get(cell.index());
+		verticesOfCellEdgeMove = graph.faces().get(cell.index()).vertices();
+		initialNbCells = graph.faces().size();
 		
-		Graph newGraph = updateBoard(context);
-		context.board().setGraphFunction(newGraph);
-		
-		return newGraph;
+		updateBoard(context);
 	}
 	
 	/**
@@ -372,7 +420,50 @@ public abstract class BoardlessAbstract
 		for (int i=0; i<nbCells+nbContainers; i++)
 			mappedPrevToNewIndexes.put(i, i);
 		
-		context.board().setGraphFunction(context.board().graph());
+		updateBoard(context);
+	}
+	
+	/**
+	 * Delete the required graph element from the graph, in order
+	 * to shrink the board to its previous size.
+	 * 
+	 * @param graph
+	 */
+	public void deleteGraphElements(Graph graph)
+	{
+		List<Integer> lastVerticesAdded = addedVerticesSinceInit.get(addedVerticesSinceInit.size()-1);
+		List<Integer> lastEdgesAdded = addedEdgesSinceInit.get(addedEdgesSinceInit.size()-1);
+
+		for (Integer edgeId : lastEdgesAdded)
+			graph.removeEdge(edgeId);
+
+		for (Integer vertexId : lastVerticesAdded)
+			graph.removeVertex(vertexId);
+	}
+	
+	/**
+	 * Delete the required graph element from the graph, in order
+	 * to shrink the board to its initial size.
+	 * 
+	 * @param graph
+	 */
+	public void deleteGraphElementsFromInit(Graph graph)
+	{
+		int nbEdgesAddedSinceInit = addedEdgesSinceInit.size();
+		for (int i=nbEdgesAddedSinceInit-1; i>= 0; i--)
+		{
+			List<Integer> addedEdges = addedEdgesSinceInit.get(i);
+			for (Integer edgeId : addedEdges)
+				graph.removeFace(edgeId, false);
+		}
+
+		int nbVerticesAddedSinceInit = addedVerticesSinceInit.size();
+		for (int i=nbVerticesAddedSinceInit-1; i>= 0; i--)
+		{
+			List<Integer> addedVertices = addedVerticesSinceInit.get(i);
+			for (Integer vertexId : addedVertices)
+				graph.removeVertex(vertexId);
+		}
 	}
 	
 	/**
@@ -384,17 +475,21 @@ public abstract class BoardlessAbstract
 	 */
 	public void rollback(Context context)
 	{
+		Board board = context.board();
+		Graph graph = board.graph();
+		Container[] containers = context.containers();
+		
 		init(context);
 		
-		initialNbCells = context.board().graph().faces().size();
-		List<Integer> lastFacesAdded = addedCellsSinceInit.get(addedCellsSinceInit.size()-1);
+		initialNbCells = graph.faces().size();
+		List<Integer> lastCellsAdded = addedCellsSinceInit.get(addedCellsSinceInit.size()-1);
 		
 		// mapping previous board to new board
-		int lastIndex = lastFacesAdded.size()-1;
+		int lastIndex = lastCellsAdded.size()-1;
 		int count = 0;
 		for (int i=0; i<initialNbCells; i++)
 		{
-			if (lastIndex >= 0 && i == lastFacesAdded.get(lastIndex))
+			if (lastIndex >= 0 && i == lastCellsAdded.get(lastIndex))
 			{
 		        count += 1;
 		        lastIndex -= 1;
@@ -407,12 +502,12 @@ public abstract class BoardlessAbstract
 		// check for new cells that would have been added at the top of the board
 		while (lastIndex >= 0)
 		{
-	        surplusIndexes.add(lastFacesAdded.get(lastIndex));
+	        surplusIndexes.add(lastCellsAdded.get(lastIndex));
 		    lastIndex -= 1;
 		}
 		
 		// also map indexes for the other containers that the board
-		int nbContainers = context.containers().length-1;
+		int nbContainers = containers.length-1;
 		int nbNewIndexes = surplusIndexes.size();
 		int nbNewIndexesSinceInit = mappedPrevToNewIndexes.size();
 		for (int i=0; i<nbContainers; i++)
@@ -421,12 +516,12 @@ public abstract class BoardlessAbstract
 			mappedPrevToNewIndexes.put(containerId+nbNewIndexes, containerId);
 		}
 		    
-		// remove unwanted cells from the graph 
-		for (Integer cellId : lastFacesAdded)
-			context.board().graph().removeFace(cellId, false);
-		context.board().setGraphFunction(context.board().graph());
+		deleteGraphElements(graph);		
+		updateGraph(board);
 
 		addedCellsSinceInit.remove(addedCellsSinceInit.size()-1);
+		addedVerticesSinceInit.remove(addedVerticesSinceInit.size()-1);
+		addedEdgesSinceInit.remove(addedEdgesSinceInit.size()-1);
 		mappedInitToNewIndexesHistory.remove(mappedInitToNewIndexesHistory.size()-1);
 		mappedNewToInitIndexesHistory.remove(mappedNewToInitIndexesHistory.size()-1);
 		surplusInitIndexesHistory.remove(surplusInitIndexesHistory.size()-1);
@@ -442,7 +537,7 @@ public abstract class BoardlessAbstract
 			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 			surplusInitIndexes = new HashSet<Integer>();
-			for (int i=0; i<context.board().graph().faces().size(); i++)
+			for (int i=0; i<graph.faces().size(); i++)
 			{
 				mappedInitToNewIndexes.put(i, i);
 				mappedNewToInitIndexes.put(i, i);
@@ -459,10 +554,14 @@ public abstract class BoardlessAbstract
 	 */
 	public void rollbackToInit(Context context)
 	{
+		Board board = context.board();
+		Graph graph = board.graph();
+		Container[] containers = context.containers();
+		
 		init(context);
 		
 		int nbCellsAddedSinceInit = addedCellsSinceInit.size();
-		initialNbCells = context.board().graph().faces().size();
+		initialNbCells = graph.faces().size();
 		
 		if (nbCellsAddedSinceInit == 1)
 		{
@@ -475,14 +574,14 @@ public abstract class BoardlessAbstract
 			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 			surplusInitIndexes = new HashSet<Integer>();
-			int otherContainer = context.containers().length-1;
+			int otherContainer = containers.length-1;
 			for (int i=0; i<initialNbCells+otherContainer; i++)
 			{
 				mappedInitToNewIndexes.put(i, i);
 				mappedNewToInitIndexes.put(i, i);
 				mappedPrevToNewIndexes.put(i, i);
 			}
-			context.board().setGraphFunction(context.board().graph());
+			updateGraph(board);
 		}
 		else
 		{
@@ -490,32 +589,27 @@ public abstract class BoardlessAbstract
 			mappedPrevToNewIndexes = mappedNewToInitIndexesHistory.get(mappedNewToInitIndexesHistory.size()-1);
 			surplusIndexes = surplusInitIndexesHistory.get(surplusInitIndexesHistory.size()-1);
 			
-			for (int i=nbCellsAddedSinceInit-1; i>= 0; i--)
-			{
-				List<Integer> addedCells = addedCellsSinceInit.get(i);
-				for (Integer cellId : addedCells)
-					context.board().graph().removeFace(cellId, false);
-			}
-			context.board().setGraphFunction(context.board().graph());
+			deleteGraphElementsFromInit(graph);
+			updateGraph(board);
 			
 			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 			surplusInitIndexes = new HashSet<Integer>();
-			int otherContainer = context.containers().length-1;
+			int otherContainer = containers.length-1;
 			for (int i=0; i<initialNbCells+otherContainer; i++)
 			{
 				mappedInitToNewIndexes.put(i, i);
 				mappedNewToInitIndexes.put(i, i);
-			}
-			
-			initFromScratch(context);
+			}			
 		}
+		
+		firsTime = true;
 	}
 	
 	/**
 	 * Creates point3D of the GraphElement that should exist, and make links between them.
 	 * 
-	 * @param context
+	 * @param graph
 	 */
-	protected abstract void calculateNewGraphElements(Context context);
+	protected abstract void calculateNewGraphElements(Graph graph);
 }

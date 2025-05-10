@@ -3,8 +3,8 @@ package boardless;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import game.util.graph.Graph;
 import main.math.Point3D;
-import other.context.Context;
 
 /**
  * Methods to create the mapping that will tell the board how to grow, specific for hexagonal tiles.
@@ -18,7 +18,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
     }
 	
 	@Override
-	protected void calculateNewGraphElements(Context context)
+	protected void calculateNewGraphElements(final Graph graph)
 	{	
 		// getting the 6 vertices around the cell on which the edge move was made
 		HashSet<game.util.graph.Vertex> mainVertices = new HashSet<game.util.graph.Vertex>();
@@ -59,7 +59,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		Point3D pointVertexQ = new Point3D(ne.pt().x(), nw.pt().y() + verticalCenter, 0);
 		Point3D pointVertexR = new Point3D(n.pt().x() + horizontalSide, n.pt().y() + verticalSide, 0);
 		
-		newVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI, pointVertexJ, pointVertexK, pointVertexL, pointVertexM, pointVertexN, pointVertexO, pointVertexP, pointVertexQ, pointVertexR};
+		newPoint3dVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI, pointVertexJ, pointVertexK, pointVertexL, pointVertexM, pointVertexN, pointVertexO, pointVertexP, pointVertexQ, pointVertexR};
 		
 		point3dToVertex = new HashMap<String, game.util.graph.Vertex>();
 		point3dToVertex.put(point3dToString(n.pt()), n);
@@ -77,7 +77,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		indexToVertex.put(sw.id(), sw);
 		indexToVertex.put(nw.id(), nw);
 
-		detectNewVertices(context);	
+		detectNewVertices(graph);	
 		
 		// link each vertex to its neighbors, in order to create the edges
 		vertexPointToNeighborsPoint = new HashMap<Point3D, Point3D[]>();
@@ -100,7 +100,7 @@ public class BoardlessHexagonal extends BoardlessAbstract
 		vertexPointToNeighborsPoint.put(pointVertexQ, new Point3D[] {pointVertexP, pointVertexR});
 		vertexPointToNeighborsPoint.put(pointVertexR, new Point3D[] {pointVertexQ, pointVertexL});
 		
-		createVandE(context);
+		createVandE(graph);
 		
 		// calculate the 6 cells around, will help know which one exist already or not
 		double vertical = cellEdgeMove.pt().y() - s.pt().y();

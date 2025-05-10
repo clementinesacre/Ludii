@@ -3,8 +3,8 @@ package boardless;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import game.util.graph.Graph;
 import main.math.Point3D;
-import other.context.Context;
 
 /**
  * Methods to create the mapping that will tell the board how to grow, specific for square tiles.
@@ -18,7 +18,7 @@ public class BoardlessSquare extends BoardlessAbstract
     }
 	
 	@Override
-	protected void calculateNewGraphElements(final Context context)
+	protected void calculateNewGraphElements(final Graph graph)
 	{				
 		// getting the 4 vertices around the cell on which the edge move was made
 		HashSet<game.util.graph.Vertex> mainVertices = new HashSet<game.util.graph.Vertex>();
@@ -49,7 +49,7 @@ public class BoardlessSquare extends BoardlessAbstract
 		Point3D pointVertexL = new Point3D(ne.pt().x() + horizontalSide, ne.pt().y() + verticalSide, 0);
 		
 		// calculation
-		newVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI, pointVertexJ, pointVertexK, pointVertexL};
+		newPoint3dVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI, pointVertexJ, pointVertexK, pointVertexL};
 		
 		point3dToVertex = new HashMap<String, game.util.graph.Vertex>();
 		point3dToVertex.put(point3dToString(ne.pt()), ne);
@@ -63,7 +63,7 @@ public class BoardlessSquare extends BoardlessAbstract
 		indexToVertex.put(sw.id(), sw);
 		indexToVertex.put(nw.id(), nw);
 		
-		detectNewVertices(context);
+		detectNewVertices(graph);
 		
 		// link each vertex to its neighbors, in order to create the edges
 		vertexPointToNeighborsPoint = new HashMap<Point3D, Point3D[]>();
@@ -80,7 +80,7 @@ public class BoardlessSquare extends BoardlessAbstract
 		vertexPointToNeighborsPoint.put(pointVertexK, new Point3D[] {pointVertexJ, ne.pt(), pointVertexL});
 		vertexPointToNeighborsPoint.put(pointVertexL, new Point3D[] {pointVertexK, pointVertexH});
 		
-		createVandE(context);
+		createVandE(graph);
 		
 		// calculate the 8 cells around, will help know which one exist already or not
 		double diagonal = cellEdgeMove.pt().x() - sw.pt().x();

@@ -3,8 +3,8 @@ package boardless;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import game.util.graph.Graph;
 import main.math.Point3D;
-import other.context.Context;
 
 /**
  * Methods to create the mapping that will tell the board how to grow, specific for triangular tiles.
@@ -18,8 +18,7 @@ public class BoardlessTriangular extends BoardlessAbstract
     }
 	
 	@Override
-	// calculateNewVCE
-	protected void calculateNewGraphElements(final Context context)
+	protected void calculateNewGraphElements(final Graph graph)
 	{		
 		// check if top of the triangle is top of triangle is facing up or down - as this will impact the calulcation of the other graph elements
 		boolean triangleUpsideDown = false;
@@ -82,7 +81,7 @@ public class BoardlessTriangular extends BoardlessAbstract
 			pointVertexI = new Point3D(e.pt().x() + rightDiagonalX, e.pt().y() + rightDiagonalY, 0);
 			
 			// calculation
-			newVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI};
+			newPoint3dVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI};
 			
 			point3dToVertex.put(point3dToString(s.pt()), s);
 			point3dToVertex.put(point3dToString(w.pt()), w);
@@ -92,7 +91,7 @@ public class BoardlessTriangular extends BoardlessAbstract
 			indexToVertex.put(w.id(), w);
 			indexToVertex.put(e.id(), e);
 	
-			detectNewVertices(context);
+			detectNewVertices(graph);
 			
 			// link each vertex to its neighbors, in order to create the edges
 			vertexPointToNeighborsPoint.put(pointVertexA, new Point3D[] {pointVertexC, s.pt(), pointVertexB});
@@ -133,7 +132,7 @@ public class BoardlessTriangular extends BoardlessAbstract
 			pointVertexI = new Point3D(n.pt().x() + rightDiagonalX, n.pt().y() + rightDiagonalY, 0);
 			
 			// calculation
-			newVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI};
+			newPoint3dVertices = new Point3D[] {pointVertexA, pointVertexB, pointVertexC, pointVertexD, pointVertexE, pointVertexF, pointVertexG, pointVertexH, pointVertexI};
 			
 			point3dToVertex.put(point3dToString(n.pt()), n);
 			point3dToVertex.put(point3dToString(e.pt()), e);
@@ -143,7 +142,7 @@ public class BoardlessTriangular extends BoardlessAbstract
 			indexToVertex.put(e.id(), e);
 			indexToVertex.put(w.id(), w);
 	
-			detectNewVertices(context);	
+			detectNewVertices(graph);	
 			
 			vertexPointToNeighborsPoint.put(pointVertexA, new Point3D[] {pointVertexD, w.pt(), pointVertexB});
 			vertexPointToNeighborsPoint.put(pointVertexB, new Point3D[] {pointVertexA, w.pt(), e.pt(), pointVertexC});
@@ -156,7 +155,7 @@ public class BoardlessTriangular extends BoardlessAbstract
 			vertexPointToNeighborsPoint.put(pointVertexI, new Point3D[] {n.pt(), pointVertexG, pointVertexH});
 		}
 		
-		createVandE(context);
+		createVandE(graph);
 		
 		if (triangleUpsideDown)
 		{
