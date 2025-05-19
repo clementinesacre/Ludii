@@ -27,6 +27,14 @@ import features.generation.AtomicFeatureGenerator;
 import features.spatial.SpatialFeature;
 import function_approx.LinearFunction;
 import game.Game;
+import game.boardless.GrowingBoard;
+import game.equipment.container.board.Boardless;
+import game.functions.dim.DimConstant;
+import game.functions.graph.GraphFunction;
+import game.functions.graph.generators.basis.hex.HexagonOnHex;
+import game.functions.graph.generators.basis.square.RectangleOnSquare;
+import game.functions.graph.generators.basis.tri.TriangleOnTri;
+import game.types.board.TilingBoardlessType;
 import game.types.play.RoleType;
 import main.CommandLineArgParse;
 import main.CommandLineArgParse.ArgOption;
@@ -40,6 +48,7 @@ import metadata.ai.features.trees.FeatureTrees;
 import metadata.ai.features.trees.classifiers.DecisionTree;
 import other.GameLoader;
 import other.context.Context;
+import other.move.Move;
 import other.playout.PlayoutMoveSelector;
 import other.trial.Trial;
 import playout_move_selectors.DecisionTreeMoveSelector;
@@ -78,6 +87,12 @@ public final class PlayoutsPerSec
 	
 	/** Ruleset name. Will try to compile ALL games that match game name with this ruleset */
 	private String ruleset = null;
+	
+	/** Options name. Will try to compile ALL games that match game name with this ruleset */
+	private List<String> options = null;
+	
+	/** To reset the context (Board, Graph, Topology) between each playout. Required for boardless games. */
+	private boolean resetContext;
 
 	/** The name of the csv to export with the results. */
 	private String exportCSV;
@@ -99,6 +114,39 @@ public final class PlayoutsPerSec
 	}
 	
 	//-------------------------------------------------------------------------
+	
+	/**
+	 * Reset the Board, the Graph and the Topology to the 
+	 * specified size. Also re-initialize the initial moves 
+	 * that had their to/from attributes adapted to fit the 
+	 * bigger board.
+	 * 
+	 * 
+	 * The implementation to make the board grow (for boardless games) will 
+	 * impact the Graph, the Board and the Topology of the context. Even when 
+	 * copying a context, it will point to the same instance of these three 
+	 * elements. One solution is to re-initialise all three of them using the 
+	 * same as in the class used to make grow the board. Another solution 
+	 * could be to make a deep copy of these elements. 
+	 * 
+	 * @param size size of the board to which we want to
+	 * go back to.
+	 */
+	public void resetBoard(final Context context, final int size)
+	{
+		Boardless board = (Boardless) context.game().board();
+		GraphFunction newGraphFunction = board.tiling() == TilingBoardlessType.Square
+				? new RectangleOnSquare(new DimConstant(size), null, null, null) : board.tiling() == TilingBoardlessType.Hexagonal 
+				? new HexagonOnHex(new DimConstant(size)) : new TriangleOnTri(new DimConstant(size));
+
+		board.setGraphFunction(newGraphFunction);
+		board.setDimension(size);
+
+		context.game().update();
+		GrowingBoard.resetMoves(context);
+		
+		GrowingBoard.reset(context);
+	}
 	
 	/**
 	 * Start the experiment
@@ -210,9 +258,9 @@ public final class PlayoutsPerSec
 			final Game game;
 			
 			if (ruleset != null && !ruleset.equals(""))
-				game = GameLoader.loadGameFromName(gameName, ruleset);
+				game = GameLoader.loadGameFromName(gameName, ruleset, options);
 			else
-				game = GameLoader.loadGameFromName(gameName, new ArrayList<String>());
+				game = GameLoader.loadGameFromName(gameName, options);
 			
 			if (noCustomPlayouts && game.hasCustomPlayouts())
 			{
@@ -230,6 +278,8 @@ public final class PlayoutsPerSec
 
 			final Trial trial = new Trial(game);
 			final Context context = new Context(game, trial);
+			
+			int initialBoardSize = game.board().dimension();
 
 			// Warming up
 			long stopAt = 0L;
@@ -240,6 +290,9 @@ public final class PlayoutsPerSec
 				game.start(context, true);
 				game.playout(context, null, 1.0, playoutMoveSelector, -1, playoutActionCap, ThreadLocalRandom.current());
 				stopAt = System.nanoTime();
+				
+				if (resetContext && initialBoardSize > -1)
+					resetBoard(context, initialBoardSize);
 			}
 			System.gc();
 
@@ -263,6 +316,9 @@ public final class PlayoutsPerSec
 				moveDone += context.trial().numMoves();
 				stopAt = System.nanoTime();
 				++playouts;
+				
+				if (resetContext && initialBoardSize > -1)
+					resetBoard(context, initialBoardSize);
 			}
 
 			final double secs = (stopAt - start) / 1000000000.0;
@@ -792,6 +848,12 @@ public final class PlayoutsPerSec
 				.withNumVals(1)
 				.withType(OptionTypes.String));
 		argParse.addOption(new ArgOption()
+				.withNames("--options")
+				.help("Options to compile. Will assume the ruleset name to be valid for ALL games run.")
+				.withDefault(new ArrayList<String>(0))
+				.withNumVals("*")
+				.withType(OptionTypes.String));
+		argParse.addOption(new ArgOption()
 				.withNames("--export-csv")
 				.help("Filename (or filepath) to write results to. By default writes to ./results.csv")
 				.withDefault("results.csv")
@@ -805,6 +867,12 @@ public final class PlayoutsPerSec
 		argParse.addOption(new ArgOption()
 				.withNames("--no-custom-playouts")
 				.help("Use this to disable custom (optimised) playout strategies on any games played.")
+				.withNumVals(0)
+				.withType(OptionTypes.Boolean));
+		argParse.addOption(new ArgOption()
+				.withNames("--reset-context")
+				.help("To reset the context (Board, Graph, Topology) between each playout. Required for boardless games.")
+				.withDefault(false)
 				.withNumVals(0)
 				.withType(OptionTypes.Boolean));
 		
@@ -835,9 +903,11 @@ public final class PlayoutsPerSec
 		experiment.seed = argParse.getValueInt("--seed");
 		experiment.gameNames = (List<String>) argParse.getValue("--game-names");
 		experiment.ruleset = argParse.getValueString("--ruleset");
+		experiment.options = (List<String>) argParse.getValue("--options");
 		experiment.exportCSV = argParse.getValueString("--export-csv");
 		experiment.suppressPrints = argParse.getValueBool("--suppress-prints");
 		experiment.noCustomPlayouts = argParse.getValueBool("--no-custom-playouts");
+		experiment.resetContext = argParse.getValueBool("--reset-context");
 		
 		experiment.featuresToUse = argParse.getValueString("--features-to-use");
 		experiment.featureSetType = argParse.getValueString("--feature-set-type");
