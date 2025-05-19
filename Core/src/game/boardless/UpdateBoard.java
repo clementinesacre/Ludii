@@ -1,4 +1,4 @@
-package boardless;
+package game.boardless;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +32,11 @@ public class UpdateBoard
 		return mappingBoardlessBoard().mappedInitToNewIndexes();
 	}
 	
+	public static HashMap<Integer, Integer> mappedNewToInitIndexes()
+	{
+		return mappingBoardlessBoard().mappedNewToInitIndexes();
+	}
+	
 	public static HashSet<Integer> surplusIndexes()
 	{
 		return mappingBoardlessBoard().surplusIndexes();
@@ -48,6 +53,15 @@ public class UpdateBoard
 	}
 	
 	//--------------------------------------------------------------------------
+	
+	public static void reset(Context context)
+	{
+		if (mappingBoardlessBoard != null)
+		{
+			mappingBoardlessBoard.firsTime = true;
+			mappingBoardlessBoard.initFromScratch(context);
+		}
+	}
 	
 	/**
 	 * Creates a mapping between the indexes of the previous board and the 
@@ -77,6 +91,7 @@ public class UpdateBoard
 					throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 			}
 
+		//System.out.println("UpdateBoard.java createMappings() graph before : "+context.board().graph());
 		switch(boardSizeChange) 
 		{
 			case 1:
@@ -100,6 +115,7 @@ public class UpdateBoard
 				// code block
 		}
 
+		//System.out.println("UpdateBoard.java createMappings() graph after : "+context.board().graph());
 		mappingBoardlessBoard().updateNewTotalIndexesCells();
 	}
 }

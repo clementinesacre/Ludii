@@ -447,6 +447,10 @@ public class MainMenu extends JMenuBar
 				menuItem.setAccelerator(KeyStroke.getKeyStroke('R', InputEvent.SHIFT_DOWN_MASK));
 				menuItem.addActionListener(al);
 				menu.add(menuItem);
+				
+				menuItem = new JMenuItem("Time Random Playouts Boardless");
+				menuItem.addActionListener(al);
+				menu.add(menuItem);
 			}
 			
 			menu.addSeparator();

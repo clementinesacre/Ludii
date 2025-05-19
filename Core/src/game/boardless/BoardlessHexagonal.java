@@ -1,4 +1,4 @@
-package boardless;
+package game.boardless;
 
 import java.util.HashMap;
 import java.util.HashSet;

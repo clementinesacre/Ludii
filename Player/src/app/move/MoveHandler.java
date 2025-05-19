@@ -7,7 +7,6 @@ import app.PlayerApp;
 import app.utils.PuzzleSelectionType;
 import boardless.GrowingBoardVisual;
 import game.equipment.component.Component;
-import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
 import game.util.directions.AbsoluteDirection;
@@ -130,9 +129,10 @@ public class MoveHandler
 		{
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
+				if (context.game().isBoardless())
+					GrowingBoardVisual.checkMoveImpactOnBoard2(app, possibleMoves.get(0), 1, true);
+				
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
-				if (context.game().isBoardless()) 
-					GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), 1, true);
 				return true; // move found
 			}
 		}

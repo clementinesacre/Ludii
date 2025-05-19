@@ -1,4 +1,4 @@
-package boardless;
+package game.boardless;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -483,7 +483,7 @@ public abstract class BoardlessAbstract
 		
 		initialNbCells = graph.faces().size();
 		List<Integer> lastCellsAdded = addedCellsSinceInit.get(addedCellsSinceInit.size()-1);
-		
+
 		// mapping previous board to new board
 		int lastIndex = lastCellsAdded.size()-1;
 		int count = 0;
@@ -562,7 +562,7 @@ public abstract class BoardlessAbstract
 		
 		int nbCellsAddedSinceInit = addedCellsSinceInit.size();
 		initialNbCells = graph.faces().size();
-		
+
 		if (nbCellsAddedSinceInit == 1)
 		{
 			// the first move done on the board was done on an edge
