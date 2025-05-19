@@ -459,11 +459,8 @@ public class Board extends Container
 	public void setGraphFunction(GraphFunction newGraphFunction)
 	{
 		graphFunction = newGraphFunction;
-		//updateRanges();
 
 		topology.clearTopology();
-		//createTopology(0, 0);
-		//System.out.println("Topology.java clearTopology() cells before clearing : "+topology().cells().get(5).adjacent());
 	}
 	
 	
@@ -483,6 +480,16 @@ public class Board extends Container
 	public Board clone()
 	{
 		return new Board(this);
+	}
+	
+	/**
+	 * Gets the dimension of the board.
+	 * 
+	 * @return dimension of the board.
+	 */
+	public int dimension()
+	{
+		return -1;
 	}
 
 }

@@ -225,6 +225,51 @@ public class GrowingBoard
 	
 	//----------------------------Initialization-------------------------------
 
+
+	/**
+	 * Reset attributes of the class.
+	 */
+	public static void reset()
+	{
+		mappedPrevToNewIndexes = null;
+		mappedNewToPrevIndexes = null;
+		surplusIndexes = null; 
+		
+		initDimensionBoard = 0;
+		initAreaBoard = 0;
+		initTotalIndexes = 0;
+		diffInit = 0;
+		prevDimensionBoard = 0;
+		prevAreaBoard = 0;
+		prevTotalIndexes = 0;
+		newDimensionBoard = 0;
+		newAreaBoard = 0;
+		newTotalIndexes = 0;
+		diff = 0;
+		
+		mappedInitToNewIndexes = null;
+		mappedNewToInitIndexes = null;
+		surplusInitIndexes = null;
+		
+		growingStep = 0;
+		
+		initMaxPerColRow = null;
+		initMinPerColRow = null;
+		initRowsSizeCumul = null;
+
+		initMinColPerRowList = null;
+		initRowsSizeCumulTriangular = null;
+		initMaxIndexRowOrCol = 0;
+		initMinColPerRow = null;
+		initMaxColPerRow = null;
+		initMaxRowPerCol = null;
+		
+		perimeter = null;
+		isVisual = false;
+		
+		movesDone = null;
+	}
+	
 	protected static void initInitConstants(Context context, int initDimension)
 	{
 		initDimensionBoard = initDimension;

@@ -71,6 +71,33 @@ public final class GameLoader
 		return loadGameFromName(name);
 	}
 	
+	/**
+	 * Load game from name.
+	 * @param name Filename + .lud extension.
+	 * @param rulesetName Name of the ruleset to load.
+	 * @param options Name of the options to load.
+	 * @return Loads game for the given name
+	 */
+	public static Game loadGameFromName(final String name, final String rulesetName, final List<String> options)
+	{
+		if (rulesetName.length() == 0)
+			return loadGameFromName(name);
+		
+		final Game tempGame = GameLoader.loadGameFromName(name, options);
+		final List<Ruleset> rulesets = tempGame.description().rulesets();
+		if (rulesets != null && !rulesets.isEmpty())
+		{
+			for (int rs = 0; rs < rulesets.size(); rs++)
+				if (rulesets.get(rs).heading().equals(rulesetName))
+					return loadGameFromName(name, rulesets.get(rs).optionSettings());
+		}
+		
+		System.err.println("ERROR: Ruleset name not found, loading default game options");
+		System.err.println("Game name = " + name);
+		System.err.println("Ruleset name = " + rulesetName);
+		return loadGameFromName(name, options);
+	}
+	
 	//-------------------------------------------------------------------------
 	
 	/**

@@ -288,10 +288,15 @@ public class Referee
 
 		context.game().update();
 		
-		// also reset initial moves to the initial plate
-		List<Move> moves = context.trial().generateCompleteMovesList();
-		for (Move m : moves)
-			GrowingBoard.generateNewMove(m, false, GrowingBoard.mappedNewToInitIndexes());
+		// also reset initial moves to the initial plate, only if board changed size at least one time
+		if (GrowingBoard.mappedNewToInitIndexes() != null)
+		{
+			List<Move> moves = context.trial().generateCompleteMovesList();
+			for (Move m : moves)
+				GrowingBoard.generateNewMove(m, false, GrowingBoard.mappedNewToInitIndexes());
+		}
+		
+		GrowingBoard.reset();
 	}
 	
 	/**
