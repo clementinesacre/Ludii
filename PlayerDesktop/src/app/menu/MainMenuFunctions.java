@@ -540,6 +540,37 @@ public class MainMenuFunctions extends JMenuBar
 				app.setVolatileMessage("Time Random Playouts is disabled for deduction puzzles.\n");
 			}
 		}
+		else if (source.getText().equals("Time Random Playouts Boardless"))
+		{
+			if (!game.isDeductionPuzzle())
+			{
+        		app.setVolatileMessage("This will take about 40 seconds, during which time the UI will not respond.\n");
+        		
+        		// Just use a series of EventQueues to ensure this gets run after the GUI has properly updated.
+        		EventQueue.invokeLater(() ->
+				{
+					EventQueue.invokeLater(() ->
+					{
+						EventQueue.invokeLater(() ->
+						{
+							EventQueue.invokeLater(() ->
+							{
+								app.manager().ref().interruptAI(app.manager());
+								DesktopApp.frame().setContentPane(DesktopApp.view());
+								final double rate = app.manager().ref().timeRandomPlayoutsBoardless();
+								app.addTextToStatusPanel("" + String.format(Locale.US, "%.2f", Double.valueOf(rate)) + " random playouts/s.\n");
+								app.setTemporaryMessage("");
+								app.setTemporaryMessage("Analysis Complete.\n");
+							});
+						});
+					});
+				});
+			}
+			else
+			{
+				app.setVolatileMessage("Time Random Playouts Boardless is disabled for deduction puzzles.\n");
+			}
+		}
 		else if (source.getText().equals("Show Compilation Concepts"))
 		{
 			final List<List<String>> conceptsPerCategories = new ArrayList<List<String>>();

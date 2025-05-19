@@ -20,6 +20,7 @@ import org.apache.commons.rng.RandomProviderState;
 
 import annotations.Hide;
 import annotations.Opt;
+import game.boardless.GrowingBoard;
 //import app.PlayerApp;
 import game.equipment.Equipment;
 import game.equipment.Item;
@@ -2985,7 +2986,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	@Override
 	public Move apply(final Context context, final Move move)
 	{		
-		return apply(context, move, false);		// By default false --> don't skip computing end rules
+		return apply(context, move, false, true);		// By default false --> don't skip computing end rules
 	}
 	
 	/**
@@ -3065,6 +3066,58 @@ public class Game extends BaseLudeme implements API, Serializable
 				context.state().setIsDecided(Constants.UNDEFINED);
 			
 			return applyInternal(context, move, skipEndRules);
+		}
+		finally
+		{
+			context.getLock().unlock();
+		}
+	}
+	
+	/**
+	 * Applies a move to the current context
+	 * 
+	 * @param context      The context.
+	 * @param move         The move to apply.
+	 * @param skipEndRules If true, we do not spend any time computing end rules.
+	 *                     Note that this can make the resulting context unsuitable
+	 *                     for further use.
+	 * @param stupidParam  to differentiate between the other apply method with the 
+	 * 					   exact same parameters. TODO: fix this bad implementation.
+	 * @return Applied move (with consequents resolved etc.
+	 */
+	public Move apply(final Context context, final Move move, final boolean skipEndRules, final boolean stupidParam)
+	{	        
+		context.getLock().lock();
+		
+		try
+		{
+			// Save data before applying end rules (for undo).
+			context.storeCurrentData();
+			
+			// If a decision was done previously we reset it.
+			if (context.state().isDecided() != Constants.UNDEFINED)
+				context.state().setIsDecided(Constants.UNDEFINED);
+			
+			if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time + only boardless game
+				GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+
+
+			if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
+			{
+				if (!GrowingBoard.isVisual)
+				{
+					int currDim = ((Boardless) context.board()).dimension();
+					int newDim = currDim + GrowingBoard.growingStep(context);
+					
+					GrowingBoard.checkMoveImpactOnBoard2(context, move, currDim, newDim, true);
+				}
+				GrowingBoard.updateChunksAndOwned(context);
+				GrowingBoard.generateNewMove(move, true);
+			}
+			
+			Move moveDone = applyInternal(context, move, skipEndRules);
+			
+			return moveDone;
 		}
 		finally
 		{

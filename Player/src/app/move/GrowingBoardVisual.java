@@ -1,6 +1,7 @@
 package app.move;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import app.PlayerApp;
 import app.utils.GameUtil;
 import app.utils.MVCSetup;
 import game.Game;
+import game.boardless.GrowingBoard;
 import game.equipment.container.board.Boardless;
 import main.Constants;
 import other.context.Context;
@@ -123,6 +125,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		// TODO check that the move is applied on a board type container
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
 		updateBoardDimensions(app, board, toSize);
+		perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 	}
 	
 	/**
@@ -177,12 +180,11 @@ public class GrowingBoardVisual extends GrowingBoard
 
 		if (context.game().isBoardless()) 
 		{
-			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
-			System.out.println("\nGrowingBoardVisual.java checkMoveImpactOnBoard() isTouchingEdge : "+isTouchingEdge(perimeter, move.to())+" - move : "+move);
+			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
 			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
-			if (isTouchingEdge(perimeter, move.to())) 
+			if (isTouchingEdge(move.to())) 
 			{
 				updateBoard(app, context, fromSize, toSize, replayMoves);
 				
@@ -191,5 +193,40 @@ public class GrowingBoardVisual extends GrowingBoard
 			}
 		}
 		return false;
+	}
+	
+	public static void checkMoveImpactOnBoard2(final PlayerApp app, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	{
+		final Context context = app.manager().ref().context();
+		if (!isVisual)
+			isVisual = true;
+		
+		if (context.game().isBoardless()) 
+		{
+			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
+			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
+			if (isTouchingEdge(move.to())) 
+			{
+				Game game = context.game();
+				Boardless board = (Boardless) game.board();
+				
+				initMainConstants(context, fromSize, toSize);
+				
+				// TODO check that the move is applied on a board type container
+				updateBoardDimensions(app, board, toSize);
+
+				Trial trial = context.trial();
+				movesDone = trial.generateCompleteMovesList();
+				System.out.println("GrwingBoardVisual.java checkMoveImpactOnBoard2() movesDone1 : "+movesDone);
+				//if (replayMoves) // TODO does not change if we call it or not - test that
+				//	resetMoves(app);
+				System.out.println("GrwingBoardVisual.java checkMoveImpactOnBoard2() movesDone2 : "+movesDone);
+				
+				//remakeTrial(context, movesDone, legalMoves, replayMoves);
+			}
+		}
 	}
 }

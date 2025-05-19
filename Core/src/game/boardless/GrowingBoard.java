@@ -1,4 +1,4 @@
-package app.move;
+package game.boardless;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,6 +79,11 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMinColPerRow;
 	private static HashMap<Integer, Integer> initMaxColPerRow;
 	private static HashMap<Integer, Integer> initMaxRowPerCol;
+	
+	public static List<TopologyElement> perimeter;
+	public static boolean isVisual;
+	
+	public static List<Move> movesDone;
 	
 	//--------------------------------Getters----------------------------------
 	
@@ -223,6 +228,51 @@ public class GrowingBoard
 	}
 	
 	//----------------------------Initialization-------------------------------
+	
+	/**
+	 * Reset attributes of the class.
+	 * @param context 
+	 */
+	public static void reset(Context context)
+	{
+		mappedPrevToNewIndexes = null;
+		mappedNewToPrevIndexes = null;
+		surplusIndexes = null; 
+		
+		initDimensionBoard = 0;
+		initAreaBoard = 0;
+		initTotalIndexes = 0;
+		diffInit = 0;
+		prevDimensionBoard = 0;
+		prevAreaBoard = 0;
+		prevTotalIndexes = 0;
+		newDimensionBoard = 0;
+		newAreaBoard = 0;
+		newTotalIndexes = 0;
+		diff = 0;
+		
+		mappedInitToNewIndexes = null;
+		mappedNewToInitIndexes = null;
+		surplusInitIndexes = null;
+		
+		growingStep = 0;
+		
+		initMaxPerColRow = null;
+		initMinPerColRow = null;
+		initRowsSizeCumul = null;
+
+		initMinColPerRowList = null;
+		initRowsSizeCumulTriangular = null;
+		initMaxIndexRowOrCol = 0;
+		initMinColPerRow = null;
+		initMaxColPerRow = null;
+		initMaxRowPerCol = null;
+		
+		perimeter = null;
+		isVisual = false;
+		
+		movesDone = null;
+	}
 	
 	protected static void initInitConstants(Context context, int initDimension)
 	{
@@ -836,15 +886,15 @@ public class GrowingBoard
 	 * @param target Value we are looking for into the list.
 	 * @return Index of the element in the list if found, -1 otherwise.
 	 */
-	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
+	public static boolean isTouchingEdge(int target) {
 		if (target == Constants.UNDEFINED) return false;
 		
         int start = 0;
-        int end = topologyElements.size() - 1;
+        int end = perimeter.size() - 1;
 
         while (start <= end) {
             int midIndex = start + (end - start) / 2;
-            int midValue = topologyElements.get(midIndex).index();
+            int midValue = perimeter.get(midIndex).index();
 
             if (midValue == target) {
                 return true;
@@ -1091,13 +1141,16 @@ public class GrowingBoard
 	}
 	
 	/**
-	 * Generates the new move based on a move, which means with the new indexes of the board
-	 * (which means updating to() and from().
+	 * Generates the new move based on a move, which means with the new 
+	 * indexes of the board (which means updating to() and from()).
 	 * 
 	 * @param prevMove previous move to copy, except for the indexes.
+	 * @param isMoveDoneOnEdge is the move done on an edge of board which 
+	 * lead to an increase of the board size. 
+	 * @param mapping Mapping to use to map move from previous to new board.
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge, HashMap<Integer, Integer> mappingIndexes)
+	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge, HashMap<Integer, Integer> mapping)
 	{
 		List<Action> actions = prevMove.actions();
 		
@@ -1108,11 +1161,11 @@ public class GrowingBoard
 			int from = newAction.from();
 			if (to != Constants.UNDEFINED)
 			{
-				newAction.setTo(mappingIndexes.get(to));
+				newAction.setTo(mapping.get(to));
 			}
 			if (from != Constants.UNDEFINED)
 			{
-				newAction.setFrom(mappingIndexes.get(from));
+				newAction.setFrom(mapping.get(from));
 			}
 			
 			prevMove.setTo(prevMove.to());
@@ -1129,9 +1182,9 @@ public class GrowingBoard
 				int from = action.from();
 				
 				if (to != Constants.UNDEFINED)
-					action.setTo(mappingIndexes.get(to));
+					action.setTo(mapping.get(to));
 				if (from != Constants.UNDEFINED)
-					action.setFrom(mappingIndexes.get(from));
+					action.setFrom(mapping.get(from));
 				
 				newActions.add(action);
 			}
@@ -1146,23 +1199,25 @@ public class GrowingBoard
 				}
 		}
 		
-		if (isLastMoveDoneOnEdge)
+		if (isMoveDoneOnEdge)
 			prevMove.setOnEdge(prevDimensionBoard());
 		
 		return prevMove;
 	}
 	
 	/**
-	 * Generates the new move based on a move, which means with the new indexes of the board
-	 * (which means updating to() and from().
-	 * Use the mapping current board and new board by default.
+	 * Generates the new move based on a move, which means with the new indexes 
+	 * of the board (which means updating to() and from()), by using the default 
+	 * mapping which is between the current board and the new board.
 	 * 
 	 * @param prevMove previous move to copy, except for the indexes.
+	 * @param isMoveDoneOnEdge is the move done on an edge of board which 
+	 * lead to an increase of the board size. 
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isLastMoveDoneOnEdge) 
+	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge)
 	{
-		return generateNewMove(prevMove, isLastMoveDoneOnEdge, mappedPrevToNewIndexes());
+		return generateNewMove(prevMove, isMoveDoneOnEdge, mappedPrevToNewIndexes());
 	}
 	
 	/** 
@@ -1229,7 +1284,8 @@ public class GrowingBoard
 	}
 	
 	/** 
-	 * Start over the game on the new board and apply the historic of move mapped to the new board.
+	 * Update the chunks and the owned based on the new board. 
+	 * Also apply the historic of move mapped to the new board.
 	 * 
 	 * @param app
 	 * @param movesDone
@@ -1253,6 +1309,33 @@ public class GrowingBoard
 		}
 	}
 	
+	/** 
+	 * Update the chunks and the owned based on the new board.
+	 * 
+	 * @param context
+	 */
+	public static void updateChunksAndOwned(Context context) 
+	{
+		remakeTrial(context, null, false);
+	}
+	
+	public static void redoneAllButLast(Context context)
+	{	
+		Move move = null;
+		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
+		
+		for (int i = 0; i < movesDone.size(); i++)
+		{
+			move = movesDone.get(i);
+			generateNewMove(move, false);
+			
+			if (i>=numInitialPlacementMoves)
+			{
+				context.game().apply(context, move, false);
+			}
+		}
+	}
+	
 	/**
 	 * Reset the state, which also reset the mover.
 	 * 
@@ -1266,10 +1349,11 @@ public class GrowingBoard
 	/** 
 	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
 	 */
-	protected static void resetMoves(Context context)
+	public static void resetMoves(Context context)
 	{
-		// TODO - how reset moves properly? problem with legal moves when doing this
-		resetState(context);
+		context.reset();
+		context.game().start(context, true);
+		context.game().incrementGameStartCount();
 	}
 	
 	/** 
@@ -1318,10 +1402,54 @@ public class GrowingBoard
 	{
 		if (context.game().isBoardless()) 
 		{
-			List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());			
-			if (isTouchingEdge(perimeter, move.to())) 
+			if (!isVisual)
+				perimeter = context.topology().perimeter(context.board().defaultSite());		
+			if (isTouchingEdge(move.to())) 
 			{
 				updateBoard(context, fromSize, toSize, replayMoves);
+			}
+		}
+	}
+	
+	public static void checkMoveImpactOnBoard3(Context context, final Move move, List<Move> movesDone, int fromSize, final int toSize, final boolean replayMoves) 
+	{
+		
+		if (context.game().isBoardless()) 
+		{
+			if (!isVisual)
+				perimeter = context.topology().perimeter(context.board().defaultSite());
+			
+			if (isTouchingEdge(move.to())) 
+			{
+				Game game = context.game();
+				Boardless board = (Boardless) game.board();
+				
+				if (!isVisual)
+				{
+					initMainConstants(context, fromSize, toSize);
+					updateBoardDimensions(context, board, toSize);
+					updateTopology(context);
+				}
+				
+			}
+		}
+		System.out.println("\n\n\n");
+	}
+	
+	
+	public static void checkMoveImpactOnBoard2(final Context context, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	{
+		if (context.game().isBoardless()) 
+		{
+			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+			if (isTouchingEdge(move.to())) 
+			{
+				Game game = context.game();
+				Boardless board = (Boardless) game.board();
+				initMainConstants(context, fromSize, toSize);
+				
+				// TODO check that the move is applied on a board type container
+				updateBoardDimensions(context, board, toSize);
 			}
 		}
 	}

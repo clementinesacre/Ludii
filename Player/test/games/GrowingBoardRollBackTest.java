@@ -12,12 +12,12 @@ import java.util.HashSet;
 import java.util.List;
 
 import app.PlayerApp;
-import app.move.GrowingBoard;
 import app.move.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.utils.UpdateTabMessages;
 import compiler.Compiler;
 import game.Game;
+import game.boardless.GrowingBoard;
 import game.equipment.Equipment;
 import game.equipment.container.board.Boardless;
 import game.rules.phase.Phase;

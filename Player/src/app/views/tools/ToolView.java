@@ -225,7 +225,10 @@ public class ToolView extends View
 		else
 			moveToJumpToWithSetup = moveToJumpTo;
 
-		Move currMove = allMoves.get(moveToJumpToWithSetup);
+		Move currMove = null;
+		if (moveToJumpToWithSetup < allMoves.size())
+			currMove = allMoves.get(moveToJumpToWithSetup);
+		
 		// Topology must be updated before state is reset as when it is boardless, it will refer at the center of the board to start over
 		if (context.game().isBoardless()) {
 			int currDim = ((Boardless) context.board()).dimension();
