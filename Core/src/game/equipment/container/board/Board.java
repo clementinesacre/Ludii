@@ -485,4 +485,13 @@ public class Board extends Container
 		return new Board(this);
 	}
 
+	/**
+	 * Gets the dimension of the board.
+	 * 
+	 * @return dimension of the board.
+	 */
+	public int dimension()
+	{
+		return -1;
+	}
 }
