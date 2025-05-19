@@ -276,7 +276,7 @@ public class Referee
 	 * @param size size of the board to which we want to
 	 * go back to.
 	 */
-	public void resetBoardless(final int size)
+	public void resetBoardless(final Context context, final int size)
 	{
 		Boardless board = (Boardless) context.game().board();
 		GraphFunction newGraphFunction = board.tiling() == TilingBoardlessType.Square
@@ -287,6 +287,7 @@ public class Referee
 		board.setDimension(size);
 
 		context.game().update();
+		GrowingBoard.resetMoves(context);
 		
 		// also reset initial moves to the initial plate, only if board changed size at least one time
 		if (GrowingBoard.mappedNewToInitIndexes() != null)
@@ -308,7 +309,10 @@ public class Referee
 	 * solution is to re-initialise all three of them using the 
 	 * same as in the class used to make grow the board. Another 
 	 * solution could be to make a deep copy of these elements. 
-	 *
+	 * 
+	 * TODO : bug - the game is not playable after this method has
+	 *  been run. assumption : visual needs to be refresh
+	 *  
 	 * @return Average number of playouts per second.
 	 */
 	public double timeRandomPlayoutsBoardless()
@@ -329,9 +333,9 @@ public class Referee
 			game.start(timingContext, true);
 			game.playout(timingContext, null, 1.0, null, 0, -1, ThreadLocalRandom.current());
 			stopAt = System.nanoTime();
-			
-			resetBoardless(initialBoardSize);
-		}
+
+			resetBoardless(timingContext, initialBoardSize);
+		}		
 
 		stopAt = 0;
 		System.gc();
@@ -346,8 +350,8 @@ public class Referee
 			stopAt = System.nanoTime();
 			moveDone += timingContext.trial().numMoves();
 			playouts++;
-			
-			resetBoardless(initialBoardSize);
+
+			resetBoardless(timingContext, initialBoardSize);
 		}
 
 		final double secs = (stopAt - start) / 1000000000.0;

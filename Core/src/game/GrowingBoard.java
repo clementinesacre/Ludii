@@ -1323,7 +1323,7 @@ public class GrowingBoard
 	/** 
 	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
 	 */
-	protected static void resetMoves(Context context)
+	public static void resetMoves(Context context)
 	{
 		context.reset();
 		context.game().start(context, true);
