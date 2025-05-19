@@ -9,6 +9,7 @@ import game.equipment.component.tile.Tile;
 import game.equipment.container.other.Hand;
 import game.functions.dim.DimConstant;
 import game.functions.dim.DimFunction;
+import game.functions.graph.GraphFunction;
 import game.functions.graph.generators.basis.hex.HexagonOnHex;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.functions.graph.generators.basis.tri.TriangleOnTri;
@@ -146,6 +147,7 @@ public class Boardless extends Board
 	 * 
 	 * @return dimension of the board.
 	 */
+	@Override
 	public int dimension()
 	{
 		return this.dimension;
@@ -172,6 +174,53 @@ public class Boardless extends Board
 	public TilingBoardlessType tiling()
 	{
 		return this.tiling;
+	}
+	
+	/**
+	 * Update the graph function, and also update the size used 
+	 * to generate the new graph function.
+	 * Does not update the Topology as this method is expected 
+	 * to be called before the Topology is generated.
+	 * 
+	 * @param nbInitialTiles number of initial tiles placed 
+	 * on the board. The board should have a perimeter of one 
+	 * around these initial tiles.
+	 */
+	public void updateGraphFunction(int nbInitialTiles)
+	{
+		switch(this.tiling())
+		{
+			case Square:
+				if (nbInitialTiles == 0)
+					dimension = 1;
+				else
+					dimension = nbInitialTiles + Constants.GROWING_STEP_SQUARE_BOARDLESS;
+				break;
+			case Hexagonal:
+				if (nbInitialTiles % 2 == 0)
+					dimension = nbInitialTiles + Constants.GROWING_STEP_HEX_BOARDLESS;
+				else
+		        	dimension = nbInitialTiles;
+				break;
+			case Triangular:
+				if (nbInitialTiles == 0)
+					dimension = 1;
+				else
+				{
+					if (nbInitialTiles%2 == 0)
+						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS + 1;
+					else
+						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+				}
+				break;
+			default:
+		}
+
+		GraphFunction newGraphFunction = this.tiling() == TilingBoardlessType.Square
+				? new RectangleOnSquare(new DimConstant(dimension), null, null, null) : this.tiling() == TilingBoardlessType.Hexagonal 
+				? new HexagonOnHex(new DimConstant(dimension)) : new TriangleOnTri(new DimConstant(dimension));
+					
+		graphFunction = newGraphFunction;
 	}
 	
 }

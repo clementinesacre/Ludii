@@ -3098,17 +3098,20 @@ public class Game extends BaseLudeme implements API, Serializable
 			if (context.state().isDecided() != Constants.UNDEFINED)
 				context.state().setIsDecided(Constants.UNDEFINED);
 			
-			if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time + only boardless game
-				GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-
-
-			if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
+			if (board().isBoardless())
 			{
-				if (!GrowingBoard.isVisual)
-					GrowingBoard.checkMoveImpactOnBoard2(context, move, 1, true);
-				GrowingBoard.updateChunksAndOwned(context);
-				GrowingBoard.redoneAllButLast(context);
-				GrowingBoard.generateNewMove(move, true);
+				if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time + only boardless game
+					GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+	
+	
+				if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
+				{
+					if (!GrowingBoard.isVisual)
+						GrowingBoard.checkMoveImpactOnBoard2(context, move, 1, true);
+					GrowingBoard.updateChunksAndOwned(context);
+					GrowingBoard.redoneAllButLast(context);
+					GrowingBoard.generateNewMove(move, true);
+				}
 			}
 			
 			Move moveDone = applyInternal(context, move, skipEndRules);
