@@ -556,6 +556,52 @@ public class Compiler
 		
 		final Object result = rootClass.compile(clsRoot, (isVerbose ? 0 : -1), report, callTree, hasCompiled);
 				
+		// updating board size in case of boardless - size will be based on the number of initial tiles
+		if (result.getClass().getName().equals("game.Game")) {
+			 try {
+				 Method methodEquipment = result.getClass().getMethod("equipment");				 
+				 Object equipment = methodEquipment.invoke(result);
+				 
+				 Method methodItemsToCreate = equipment.getClass().getMethod("itemsToCreate");
+				 Object[] itemsToCreate = (Object[]) methodItemsToCreate.invoke(equipment);
+				 
+				 Object board = itemsToCreate[0];
+				 if (board.getClass().getName().equals("game.equipment.container.board.Boardless")) 
+				 {
+					 Method methodRules = result.getClass().getMethod("rules");				 
+					 Object rules = methodRules.invoke(result);
+					 
+					 Method methodStart = rules.getClass().getMethod("start");				 
+					 Object start = methodStart.invoke(rules);
+					 
+					 Method methodStartRules = start.getClass().getMethod("rules");				 
+					 Object[] startRules = (Object[]) methodStartRules.invoke(start);
+					 //System.out.println("Compiler.java compileTask() startRules : "+Arrays.toString(startRules));
+					 int count = 0;
+					 for (int i=0; i<startRules.length; i++)
+						 if (startRules[i].getClass().getName().equals("game.rules.start.place.item.PlaceItem")) 
+						 {
+							 Method methodContainer = startRules[i].getClass().getMethod("container");	
+							 Method methodAt = startRules[i].getClass().getMethod("posn");	
+							 //System.out.println("Compiler.java compileTask() methodAt : "+methodAt.invoke(startRules[i])+" - methodContainer : "+methodContainer.invoke(startRules[i]));
+							 // make sure the piece is placed on the main board
+							 if (methodContainer.invoke(startRules[i]) == null && (methodAt.invoke(startRules[i]) == null || !methodAt.invoke(startRules[i]).getClass().getName().equals("game.functions.ints.board.HandSite"))) 
+							 {
+								 count += 1;
+							 }
+						 }
+
+					 //System.out.println("Compiler.java compileTask() arrive ici count : "+count);
+					 Method methodUpdateGraphFunction = board.getClass().getMethod("updateGraphFunction", int.class);				 
+					 methodUpdateGraphFunction.invoke(board, count);
+				 }
+			 }
+			 catch (final Exception e)
+			 {
+				 e.printStackTrace();
+			 }
+		}
+						
 		// Check fragments that did not compile
 		for (final Map.Entry<String, Boolean> entry : hasCompiled.entrySet()) 
 		{
