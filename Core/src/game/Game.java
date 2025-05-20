@@ -20,6 +20,7 @@ import org.apache.commons.rng.RandomProviderState;
 
 import annotations.Hide;
 import annotations.Opt;
+import game.boardless.GrowingBoard;
 //import app.PlayerApp;
 import game.equipment.Equipment;
 import game.equipment.Item;

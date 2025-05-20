@@ -1,4 +1,4 @@
-package app.move;
+package app.boardless;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import app.PlayerApp;
 import app.utils.GameUtil;
 import app.utils.MVCSetup;
 import game.Game;
-import game.GrowingBoard;
+import game.boardless.GrowingBoard;
 import game.equipment.container.board.Boardless;
 import game.rules.play.moves.Moves;
 import main.Constants;
@@ -111,7 +111,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		initMainConstants(context, fromSize, toSize);
 
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
+		System.out.println("GrowingBoardVisual.java updateBoardWithoutRemakeTrial() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
 		updateBoardDimensions(app, board, toSize);
 		perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 	}
@@ -147,7 +147,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
 		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
 		for (int i=0; i<((FlatCellOnlyOwned) context.state().owned()).locations().length; i++)
-			System.out.println("GrowingBoard.java updateOwnedPrevToNew() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
+			System.out.println("GrowingBoard.java displayInfo() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
 		System.out.println("\n\n");
 	}
 	

@@ -1,4 +1,4 @@
-package game;
+package game.boardless;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import game.Game;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
@@ -61,9 +62,7 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> mappedInitToNewIndexes;
 	private static HashMap<Integer, Integer> mappedNewToInitIndexes;
 	private static HashSet<Integer> surplusInitIndexes; // indexes that are being added from init board to new one
-	
-	private static int growingStep; // step from which the board will be growing / shrinking
-	
+		
 	// Remember information about the initial plate in case of hexagonal board
 	private static HashMap<Integer, Integer> initMaxPerColRow;
 	private static HashMap<Integer, Integer> initMinPerColRow;
@@ -78,9 +77,9 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMaxRowPerCol;
 	
 	public static List<TopologyElement> perimeter;
-	protected static boolean isVisual;
+	public static boolean isVisual;
 	
-	protected static List<Move> movesDone;
+	public static List<Move> movesDone;
 	//--------------------------------Getters----------------------------------
 	
 	public static HashMap<Integer, Integer> mappedPrevToNewIndexes()
@@ -213,14 +212,16 @@ public class GrowingBoard
 		return initMaxRowPerCol;
 	}
 	
+	/**
+	 * 
+	 * @param context
+	 * @return step(s) from which the board will be growing / shrinking
+	 */
 	public static int growingStep(Context context)
 	{
-		if (growingStep != 0)
-			return growingStep;
-		else
-			return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
-			? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
-			? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+		return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
+		? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
+		? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 	}
 	
 	//----------------------------Initialization-------------------------------
@@ -250,9 +251,7 @@ public class GrowingBoard
 		mappedInitToNewIndexes = null;
 		mappedNewToInitIndexes = null;
 		surplusInitIndexes = null;
-		
-		growingStep = 0;
-		
+				
 		initMaxPerColRow = null;
 		initMinPerColRow = null;
 		initRowsSizeCumul = null;
@@ -354,9 +353,6 @@ public class GrowingBoard
 		}
 		
 		initTotalIndexes = initAreaBoard()+context.sitesFrom().length-1;
-		growingStep = ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
-				? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
-				? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 	}
 	
 	/** 
@@ -1284,12 +1280,12 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateChunksAndOwned(Context context) 
+	public static void updateChunksAndOwned(Context context) 
 	{	
 		remakeTrial(context, null, null, false);
 	}
 	
-	protected static void redoneAllButLast(Context context)
+	public static void redoneAllButLast(Context context)
 	{
 		
 		/*for (int i=0; i<movesDone.size(); i++) 

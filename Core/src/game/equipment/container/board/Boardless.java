@@ -5,8 +5,6 @@ import java.util.BitSet;
 import annotations.Name;
 import annotations.Opt;
 import game.Game;
-import game.equipment.component.tile.Tile;
-import game.equipment.container.other.Hand;
 import game.functions.dim.DimConstant;
 import game.functions.dim.DimFunction;
 import game.functions.graph.GraphFunction;
@@ -215,6 +213,8 @@ public class Boardless extends Board
 				break;
 			default:
 		}
+		
+		this.initDimension = dimension;
 
 		GraphFunction newGraphFunction = this.tiling() == TilingBoardlessType.Square
 				? new RectangleOnSquare(new DimConstant(dimension), null, null, null) : this.tiling() == TilingBoardlessType.Hexagonal 

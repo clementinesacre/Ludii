@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.PlayerApp;
-import app.move.GrowingBoardVisual;
+import app.boardless.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.utils.SettingsExhibition;
 import app.views.View;

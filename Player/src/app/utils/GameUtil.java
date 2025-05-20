@@ -10,6 +10,7 @@ import app.move.MoveHandler;
 import app.move.animation.MoveAnimation;
 import compiler.Compiler;
 import game.Game;
+import game.boardless.GrowingBoard;
 import game.equipment.container.Container;
 import game.types.board.SiteType;
 import game.types.play.RoleType;

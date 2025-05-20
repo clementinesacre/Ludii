@@ -27,7 +27,7 @@ import features.generation.AtomicFeatureGenerator;
 import features.spatial.SpatialFeature;
 import function_approx.LinearFunction;
 import game.Game;
-import game.GrowingBoard;
+import game.boardless.GrowingBoard;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;

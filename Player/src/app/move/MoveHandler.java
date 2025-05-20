@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import app.PlayerApp;
+import app.boardless.GrowingBoardVisual;
 import app.utils.PuzzleSelectionType;
 import game.equipment.component.Component;
 import game.equipment.container.board.Boardless;
