@@ -476,6 +476,8 @@ public class GrowingBoard
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();	
 	
+		int nbOtherContainers = context.sitesFrom().length-1;
+		int nbCells = context.topology().cells().size();
 		int newNbrRowsOrCols = (newDimensionBoard()*2)-1;
 		ArrayList<Integer> newRowsSizeCumul = new ArrayList<Integer>();
 		newRowsSizeCumul.add(0);
@@ -496,6 +498,13 @@ public class GrowingBoard
 				int newIndex = coordToIndexHex(newRow, newCol, newRowsSizeCumul.get(newRow), newDimensionBoard());
 				mappedPrevToNewIndexes().put(prevIndex.index(), newIndex);
 				mappedNewToPrevIndexes().put(newIndex, prevIndex.index());
+			}
+			// mapping container outside of the board
+			for (int i=nbCells; i<nbCells+nbOtherContainers; i++)
+			{
+				int newIndex = i + diff();
+				mappedPrevToNewIndexes().put(i, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, i);
 			}
 			for (int i = 0; i < newTotalIndexes(); i++)
 				if (!mappedNewToPrevIndexes().containsKey(i))
@@ -523,6 +532,13 @@ public class GrowingBoard
 					mappedNewToPrevIndexes().put(newIndex, prevIndex.index());
 				}
 			}
+			// mapping container outside of the board
+			for (int i=nbCells; i<nbCells+nbOtherContainers; i++)
+			{
+				int newIndex = i - diff();
+				mappedPrevToNewIndexes().put(i, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, i);
+			}
 			for (int i = 0; i < prevTotalIndexes(); i++)
 				if (!mappedPrevToNewIndexes().containsKey(i))
 					surplusIndexes().add(i);
@@ -546,6 +562,14 @@ public class GrowingBoard
 					mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
 					mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
 				}
+		}
+		// mapping container outside of the board
+		int prevIndex = mappedInitToNewIndexes().size();
+		for (int i=prevIndex; i<prevIndex+nbOtherContainers; i++)
+		{
+			int newIndex = i + diffInit();
+			mappedInitToNewIndexes().put(i, newIndex);
+			mappedNewToInitIndexes().put(newIndex, i);
 		}
 		for (int i = 0; i < newTotalIndexes(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
@@ -747,6 +771,10 @@ public class GrowingBoard
 	 * @param futureDimensionBoard dimension of the new board (size of one side of the board).
 	 */
 	public static void initMainConstants(Context context, int currDimensionBoard, int futureDimensionBoard) {
+		
+		if (initDimensionBoard() == 0)
+			initInitConstants(context, currDimensionBoard);
+		
 		prevDimensionBoard = currDimensionBoard;
 		newDimensionBoard = futureDimensionBoard;
 		
@@ -779,8 +807,6 @@ public class GrowingBoard
 
 		diffInit = newAreaBoard() - initAreaBoard();
 		
-		if (initDimensionBoard() == 0)
-			initInitConstants(context, currDimensionBoard);
 		
 		initMappingIndexes(context);
 		
