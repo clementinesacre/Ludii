@@ -153,7 +153,7 @@ public final class PlayoutsPerSec
 				GrowingBoard.generateNewMove(m, false, UpdateBoard.mappedNewToInitIndexes());
 		}
 		
-		GrowingBoard.reset(context);
+		GrowingBoard.reset();
 	}
 	
 	/**

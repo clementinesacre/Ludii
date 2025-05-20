@@ -96,8 +96,8 @@ public abstract class BoardlessAbstract
 	
 	//-------------------------------------------------------------------------
 	
-	public void initFromScratch(Context context)
-	{	
+	public void reset()
+	{
 		addedCellsSinceInit = new ArrayList<List<Integer>>();
 		addedVerticesSinceInit = new ArrayList<List<Integer>>();
 		addedEdgesSinceInit = new ArrayList<List<Integer>>();
@@ -106,6 +106,15 @@ public abstract class BoardlessAbstract
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
+		
+		mappedInitToNewIndexesHistory = new ArrayList<HashMap<Integer, Integer>>();
+		mappedNewToInitIndexesHistory = new ArrayList<HashMap<Integer, Integer>>();
+		surplusInitIndexesHistory = new ArrayList<HashSet<Integer>>();
+	}
+	
+	public void initFromScratch(Context context)
+	{	
+		reset();
 		
 		int nbCells = context.board().graph().faces().size();
 		for (int i=0; i<nbCells; i++)
@@ -119,10 +128,6 @@ public abstract class BoardlessAbstract
 			mappedInitToNewIndexes.put(i, i);
 			mappedNewToInitIndexes.put(i, i);
 		}
-		
-		mappedInitToNewIndexesHistory = new ArrayList<HashMap<Integer, Integer>>();
-		mappedNewToInitIndexesHistory = new ArrayList<HashMap<Integer, Integer>>();
-		surplusInitIndexesHistory = new ArrayList<HashSet<Integer>>();
 	}
 	
 	public void init(Context context)

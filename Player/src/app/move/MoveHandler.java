@@ -4,8 +4,8 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 
 import app.PlayerApp;
+import app.boardless.GrowingBoardVisual;
 import app.utils.PuzzleSelectionType;
-import boardless.GrowingBoardVisual;
 import game.equipment.component.Component;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;

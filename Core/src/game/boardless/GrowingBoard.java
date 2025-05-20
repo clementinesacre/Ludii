@@ -40,11 +40,10 @@ public class GrowingBoard
 	
 	/**
 	 * Reset attributes of the class.
-	 * @param context 
 	 */
-	public static void reset(Context context)
+	public static void reset()
 	{
-		UpdateBoard.reset(context);
+		UpdateBoard.reset();
 		
 		perimeter = null;
 		isVisual = false;

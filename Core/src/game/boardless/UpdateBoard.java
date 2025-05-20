@@ -54,12 +54,13 @@ public class UpdateBoard
 	
 	//--------------------------------------------------------------------------
 	
-	public static void reset(Context context)
+	public static void reset()
 	{
 		if (mappingBoardlessBoard != null)
 		{
 			mappingBoardlessBoard.firsTime = true;
-			mappingBoardlessBoard.initFromScratch(context);
+			mappingBoardlessBoard.reset();
+			mappingBoardlessBoard = null;
 		}
 	}
 	

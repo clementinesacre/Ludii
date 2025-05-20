@@ -1,4 +1,4 @@
-package boardless;
+package app.boardless;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
@@ -192,10 +192,8 @@ public class GrowingBoardVisual extends GrowingBoard
 
 				Trial trial = context.trial();
 				movesDone = trial.generateCompleteMovesList();
-				System.out.println("GrwingBoardVisual.java checkMoveImpactOnBoard2() movesDone1 : "+movesDone);
 				if (replayMoves) // TODO does not change if we call it or not - test that
 					resetMoves(app);
-				System.out.println("GrwingBoardVisual.java checkMoveImpactOnBoard2() movesDone2 : "+movesDone);
 				
 				//remakeTrial(context, movesDone, legalMoves, replayMoves);
 			}

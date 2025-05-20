@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import app.PlayerApp;
+import app.boardless.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.utils.SettingsExhibition;
 import app.views.View;
@@ -21,7 +22,6 @@ import app.views.tools.buttons.ButtonQuit;
 import app.views.tools.buttons.ButtonSettings;
 import app.views.tools.buttons.ButtonShow;
 import app.views.tools.buttons.ButtonStart;
-import boardless.GrowingBoardVisual;
 import main.Constants;
 import other.concept.Concept;
 import other.context.Context;
