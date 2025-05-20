@@ -477,7 +477,9 @@ public class GrowingBoard
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();	
-	
+		
+		int nbOtherContainers = context.sitesFrom().length-1;
+		int nbCells = context.topology().cells().size();
 		int newNbrRowsOrCols = (newDimensionBoard()*2)-1;
 		ArrayList<Integer> newRowsSizeCumul = new ArrayList<Integer>();
 		newRowsSizeCumul.add(0);
@@ -498,6 +500,13 @@ public class GrowingBoard
 				int newIndex = coordToIndexHex(newRow, newCol, newRowsSizeCumul.get(newRow), newDimensionBoard());
 				mappedPrevToNewIndexes().put(prevIndex.index(), newIndex);
 				mappedNewToPrevIndexes().put(newIndex, prevIndex.index());
+			}
+			// mapping container outside of the board
+			for (int i=nbCells; i<nbCells+nbOtherContainers; i++)
+			{
+				int newIndex = i + diff();
+				mappedPrevToNewIndexes().put(i, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, i);
 			}
 			for (int i = 0; i < newTotalIndexes(); i++)
 				if (!mappedNewToPrevIndexes().containsKey(i))
@@ -545,6 +554,13 @@ public class GrowingBoard
 					}
 				}
 			}
+			// mapping container outside of the board
+			for (int i=nbCells; i<nbCells+nbOtherContainers; i++)
+			{
+				int newIndex = i - diff();
+				mappedPrevToNewIndexes().put(i, newIndex);
+				mappedNewToPrevIndexes().put(newIndex, i);
+			}
 			for (int i = 0; i < prevTotalIndexes(); i++)
 				if (!mappedPrevToNewIndexes().containsKey(i))
 					surplusIndexes().add(i);
@@ -568,6 +584,14 @@ public class GrowingBoard
 					mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
 					mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
 				}
+		}
+		// mapping container outside of the board
+		int prevIndex = mappedInitToNewIndexes().size();
+		for (int i=prevIndex; i<prevIndex+nbOtherContainers; i++)
+		{
+			int newIndex = i + diffInit();
+			mappedInitToNewIndexes().put(i, newIndex);
+			mappedNewToInitIndexes().put(newIndex, i);
 		}
 		for (int i = 0; i < newTotalIndexes(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
@@ -740,6 +764,10 @@ public class GrowingBoard
 	 * @param futureDimensionBoard dimension of the new board (size of one side of the board).
 	 */
 	protected static void initMainConstants(Context context, int currDimensionBoard, int futureDimensionBoard) {
+
+		if (initDimensionBoard() == 0)
+			initInitConstants(context, currDimensionBoard);
+		
 		prevDimensionBoard = currDimensionBoard;
 		newDimensionBoard = futureDimensionBoard; 
 		
@@ -772,28 +800,7 @@ public class GrowingBoard
 
 		diffInit = newAreaBoard() - initAreaBoard();
 		
-		if (initDimensionBoard() == 0)
-			initInitConstants(context, currDimensionBoard);
-		
 		initMappingIndexes(context);
-		
-		/*System.out.println("GrowingBoard.java initMainConstants() mappedNewToPrevIndexes() : "+mappedNewToPrevIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() mappedPrevToNewIndexes() : "+mappedPrevToNewIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() surplusIndexes() : "+surplusIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() prevDimensionBoard() : "+prevDimensionBoard());
-		System.out.println("GrowingBoard.java initMainConstants() prevAreaBoard() : "+prevAreaBoard());
-		System.out.println("GrowingBoard.java initMainConstants() prevTotalIndexes() : "+prevTotalIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() newDimensionBoard() : "+newDimensionBoard());
-		System.out.println("GrowingBoard.java initMainConstants() newAreaBoard() : "+newAreaBoard());
-		System.out.println("GrowingBoard.java initMainConstants() newTotalIndexes() : "+newTotalIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() diff() : "+diff());
-		System.out.println("GrowingBoard.java initMainConstants() initDimensionBoard() : "+initDimensionBoard());
-		System.out.println("GrowingBoard.java initMainConstants() initAreaBoard() : "+initAreaBoard());
-		System.out.println("GrowingBoard.java initMainConstants() initTotalIndexes() : "+initTotalIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() diffInit() : "+diffInit());
-		System.out.println("GrowingBoard.java initMainConstants() mappedNewToInitIndexes() : "+mappedNewToInitIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() mappedInitToNewIndexes() : "+mappedInitToNewIndexes());
-		System.out.println("GrowingBoard.java initMainConstants() surplusInitIndexes() : "+surplusInitIndexes());*/
 	}
 	
 	/** 
