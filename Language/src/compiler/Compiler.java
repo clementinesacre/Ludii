@@ -613,7 +613,7 @@ public class Compiler
 		
 		final Object result = rootClass.compile(clsRoot, (isVerbose ? 0 : -1), report, callTree, hasCompiled);
 				
-
+		if (result.getClass().getName().equals("game.Game")) {
 			 updateInitialBoardlessSize(result);
 		}
 						
