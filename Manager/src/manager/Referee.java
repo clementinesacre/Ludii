@@ -289,7 +289,7 @@ public class Referee
 		context.game().update();
 		GrowingBoard.resetMoves(context);
 		
-		GrowingBoard.reset(context);
+		GrowingBoard.reset();
 	}
 	
 	/**

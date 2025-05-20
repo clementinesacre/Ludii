@@ -145,7 +145,7 @@ public final class PlayoutsPerSec
 		context.game().update();
 		GrowingBoard.resetMoves(context);
 		
-		GrowingBoard.reset(context);
+		GrowingBoard.reset();
 	}
 	
 	/**

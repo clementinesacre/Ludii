@@ -65,8 +65,6 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> mappedNewToInitIndexes;
 	private static HashSet<Integer> surplusInitIndexes; // indexes that are being added from init board to new one
 	
-	private static int growingStep; // step from which the board will be growing / shrinking
-	
 	// Remember information about the initial plate in case of hexagonal board
 	private static HashMap<Integer, Integer> initMaxPerColRow;
 	private static HashMap<Integer, Integer> initMinPerColRow;
@@ -217,12 +215,14 @@ public class GrowingBoard
 		return initMaxRowPerCol;
 	}
 	
+	/**
+	 * 
+	 * @param context
+	 * @return step(s) from which the board will be growing / shrinking
+	 */
 	public static int growingStep(Context context)
 	{
-		if (growingStep != 0)
-			return growingStep;
-		else
-			return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
+		return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
 			? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
 			? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 	}
@@ -231,9 +231,8 @@ public class GrowingBoard
 	
 	/**
 	 * Reset attributes of the class.
-	 * @param context 
 	 */
-	public static void reset(Context context)
+	public static void reset()
 	{
 		mappedPrevToNewIndexes = null;
 		mappedNewToPrevIndexes = null;
@@ -254,9 +253,7 @@ public class GrowingBoard
 		mappedInitToNewIndexes = null;
 		mappedNewToInitIndexes = null;
 		surplusInitIndexes = null;
-		
-		growingStep = 0;
-		
+				
 		initMaxPerColRow = null;
 		initMinPerColRow = null;
 		initRowsSizeCumul = null;
@@ -358,10 +355,6 @@ public class GrowingBoard
 		}
 		
 		initTotalIndexes = initAreaBoard()+context.sitesFrom().length-1;
-		growingStep = ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
-				? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
-				? Constants.GROWING_STEP_HEX_BOARDLESS : Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
-	
 	}
 	
 	/** 

@@ -1,4 +1,4 @@
-package games;
+package games.boardless;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import app.PlayerApp;
-import app.move.GrowingBoardVisual;
+import app.boardless.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.views.tools.ToolView;
 import game.Game;

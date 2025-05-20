@@ -1,4 +1,4 @@
-package games;
+package games.boardless;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -12,7 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import app.PlayerApp;
-import app.move.GrowingBoardVisual;
+import app.boardless.GrowingBoardVisual;
 import app.utils.GameUtil;
 import app.utils.UpdateTabMessages;
 import compiler.Compiler;

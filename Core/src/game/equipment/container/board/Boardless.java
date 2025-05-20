@@ -34,7 +34,7 @@ public class Boardless extends Board
 	private static final long serialVersionUID = 1L;
 	private int dimension;
 	private TilingBoardlessType tiling;
-	private final int initDimension;
+	private int initDimension;
 
 	//-------------------------------------------------------------------------
 
@@ -215,6 +215,7 @@ public class Boardless extends Board
 				break;
 			default:
 		}
+		this.initDimension = dimension;
 
 		GraphFunction newGraphFunction = this.tiling() == TilingBoardlessType.Square
 				? new RectangleOnSquare(new DimConstant(dimension), null, null, null) : this.tiling() == TilingBoardlessType.Hexagonal 

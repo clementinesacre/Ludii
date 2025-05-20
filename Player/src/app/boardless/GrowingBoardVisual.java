@@ -1,4 +1,4 @@
-package app.move;
+package app.boardless;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
