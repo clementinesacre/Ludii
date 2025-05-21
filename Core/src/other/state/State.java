@@ -11,6 +11,7 @@ import java.util.Objects;
 import annotations.Hide;
 import game.Game;
 import game.Game.StateConstructorLock;
+import game.boardless.GrowingBoard;
 import game.equipment.container.Container;
 import game.equipment.container.other.Dice;
 import game.functions.ints.last.LastFrom;
@@ -962,7 +963,6 @@ public class State implements Serializable
 		}
 		else
 		{
-			//isPlayable = game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell);
 			containerStates = new ContainerState[other.containerStates.length];
 			for (int is = 0; is < containerStates.length; is++)
 				if (other.containerStates[is] == null)
@@ -1057,10 +1057,12 @@ public class State implements Serializable
 				
 		if (other.valueMap != null)
 			valueMap = new TObjectIntHashMap<String>(other.valueMap);
-
-		//if (game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell) && !isPlayable)
-		if (game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell))
+		
+		// Only put center of the board as playable if there are no initial tile on it
+		if (game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell) && GrowingBoard.nbInitialTiles(game) == 0)
+		{
 			containerStates[0].setPlayable(this, game.board().topology().centre(SiteType.Cell).get(0).index(), true);
+		}
 		
 		stateHash = other.stateHash;
 		moverHash = other.moverHash;
