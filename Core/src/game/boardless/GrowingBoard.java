@@ -570,29 +570,39 @@ public class GrowingBoard
 		mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
-				    
-		int diffInitToPrevDimensionBoard = prevDimensionBoard() - initDimensionBoard();
-		int initMaxIndexRowOrCol = (initDimensionBoard()*2) - 2;
-		for (Cell prevIndex : context.topology().cells()) 
-		{ 
-			int newCol = prevIndex.col()-diffInitToPrevDimensionBoard;
-			int newRow = prevIndex.row()-diffInitToPrevDimensionBoard;
-			if (newCol >= 0 && newRow >= 0 && newCol <= initMaxIndexRowOrCol && newRow <= initMaxIndexRowOrCol)
-				if (newCol >= initMinPerColRow().get(newRow) && newRow >= initMinPerColRow().get(newCol) && newCol <= initMaxPerColRow().get(newRow) && newRow <= initMaxPerColRow().get(newCol)) 
-				{
-					int newIndex = coordToIndexHex(newRow, newCol, initRowsSizeCumul().get(newRow), initDimensionBoard());
-					mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
-					mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
-				}
-		}
-		// mapping container outside of the board
-		int prevIndex = mappedInitToNewIndexes().size();
-		for (int i=prevIndex; i<prevIndex+nbOtherContainers; i++)
+				
+		if (prevDimensionBoard() < newDimensionBoard() || prevDimensionBoard() == newDimensionBoard()) 
 		{
-			int newIndex = i + diffInit();
-			mappedInitToNewIndexes().put(i, newIndex);
-			mappedNewToInitIndexes().put(newIndex, i);
+			int diffInitToPrevDimensionBoard = prevDimensionBoard() - initDimensionBoard();
+			int initMaxIndexRowOrCol = (initDimensionBoard()*2) - 2;
+			for (Cell prevIndex : context.topology().cells()) 
+			{ 
+				int newCol = prevIndex.col()-diffInitToPrevDimensionBoard;
+				int newRow = prevIndex.row()-diffInitToPrevDimensionBoard;
+				if (newCol >= 0 && newRow >= 0 && newCol <= initMaxIndexRowOrCol && newRow <= initMaxIndexRowOrCol)
+					if (newCol >= initMinPerColRow().get(newRow) && newRow >= initMinPerColRow().get(newCol) && newCol <= initMaxPerColRow().get(newRow) && newRow <= initMaxPerColRow().get(newCol)) 
+					{
+						int newIndex = coordToIndexHex(newRow, newCol, initRowsSizeCumul().get(newRow), initDimensionBoard());
+						mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
+						mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
+					}
+			}
+			// mapping container outside of the board
+			int prevIndex = mappedInitToNewIndexes().size();
+			for (int i=prevIndex; i<prevIndex+nbOtherContainers; i++)
+			{
+				int newIndex = i + diffInit();
+				mappedInitToNewIndexes().put(i, newIndex);
+				mappedNewToInitIndexes().put(newIndex, i);
+			}
 		}
+		else
+			for (int i=0; i<initTotalIndexes(); i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+		
 		for (int i = 0; i < newTotalIndexes(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
 				surplusInitIndexes().add(i);
@@ -723,28 +733,38 @@ public class GrowingBoard
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
 		
-		int diffInitToPrevDimensionBoard = (prevDimensionBoard() - initDimensionBoard())/Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
-		for (Cell prevIndex : context.topology().cells()) 
-		{ 
-			int newCol = prevIndex.col()-(Constants.GROWING_STEP_TRIANGLE_BOARDLESS*diffInitToPrevDimensionBoard);
-			int newRow = prevIndex.row()-((Constants.GROWING_STEP_TRIANGLE_BOARDLESS-1)*diffInitToPrevDimensionBoard);
-			if (newCol >= 0 && newRow >= 0 && newCol <= initMaxIndexRowOrCol() && newRow <= initMaxIndexRowOrCol()) {
-				// make sure new coordinates exist on the smaller board
-				if (newCol >= initMinColPerRow().get(newRow) && newCol <= initMaxColPerRow().get(newRow) && (initMaxColPerRow().get(newRow)-newCol)%2 == 0 && newRow <= initMaxRowPerCol().get(newCol))
-				{
-					int newIndex = coordToIndexTriangle(newCol, initMinColPerRowList().get(newRow), initRowsSizeCumulTriangular().get(newRow));
-					mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
-					mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
+		if (prevDimensionBoard() < newDimensionBoard() || prevDimensionBoard() == newDimensionBoard()) 
+		{
+			int diffInitToPrevDimensionBoard = (prevDimensionBoard() - initDimensionBoard())/Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+			for (Cell prevIndex : context.topology().cells()) 
+			{ 
+				int newCol = prevIndex.col()-(Constants.GROWING_STEP_TRIANGLE_BOARDLESS*diffInitToPrevDimensionBoard);
+				int newRow = prevIndex.row()-((Constants.GROWING_STEP_TRIANGLE_BOARDLESS-1)*diffInitToPrevDimensionBoard);
+				if (newCol >= 0 && newRow >= 0 && newCol <= initMaxIndexRowOrCol() && newRow <= initMaxIndexRowOrCol()) {
+					// make sure new coordinates exist on the smaller board
+					if (newCol >= initMinColPerRow().get(newRow) && newCol <= initMaxColPerRow().get(newRow) && (initMaxColPerRow().get(newRow)-newCol)%2 == 0 && newRow <= initMaxRowPerCol().get(newCol))
+					{
+						int newIndex = coordToIndexTriangle(newCol, initMinColPerRowList().get(newRow), initRowsSizeCumulTriangular().get(newRow));
+						mappedInitToNewIndexes().put(newIndex, mappedPrevToNewIndexes().get(prevIndex.index()));
+						mappedNewToInitIndexes().put(mappedPrevToNewIndexes().get(prevIndex.index()), newIndex);
+					}
 				}
 			}
+			// creating map for the cells outside the main board
+			for (int prevIndex=initAreaBoard(); prevIndex<initTotalIndexes(); prevIndex++) 
+			{
+				int newIndex = prevIndex + diffInit();
+				mappedInitToNewIndexes().put(prevIndex, newIndex);
+				mappedNewToInitIndexes().put(newIndex, prevIndex);
+			}
 		}
-		// creating map for the cells outside the main board
-		for (int prevIndex=initAreaBoard(); prevIndex<initTotalIndexes(); prevIndex++) 
-		{
-			int newIndex = prevIndex + diffInit();
-			mappedInitToNewIndexes().put(prevIndex, newIndex);
-			mappedNewToInitIndexes().put(newIndex, prevIndex);
-		}
+		else
+			for (int i=0; i<initTotalIndexes(); i++)
+			{
+				mappedInitToNewIndexes().put(i, i);
+				mappedNewToInitIndexes().put(i, i);
+			}
+		
 		for (int i = 0; i < newTotalIndexes(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
 				surplusInitIndexes().add(i);
