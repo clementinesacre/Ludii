@@ -37,6 +37,7 @@ public class GrowingBoard
 	public static boolean isVisual;
 	
 	public static List<Move> movesDone;
+	private static int nbInitialTiles = -1;
 	
 	/**
 	 * Reset attributes of the class.
@@ -49,9 +50,22 @@ public class GrowingBoard
 		isVisual = false;
 		
 		movesDone = null;
+		nbInitialTiles = -1;
 	}
 	
 	//-------------------------------------------------------------------------
+	
+	/**
+	 * 
+	 * @param game
+	 * @return the number of initial tiles on the main board.
+	 */
+	public static int nbInitialTiles(Game game)
+	{
+		if (nbInitialTiles == -1)
+			nbInitialTiles = game.rules().start().nbInitialTilesOnBoard();
+		return nbInitialTiles;
+	}
 	
 	/**
 	 * Updates the content of the Topology to match the new board.

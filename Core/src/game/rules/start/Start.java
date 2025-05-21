@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import annotations.Or;
 import game.Game;
+import game.functions.ints.IntFunction;
+import game.rules.start.place.item.PlaceItem;
 import game.types.board.SiteType;
 import other.BaseLudeme;
 import other.action.BaseAction;
@@ -83,6 +85,25 @@ public class Start extends BaseLudeme implements Serializable
 	{
 		for (final StartRule rule : rules)
 			rule.eval(context);
+	}
+	
+	/**
+	 * 
+	 * @return the number of initial tiles on the main board.
+	 */
+	public int nbInitialTilesOnBoard()
+	{
+		int count = 0;
+		for (int i=0; i<rules.length; i++)
+			 if (rules[i].getClass().getName().equals("game.rules.start.place.item.PlaceItem")) 
+			 {
+				 String container = ((PlaceItem) rules[i]).container();
+				 IntFunction posn = ((PlaceItem) rules[i]).posn();
+				 // make sure the piece is placed on the main board
+				 if (container == null && (posn == null || !posn.getClass().getName().equals("game.functions.ints.board.HandSite")))
+					 count += 1;
+			 }
+		return count;
 	}
 
 	//-------------------------------------------------------------------------
