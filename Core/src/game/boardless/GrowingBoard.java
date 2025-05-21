@@ -424,33 +424,24 @@ public class GrowingBoard
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
 		
-		if (prevDimensionBoard() < newDimensionBoard() || prevDimensionBoard() == newDimensionBoard()) 
+		int newIndex;
+		for (int prevIndex = 0; prevIndex < initTotalIndexes(); prevIndex++)
 		{
-			int newIndex;
-			for (int prevIndex = 0; prevIndex < initTotalIndexes(); prevIndex++)
+			if (prevIndex < initAreaBoard())
 			{
-				if (prevIndex < initAreaBoard())
-				{
-					int col = prevIndex%initDimensionBoard();
-					int line = prevIndex/initDimensionBoard();
-					int offset = (newDimensionBoard()-initDimensionBoard())/2;
-	
-					int mCol = col + offset;
-					int mLine = line + offset;
-					newIndex = mLine * newDimensionBoard() + mCol;
-				}
-				else
-					newIndex = prevIndex + diffInit();
-				mappedInitToNewIndexes().put(prevIndex, newIndex);
-				mappedNewToInitIndexes().put(newIndex, prevIndex);
+				int col = prevIndex%initDimensionBoard();
+				int line = prevIndex/initDimensionBoard();
+				int offset = (newDimensionBoard()-initDimensionBoard())/2;
+
+				int mCol = col + offset;
+				int mLine = line + offset;
+				newIndex = mLine * newDimensionBoard() + mCol;
 			}
+			else
+				newIndex = prevIndex + diffInit();
+			mappedInitToNewIndexes().put(prevIndex, newIndex);
+			mappedNewToInitIndexes().put(newIndex, prevIndex);
 		}
-		else
-			for (int i=0; i<initTotalIndexes(); i++)
-			{
-				mappedInitToNewIndexes().put(i, i);
-				mappedNewToInitIndexes().put(i, i);
-			}
 		
 		for (int i = 0; i < newTotalIndexes(); i++)
 			if (!mappedNewToInitIndexes().containsKey(i))
