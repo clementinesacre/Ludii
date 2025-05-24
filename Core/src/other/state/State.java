@@ -956,11 +956,8 @@ public class State implements Serializable
 		triggered = other.triggered;
 		stalemated = other.stalemated;
 
-		boolean isPlayable = false;
 		if (other.containerStates == null)
-		{
 			containerStates = null;
-		}
 		else
 		{
 			containerStates = new ContainerState[other.containerStates.length];
@@ -1060,9 +1057,7 @@ public class State implements Serializable
 		
 		// Only put center of the board as playable if there are no initial tile on it
 		if (game.isBoardless() && containerStates[0].isEmpty(game.board().topology().centre(SiteType.Cell).get(0).index(), SiteType.Cell) && GrowingBoard.nbInitialTiles(game) == 0)
-		{
 			containerStates[0].setPlayable(this, game.board().topology().centre(SiteType.Cell).get(0).index(), true);
-		}
 		
 		stateHash = other.stateHash;
 		moverHash = other.moverHash;

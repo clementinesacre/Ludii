@@ -143,6 +143,7 @@ public final class PlayoutsPerSec
 		board.setDimension(size);
 
 		context.game().update();
+		GrowingBoard.resetMoves(context);
 		
 		// also reset initial moves to the initial plate, only if board changed size at least one time
 		if (GrowingBoard.mappedNewToInitIndexes() != null)
