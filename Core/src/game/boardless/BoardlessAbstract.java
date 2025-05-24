@@ -9,6 +9,7 @@ import java.util.List;
 
 import game.equipment.container.Container;
 import game.equipment.container.board.Board;
+import game.types.board.SiteType;
 import game.util.graph.Edge;
 import game.util.graph.Face;
 import game.util.graph.Graph;
@@ -123,7 +124,10 @@ public abstract class BoardlessAbstract
 			mappedNewToInitIndexes.put(i, i);
 		}
 		// adding ids for the other containers than the board
-		for (int i=nbCells; i<nbCells+context.containers().length-1; i++)
+		int nbContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
+		for (int i=nbCells; i<nbCells+nbContainers; i++)
 		{
 			mappedInitToNewIndexes.put(i, i);
 			mappedNewToInitIndexes.put(i, i);
@@ -309,7 +313,6 @@ public abstract class BoardlessAbstract
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
-		Container[] containers = context.containers();
 		
 		calculateNewGraphElements(graph);
 		
@@ -368,7 +371,9 @@ public abstract class BoardlessAbstract
 		}
 
 		// map other containers that board TODO what if multiple cells inside a hand ? 
-		int nbContainers = containers.length-1;
+		int nbContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
 		int nbNewIndexes = surplusIndexes.size();
 		int nbNewIndexesSinceInit = surplusInitIndexes.size();
 		
@@ -421,7 +426,9 @@ public abstract class BoardlessAbstract
 	{
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		int nbCells = context.board().graph().faces().size();
-		int nbContainers = context.containers().length-1;
+		int nbContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
 		for (int i=0; i<nbCells+nbContainers; i++)
 			mappedPrevToNewIndexes.put(i, i);
 		
@@ -482,7 +489,6 @@ public abstract class BoardlessAbstract
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
-		Container[] containers = context.containers();
 		
 		init(context);
 		
@@ -512,7 +518,9 @@ public abstract class BoardlessAbstract
 		}
 		
 		// also map indexes for the other containers that the board
-		int nbContainers = containers.length-1;
+		int nbContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
 		int nbNewIndexes = surplusIndexes.size();
 		int nbNewIndexesSinceInit = mappedPrevToNewIndexes.size();
 		for (int i=0; i<nbContainers; i++)
@@ -561,7 +569,9 @@ public abstract class BoardlessAbstract
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
-		Container[] containers = context.containers();
+		int nbContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
 		
 		init(context);
 		
@@ -579,8 +589,7 @@ public abstract class BoardlessAbstract
 			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 			surplusInitIndexes = new HashSet<Integer>();
-			int otherContainer = containers.length-1;
-			for (int i=0; i<initialNbCells+otherContainer; i++)
+			for (int i=0; i<initialNbCells+nbContainers; i++)
 			{
 				mappedInitToNewIndexes.put(i, i);
 				mappedNewToInitIndexes.put(i, i);
@@ -600,8 +609,7 @@ public abstract class BoardlessAbstract
 			mappedInitToNewIndexes = new HashMap<Integer, Integer>();
 			mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 			surplusInitIndexes = new HashSet<Integer>();
-			int otherContainer = containers.length-1;
-			for (int i=0; i<initialNbCells+otherContainer; i++)
+			for (int i=0; i<initialNbCells+nbContainers; i++)
 			{
 				mappedInitToNewIndexes.put(i, i);
 				mappedNewToInitIndexes.put(i, i);

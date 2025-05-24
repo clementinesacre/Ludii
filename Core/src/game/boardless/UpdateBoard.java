@@ -92,7 +92,6 @@ public class UpdateBoard
 					throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 			}
 
-		//System.out.println("UpdateBoard.java createMappings() graph before : "+context.board().graph());
 		switch(boardSizeChange) 
 		{
 			case 1:
@@ -116,7 +115,6 @@ public class UpdateBoard
 				// code block
 		}
 
-		//System.out.println("UpdateBoard.java createMappings() graph after : "+context.board().graph());
 		mappingBoardlessBoard().updateNewTotalIndexesCells();
 	}
 }
