@@ -2475,16 +2475,20 @@ public class Game extends BaseLudeme implements API, Serializable
 
 			final String componentName = component.name();
 			final RoleType role = component.role();
-
-			// Not for the puzzle, not for a domino or a die
-			if (players.count() != 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
-				if (role == RoleType.Neutral || (role.owner() > 0 && role.owner() <= Constants.MAX_PLAYERS))
-					component.setName(componentName + role.owner());
-
-			// For puzzle we modify the name only if the role is equal to Neutral
-			if (players.count() == 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
-				if (role == RoleType.Neutral)
-					component.setName(componentName + role.owner());
+			
+			// only add owner id after the name of the component if its not done already (= component name does not end with a number)
+			if (!componentName.matches(".*\\d$"))
+			{
+				// Not for the puzzle, not for a domino or a die
+				if (players.count() != 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
+					if (role == RoleType.Neutral || (role.owner() > 0 && role.owner() <= Constants.MAX_PLAYERS))
+						component.setName(componentName + role.owner());
+	
+				// For puzzle we modify the name only if the role is equal to Neutral
+				if (players.count() == 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
+					if (role == RoleType.Neutral)
+						component.setName(componentName + role.owner());
+			}
 		}
 
 		// We build the tracks and compute the maps
