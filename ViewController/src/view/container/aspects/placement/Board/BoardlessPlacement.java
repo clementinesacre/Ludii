@@ -38,24 +38,27 @@ public class BoardlessPlacement extends BoardPlacement
 	public List<Cell> drawnCells()
 	{
 		final List<Cell> drawnCells = new ArrayList<Cell>();
-		for (final Cell vOri : topology().cells())
-		{			
-			if (currentState.containerStates()[0].isPlayable(vOri.index()) || currentState.containerStates()[0].isOccupied(vOri.index()))
-			{
-				final Cell newCell = zoomedCells.get(vOri.index());
-				final ArrayList<Vertex> newVertices = new ArrayList<>();
-				for (final Vertex v : vOri.vertices())
+		if (currentState != null)
+		{
+			for (final Cell vOri : topology().cells())
+			{			
+				if (currentState.containerStates()[0].isPlayable(vOri.index()) || currentState.containerStates()[0].isOccupied(vOri.index()))
 				{
-					newVertices.add(zoomedVertices.get(v.index()));
+					final Cell newCell = zoomedCells.get(vOri.index());
+					final ArrayList<Vertex> newVertices = new ArrayList<>();
+					for (final Vertex v : vOri.vertices())
+					{
+						newVertices.add(zoomedVertices.get(v.index()));
+					}
+					newCell.setVertices(newVertices);
+					drawnCells.add(newCell);
 				}
-				newCell.setVertices(newVertices);
-				drawnCells.add(newCell);
-			}
-			else
-			{
-				final Cell newCell = new Cell(vOri.index(), Constants.UNDEFINED, Constants.UNDEFINED,
-						Constants.UNDEFINED);
-				drawnCells.add(newCell);
+				else
+				{
+					final Cell newCell = new Cell(vOri.index(), Constants.UNDEFINED, Constants.UNDEFINED,
+							Constants.UNDEFINED);
+					drawnCells.add(newCell);
+				}
 			}
 		}
 		
