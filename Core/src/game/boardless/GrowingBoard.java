@@ -354,7 +354,7 @@ public class GrowingBoard
 			throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 		}
 		
-		initTotalIndexes = initAreaBoard()+context.sitesFrom().length-1;
+		initTotalIndexes = context.game().equipment().offset().length;
 	}
 	
 	/** 
@@ -478,8 +478,8 @@ public class GrowingBoard
 		mappedNewToPrevIndexes = new HashMap<Integer, Integer>();
 		surplusIndexes = new HashSet<Integer>();	
 		
-		int nbOtherContainers = context.sitesFrom().length-1;
 		int nbCells = context.topology().cells().size();
+		int nbOtherContainers = prevTotalIndexes() - nbCells;
 		int newNbrRowsOrCols = (newDimensionBoard()*2)-1;
 		ArrayList<Integer> newRowsSizeCumul = new ArrayList<Integer>();
 		newRowsSizeCumul.add(0);
@@ -810,8 +810,12 @@ public class GrowingBoard
 			throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
 		}
 		
-		prevTotalIndexes = prevAreaBoard()+context.sitesFrom().length-1;
-		newTotalIndexes = newAreaBoard()+context.sitesFrom().length-1;
+		int nbOtherContainers = 0;
+		for (int i=1; i<context.sitesFrom().length; i++)
+			nbOtherContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
+		
+		prevTotalIndexes = prevAreaBoard()+nbOtherContainers;
+		newTotalIndexes = newAreaBoard()+nbOtherContainers;
 		
 		if (prevAreaBoard() < newAreaBoard())
 			diff = newAreaBoard() - prevAreaBoard();
@@ -862,22 +866,7 @@ public class GrowingBoard
 	 * @param context
 	 */
 	protected static void updateTopology(Context context)
-	{		
-		/*System.out.println("GrowingBoard.java updateTopology() regions : "+Arrays.toString(game.equipment().regions()));
-		System.out.println("GrowingBoard.java updateTopology() containers : "+Arrays.toString(game.equipment().containers()));
-		System.out.println("GrowingBoard.java updateTopology() components : "+Arrays.toString(game.equipment().components()));
-		System.out.println("GrowingBoard.java updateTopology() maps : "+Arrays.toString(game.equipment().maps()));
-		System.out.println("GrowingBoard.java updateTopology() totalDefaultSites : "+game.equipment().totalDefaultSites());
-		System.out.println("GrowingBoard.java updateTopology() containerId : "+Arrays.toString(game.equipment().containerId()));
-		System.out.println("GrowingBoard.java updateTopology() offset : "+Arrays.toString(game.equipment().offset()));
-		System.out.println("GrowingBoard.java updateTopology() sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-		//System.out.println("GrowingBoard.java updateTopology() vertexWithHints : "+Arrays.toString(game.equipment().vertexWithHints()));
-		//System.out.println("GrowingBoard.java updateTopology() cellWithHints : "+Arrays.toString(game.equipment().cellWithHints()));
-		//System.out.println("GrowingBoard.java updateTopology() edgeWithHints : "+Arrays.toString(game.equipment().edgeWithHints()));
-		System.out.println("GrowingBoard.java updateTopology() vertexHints : "+Arrays.toString(game.equipment().vertexHints()));
-		System.out.println("GrowingBoard.java updateTopology() cellHints : "+Arrays.toString(game.equipment().cellHints()));
-		System.out.println("GrowingBoard.java updateTopology() edgeHints : "+Arrays.toString(game.equipment().edgeHints()));
-		System.out.println("GrowingBoard.java updateTopology() itemsToCreate : "+Arrays.toString(game.equipment().itemsToCreate()));*/
+	{
 		context.game().update();
 	}
 	
@@ -1453,7 +1442,6 @@ public class GrowingBoard
 				
 			}
 		}
-		System.out.println("\n\n\n");
 	}
 	
 	
