@@ -119,7 +119,8 @@ public class FileHandling
 				(
 					lud.contains("lud/bad/") ||
 					lud.contains("lud/bad_playout/") ||
-					lud.contains("lud/wishlist/")
+					lud.contains("lud/wishlist/")||
+					lud.contains("lud/dominoes/Block.lud")
 				);
 	}
 	
