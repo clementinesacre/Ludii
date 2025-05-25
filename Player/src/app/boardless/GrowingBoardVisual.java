@@ -46,52 +46,6 @@ public class GrowingBoardVisual extends GrowingBoard
 	}
 	
 	/** 
-	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
-	 * Is equivalent to restore to initial state.
-	 * Code taken from ToolView.jumpToMove().
-	 * 
-	 * @param app
-	 */
-	private static void resetMoves(final PlayerApp app)
-	{
-		Context context = app.manager().ref().context();
-
-		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-		app.settingsPlayer().setWebGameResultValid(false);
-
-		// Store the previous saved trial, and reload it after resetting the game.
-		final List<Move> allMoves = context.trial().generateCompleteMovesList();
-		allMoves.addAll(app.manager().undoneMoves());
-
-		GameUtil.resetGameWithoutResetContext(app);
-
-		app.manager().settingsManager().setAgentsPaused(app.manager(), true);
-
-		final int moveToJumpToWithSetup = 0;
-		final List<Move> newDoneMoves = allMoves.subList(0, moveToJumpToWithSetup);
-		final List<Move> newUndoneMoves = allMoves.subList(moveToJumpToWithSetup, allMoves.size());
-		
-		app.manager().ref().makeSavedMoves(app.manager(), newDoneMoves);
-		app.manager().setUndoneMoves(newUndoneMoves);
-
-		// this is just a tiny bit hacky, but makes sure MCTS won't reuse incorrect tree after going back in Trial
-		context.game().incrementGameStartCount();
-
-		app.bridge().settingsVC().setSelectedFromLocation(new FullLocation(Constants.UNDEFINED));
-		GameUtil.resetUIVariables(app);
-
-		// Reset state but without reseting movers - as moves are not re-applied, state of movers is still good
-		int mover = context.state().mover();
-		int prev = context.state().prev();
-		int next = context.state().next();
-		resetState(context);
-		context.state().setMover(mover);
-		context.state().setNext(next);
-		context.state().setPrev(prev);
-	}
-	
-	
-	/** 
 	 * Start over the game on the new board and apply the historic of move mapped to the new board.
 	 * 
 	 * @param app
@@ -101,8 +55,6 @@ public class GrowingBoardVisual extends GrowingBoard
 		Context context = app.manager().ref().context();
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
-		if (replayMoves) // TODO does not change if we call it or not - test that
-			resetMoves(app);
 		remakeTrial(context, movesDone, replayMoves);
 	}
 	
@@ -147,20 +99,6 @@ public class GrowingBoardVisual extends GrowingBoard
 		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size (new size : "+toSize+")");
 		updateBoardDimensions(app, board, toSize);
 		remakeTrial(app, replayMoves);
-	}
-	
-	public static void displayInfo(Context context)
-	{
-		System.out.println("\n\n");
-		System.out.println("GrowingBoardVisual.java displayInfo() containerStates 0 : "+(ContainerFlatState) context.state().containerStates()[0]);
-		System.out.println("GrowingBoardVisual.java displayInfo() offset : "+Arrays.toString(context.game().equipment().offset()));
-		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.game().equipment().containerId()));
-		System.out.println("GrowingBoardVisual.java displayInfo() sitesFrom : "+Arrays.toString(context.game().equipment().sitesFrom()));
-		System.out.println("GrowingBoardVisual.java displayInfo() mover : "+context.state().mover());
-		System.out.println("GrowingBoardVisual.java displayInfo() containerId : "+Arrays.toString(context.containerId()));
-		for (int i=0; i<((FlatCellOnlyOwned) context.state().owned()).locations().length; i++)
-			System.out.println("GrowingBoard.java updateOwnedPrevToNew() locations["+i+"] 2: "+Arrays.toString(((FlatCellOnlyOwned) context.state().owned()).locations()[i]));
-		System.out.println("\n\n");
 	}
 	
 	/** 

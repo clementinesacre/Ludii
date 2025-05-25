@@ -1235,7 +1235,7 @@ public class GrowingBoard
 	 * @param context
 	 * @param movesDone
 	 */
-	protected static void replayMoves(Context context, List<Move> movesDone, HashMap<Integer, Integer> mappingIndexes)
+	public static void replayMoves(Context context, List<Move> movesDone, HashMap<Integer, Integer> mappingIndexes)
 	{
 		Move move = null;
 		
@@ -1356,16 +1356,6 @@ public class GrowingBoard
 	}
 	
 	/** 
-	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
-	 */
-	public static void resetMoves(Context context)
-	{
-		context.reset();
-		context.game().start(context, true);
-		context.game().incrementGameStartCount();
-	}
-	
-	/** 
 	 * Start over the game on the new board and apply the historic of move mapped to the new board.
 	 * 
 	 * @param app
@@ -1374,8 +1364,7 @@ public class GrowingBoard
 	{
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
-		if (replayMoves)
-			resetMoves(context);
+
 		remakeTrial(context, movesDone, replayMoves);
 	}
 	

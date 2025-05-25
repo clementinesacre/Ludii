@@ -3081,6 +3081,7 @@ public class Game extends BaseLudeme implements API, Serializable
 	
 				if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
 				{
+					List<Move> movesDone = context.trial().generateCompleteMovesList();
 					if (!GrowingBoard.isVisual)
 					{
 						int currDim = ((Boardless) context.board()).dimension();
@@ -3090,6 +3091,9 @@ public class Game extends BaseLudeme implements API, Serializable
 					}
 					GrowingBoard.updateChunksAndOwned(context);
 					GrowingBoard.generateNewMove(move, true);
+					
+					if (!GrowingBoard.isVisual)
+						GrowingBoard.replayMoves(context, movesDone, GrowingBoard.mappedPrevToNewIndexes());
 				}
 			}
 

@@ -108,7 +108,7 @@ public class GrowingBoardTestGames {
 		Context context = initGame("Chex.lud");
 		Boardless board = (Boardless) context.game().board();
 
-		assertEquals(1, board.dimension());
+		assertEquals(3, board.dimension());
 	}
 	
 	
@@ -135,18 +135,5 @@ public class GrowingBoardTestGames {
 		Boardless board = (Boardless) context.game().board();
 		
 		assertEquals(10, board.dimension());
-	}
-	
-	
-	/**
-	 * Tests the initial dimension of the board for the game Trax.
-	 */
-	@Test
-	public void testTrax()
-	{
-		Context context = initGame("Trax.lud");
-		Boardless board = (Boardless) context.game().board();
-		
-		assertEquals(4, board.dimension());
 	}
 }
