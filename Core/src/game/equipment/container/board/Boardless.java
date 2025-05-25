@@ -206,7 +206,7 @@ public class Boardless extends Board
 				break;
 			case Triangular:
 				if (nbInitialTiles == 0)
-					dimension = 3;
+					dimension = 4;
 				else
 				{
 					if (nbInitialTiles%2 == 0)
