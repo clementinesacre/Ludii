@@ -875,7 +875,7 @@ public class GrowingBoard
 	 * @param board
 	 * @param newSize new size of the board.
 	 */
-	protected static void updateBoardDimensions(Context context, Boardless board, int newSize) 
+	public static void updateBoardDimensions(Context context, Boardless board, int newSize) 
 	{
 
 		System.out.println("GrowingBoard.java updateBoardDimensions() curr size : "+board.dimension()+ " - new size : "+newSize);
@@ -934,7 +934,8 @@ public class GrowingBoard
 			ChunkSet previousCS = previousHCS.internalState();
 			ChunkSet newCS = (ChunkSet) newHCS.internalState();
 			TIntArrayList nonzeroChunks = previousCS.getNonzeroChunks();
-			for (int prevVal : nonzeroChunks.toArray()) { 
+			for (int prevVal : nonzeroChunks.toArray()) 
+			{ 
 				newCS.setChunk(mappedInitToNewIndexes().get(prevVal), previousCS.getChunk(prevVal));
 			}
 		}
@@ -1007,8 +1008,8 @@ public class GrowingBoard
 				Region empty;
 				
 				// update each container state (container state 0 is the board state)
-				if (i == 0) {
-					// TODO maybe there is another way to copy a HashedChunkSet
+				if (i == 0) 
+				{
 					who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites);
 					what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites);
 					count = copyChunkWithNewBoardSize(containerFlatState.count(), generator, containerFlatState.getMaxWhatVal(), numSites);
@@ -1300,7 +1301,7 @@ public class GrowingBoard
 	 * @param legalMoves
 	 * @param replayMoves
 	 */
-	protected static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves, final boolean replayMoves) 
+	public static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves, final boolean replayMoves) 
 	{
 		updateChunks(context, prevDimensionBoard(), newDimensionBoard());
 		updateOwned(context);
@@ -1347,7 +1348,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void resetState(final Context context)
+	public static void resetState(final Context context)
 	{	
 		context.state().reset(context.game());
 	}

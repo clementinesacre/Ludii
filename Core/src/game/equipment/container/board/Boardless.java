@@ -208,9 +208,9 @@ public class Boardless extends Board
 				else
 				{
 					if (nbInitialTiles%2 == 0)
-						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS + 1;
-					else
 						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
+					else
+						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS+1;
 				}
 				break;
 			default:

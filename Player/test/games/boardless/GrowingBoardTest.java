@@ -8,21 +8,15 @@ import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import app.PlayerApp;
-import app.boardless.GrowingBoardVisual;
-import app.utils.GameUtil;
-import app.views.tools.ToolView;
 import game.Game;
 import game.boardless.GrowingBoard;
 import game.equipment.Equipment;
-import game.equipment.container.board.Boardless;
 import game.rules.phase.Phase;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
@@ -36,7 +30,6 @@ import other.GameLoader;
 import other.action.ActionType;
 import other.trial.Trial;
 import other.context.Context;
-import other.location.FullLocation;
 import other.move.Move;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
@@ -70,66 +63,17 @@ public class GrowingBoardTest {
 	}
 	
 	/**
-	 * Creates a move Move that needs a from and a to.
-	 * 
-	 * @param from index of the from position.
-	 * @param to index of the to position.
-	 * @param mover id of the mover. Starts at 1.
-	 * @return the create Move.
-	 */
-	public Move getMoveMove(int from, int to, int mover)
-	{
-		String moveStr = "[Move:mover="+mover+",from="+from+",to="+to+",actions=[Move:typeFrom=Cell,from="+from+",typeTo=Cell,to="+to+",decision=true]]";
-		return new Move(moveStr);
-	}
-	
-
-	public Move getMoveAdd(int to, int mover)
-	{
-		String moveStr = "[Move:mover="+mover+",to="+to+",actions=[Add:type=Cell,to="+to+",what=1,decision=true]]";
-		return new Move(moveStr);
-	}
-	
-	/**
 	 * Apply a move.
 	 * 
 	 * @param context context on which apply the move.
-	 * @param from index of the from position.
-	 * @param to index of the to position.
-	 * @param move mover id of the mover. Starts at 1.
-	 * @param moveType move type (Move, Add, ...).
+	 * @param move move to apply.
 	 */
-	public void applyMove(Context context, int from, int to, int mover, int moveType)
+	public void applyMove(Context context, Move move)
 	{
-		Move move = null;
-		if(moveType == 0)
-			move = getMoveMove(from, to, mover);
-		else if(moveType == 1)
-			move = getMoveAdd(to, mover);
-		
 		if (move != null)
-		{
 			context.game().apply(context, move);
-			context.trial().setNumSubmovesPlayed(context.trial().numSubmovesPlayed() + 1); //TODO ??
-		}
 		else
-		{
 			fail("moveType does not exist");
-		}
-	}
-	
-	/**
-	 * Call all needed methods to update the board.
-	 * 
-	 * @param context context on which to update the board.
-	 * @return list of the containers (like board and hand's players) before updating the board.
-	 */
-	public ContainerState[] updateBoard(Context context)
-	{		
-		ContainerState[] prevContainerStates = context.state().containerStates();
-		GrowingBoard.updateBoard(context, ((Boardless)context.board()).dimension(), ((Boardless) context.board()).dimension() + GrowingBoardVisual.growingStep(context), true);
-		
-		return prevContainerStates;
 	}
 	
 	/**
@@ -179,19 +123,19 @@ public class GrowingBoardTest {
 		
 		// test
 		for (int i=0; i<6; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=6; i<8; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=9; i<11; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=11; i<14; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=14; i<16; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=16; i<19; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=19; i<=24; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(25, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+25+",to="+i+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+i+",decision=true]]").to()));
 	}
 	
 	/**
@@ -204,7 +148,8 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+19+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test main constants
 		assertEquals(GrowingBoard.prevDimensionBoard(), 5);
@@ -285,10 +230,12 @@ public class GrowingBoardTest {
 	public void testInitConstants2TouchedEdge()
 	{
 		// init
-		Context context = initGame();
+		Context context = initGame();		
 
-		updateBoard(context);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// test main constants
 		assertEquals(GrowingBoard.prevDimensionBoard(), 7);
@@ -387,8 +334,8 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Equipment equipment = game.equipment();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		int[] newOffset = equipment.offset();
@@ -427,10 +374,10 @@ public class GrowingBoardTest {
 		Game game = context.game();
 		Equipment equipment = game.equipment();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		int[] newOffset = equipment.offset();
@@ -467,8 +414,8 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 
 		// test
 		List<Move> newMovesDone = context.trial().generateCompleteMovesList();
@@ -499,51 +446,32 @@ public class GrowingBoardTest {
 	@Test
 	public void testGenerateLegalMoves()
 	{
-		// TODO BUG : I DONT KNOW HOW TO APPLY A MOVE PROPERLY  - HERE THERE ARE NO LEGAL MOVES AFTER 
-		// I APPLIED THE MOVE - UNLIKE WHEN DOING IT WITH THE VISUAL INTERFACE
-		
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);		
-		updateBoard(context);
-		context.game().moves(context); // make sure cachedLegalMoves is init 
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
-		Moves newLegalMoves = context.trial().cachedLegalMoves();
-
-		assertEquals(newLegalMoves.get(0).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(0).actions().get(0).to(), 15);
-
-		assertEquals(newLegalMoves.get(1).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(1).actions().get(0).to(), 16);
-
-		assertEquals(newLegalMoves.get(2).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(2).actions().get(0).to(), 17);
-
-		assertEquals(newLegalMoves.get(3).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(3).actions().get(0).to(), 18);
-
-		assertEquals(newLegalMoves.get(4).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(4).actions().get(0).to(), 19);
-
-		assertEquals(newLegalMoves.get(5).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(5).actions().get(0).to(), 26);
-
-		assertEquals(newLegalMoves.get(6).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(6).actions().get(0).to(), 29);
-
-		assertEquals(newLegalMoves.get(7).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(7).actions().get(0).to(), 30);
-
-		assertEquals(newLegalMoves.get(8).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(8).actions().get(0).to(), 31);
-
-		assertEquals(newLegalMoves.get(9).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(9).actions().get(0).to(), 32);
-
-		assertEquals(newLegalMoves.get(10).actions().get(0).from(), 50);
-		assertEquals(newLegalMoves.get(10).actions().get(0).to(), 33);
+		HashMap<Integer, HashSet<Integer>> legalMoves = generateLegalMoves(context, 1);
+		
+		assertEquals(legalMoves.size(), 1);
+		assertTrue(legalMoves.containsKey(50));
+		assertTrue(legalMoves.get(50).contains(14));
+		assertTrue(legalMoves.get(50).contains(15));
+		assertTrue(legalMoves.get(50).contains(16));
+		assertTrue(legalMoves.get(50).contains(17));
+		assertTrue(legalMoves.get(50).contains(18));
+		assertTrue(legalMoves.get(50).contains(19));
+		assertTrue(legalMoves.get(50).contains(21));
+		assertTrue(legalMoves.get(50).contains(26));
+		assertTrue(legalMoves.get(50).contains(29));
+		assertTrue(legalMoves.get(50).contains(28));
+		assertTrue(legalMoves.get(50).contains(30));
+		assertTrue(legalMoves.get(50).contains(31));
+		assertTrue(legalMoves.get(50).contains(32));
+		assertTrue(legalMoves.get(50).contains(33));
+		assertEquals(legalMoves.get(50).size(), 14);
 	}
 	
 	/**
@@ -555,9 +483,10 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-		
-		applyMove(context, 25, 10, 1, 0);
-		ContainerState[] prevContainerStates = updateBoard(context);
+
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -567,10 +496,10 @@ public class GrowingBoardTest {
 		{
 			ContainerFlatState newContainerFlatState = (ContainerFlatState) newContainerState0;
 			ContainerFlatState prevContainerFlatState = (ContainerFlatState) prevContainerStates[0];
-						
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), 1);
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks()+1);
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks()+1);
 			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
@@ -712,11 +641,11 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-		
-		applyMove(context, 25, 6, 1, 0);
-		applyMove(context, 26, 18, 2, 0);
-		applyMove(context, 25, 17, 1, 0);
-		applyMove(context, 26, 7, 2, 0);
+
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+6+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+6+",decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+2+",from="+25+",to="+18+",actions=[Move:typeFrom=Cell,from="+26+",typeTo=Cell,to="+18+",decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+17+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+17+",decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+2+",from="+26+",to="+7+",actions=[Move:typeFrom=Cell,from="+26+",typeTo=Cell,to="+7+",decision=true]]"));
 			
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -890,12 +819,12 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 6, 1, 0);
-		applyMove(context, 26, 18, 2, 0);
-		applyMove(context, 25, 17, 1, 0);
-		applyMove(context, 26, 5, 2, 0);
-
-		ContainerState[] prevContainerStates = updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+6+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+6+",decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+2+",from="+26+",to="+18+",actions=[Move:typeFrom=Cell,from="+26+",typeTo=Cell,to="+18+",decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+17+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+17+",decision=true]]"));
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		applyMove(context, new Move("[Move:mover="+2+",from="+26+",to="+5+",actions=[Move:typeFrom=Cell,from="+26+",typeTo=Cell,to="+5+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -910,9 +839,9 @@ public class GrowingBoardTest {
 			List<Cell> adj2 = context.state().containerStates()[0].container().topology().cells().get(15).adjacent();
 			assertEquals(adj1, adj2);
 			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks()+1);
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks()+1);
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks()+1);
 			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
@@ -1099,11 +1028,12 @@ public class GrowingBoardTest {
 		Context context = initGame();
 		Game game = context.game();
 		Equipment equipment = game.equipment();
-		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 2, 0);
-		ContainerState[] prevContainerStates = updateBoard(context);
+
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		ContainerState[] prevContainerStates = context.state().containerStates();
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		ContainerState[] newContainerStates = context.state().containerStates();
@@ -1118,9 +1048,9 @@ public class GrowingBoardTest {
 			List<Cell> adj2 = context.state().containerStates()[0].container().topology().cells().get(15).adjacent();
 			assertEquals(adj1, adj2);
 			
-			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks());
-			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks());
+			assertEquals(newContainerFlatState.who().internalState().numNonZeroChunks(), prevContainerFlatState.who().internalState().numNonZeroChunks()+1);
+			assertEquals(newContainerFlatState.what().internalState().numNonZeroChunks(), prevContainerFlatState.what().internalState().numNonZeroChunks()+1);
+			assertEquals(newContainerFlatState.count().internalState().numNonZeroChunks(), prevContainerFlatState.count().internalState().numNonZeroChunks()+1);
 			assertEquals(newContainerFlatState.state().internalState().numNonZeroChunks(), prevContainerFlatState.state().internalState().numNonZeroChunks());
 			assertNull(newContainerFlatState.rotation());
 			assertNull(newContainerFlatState.value());
@@ -1218,8 +1148,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		List<Move> movesDone = context.trial().generateCompleteMovesList();
@@ -1250,11 +1181,11 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 1, 0);
-		updateBoard(context);
+
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		int [] emptySites = context.state().containerStates()[0].emptySites().sites();
@@ -1279,8 +1210,9 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);	
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+
 		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		List<Integer> perimeterIndexes = perimeter.stream().map(TopologyElement::index).collect(Collectors.toList());
 		
@@ -1318,10 +1250,11 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 1, 0);
-		updateBoard(context);		
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
+		
 		List<TopologyElement> perimeter = context.topology().perimeter(context.board().defaultSite());
 		List<Integer> perimeterIndexes = new ArrayList<Integer>();
 		for (int i=0; i<perimeter.size(); i++)
@@ -1370,43 +1303,47 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 1, 0);
-		updateBoard(context);		
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated	
 		GrowingBoard.perimeter = context.topology().perimeter(context.board().defaultSite());
+		
+		
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		for (int i=0; i<10; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=10; i<17; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=17; i<19; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=19; i<26; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=26; i<28; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=28; i<35; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=35; i<37; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=37; i<44; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=44; i<46; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=46; i<53; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=53; i<55; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=55; i<62; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=62; i<64; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=64; i<71; i++)
-			assertFalse(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertFalse(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 		for (int i=71; i<=80; i++)
-			assertTrue(GrowingBoard.isTouchingEdge(getMoveMove(81, i, 1).to()));
+			assertTrue(GrowingBoard.isTouchingEdge(new Move("[Move:mover="+1+",from="+81+",to="+i+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+i+",decision=true]]").to()));
 	}
 	
 	/**
@@ -1418,8 +1355,8 @@ public class GrowingBoardTest {
 	{
 		Context context = initGame();
 
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// Corners
 		List<TopologyElement> cornerTypeVertex = context.topology().corners().get(SiteType.Vertex);
@@ -2129,10 +2066,10 @@ public class GrowingBoardTest {
 	{
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// Corners
 		List<TopologyElement> cornerTypeVertex = context.topology().corners().get(SiteType.Vertex);
@@ -2885,22 +2822,22 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-
+		
 		// test
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().mover(), 2);
 
-		applyMove(context, 50, 21, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().mover(), 1);
 
-		applyMove(context, 81, 36, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+36+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+36+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().mover(), 2);
 
-		applyMove(context, 122, 55, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+55+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+55+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().mover(), 1);
 	}
 
@@ -2913,15 +2850,15 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 2, 0);
-		updateBoard(context);
-		applyMove(context, 81, 36, 1, 0);
-		updateBoard(context);
-		applyMove(context, 122, 55, 2, 0);
-		updateBoard(context);
+		
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+36+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+36+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+55+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+55+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		assertEquals(context.trial().numInitialPlacementMoves(), 5);
@@ -2936,8 +2873,8 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		int[] containerId = context.containerId();
@@ -2956,10 +2893,10 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 10, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 21, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
 		
 		// test
 		int[] containerId = context.containerId();
@@ -2980,32 +2917,32 @@ public class GrowingBoardTest {
 		Context context = initGame();
 
 		// test
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 49);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 49);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 50);
 
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 81);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 81);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 82);
 		
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 121);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 121);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 122);
 		
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 169);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 169);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 170);
 		
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
 		assertEquals(context.state().containerStates()[0].container().topology().cells().size(), 225);
 		assertEquals(context.state().containerStates()[1].container().topology().cells().get(0).index(), 225);
 		assertEquals(context.state().containerStates()[2].container().topology().cells().get(0).index(), 226);
@@ -3021,18 +2958,18 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
-		applyMove(context, 226, 119, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+14+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+14+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+226+",to="+119+",actions=[Move:typeFrom=Cell,from="+226+",typeTo=Cell,to="+119+",decision=true]]"));
+		// board should have been updated
 
 		HashMap<Integer, HashSet<Integer>> legalMoves = generateLegalMoves(context, 1);
 
@@ -3078,8 +3015,8 @@ public class GrowingBoardTest {
 		Context context = initGame();
 
 		// test
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+14+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+14+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard1 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard1.size(), 3);
 		assertTrue(sitesBoard1.contains(23));
@@ -3093,8 +3030,8 @@ public class GrowingBoardTest {
 		assertEquals(sitesPlayer2_1.size(), 1);
 		assertTrue(sitesPlayer2_1.contains(50));
 		
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard2 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard2.size(), 3);
 		assertTrue(sitesBoard2.contains(39));
@@ -3109,8 +3046,8 @@ public class GrowingBoardTest {
 		assertTrue(sitesPlayer2_2.contains(82));
 		assertTrue(sitesPlayer2_2.contains(43));
 		
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard3 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard3.size(), 3);
 		assertTrue(sitesBoard3.contains(59));
@@ -3126,8 +3063,8 @@ public class GrowingBoardTest {
 		assertTrue(sitesPlayer2_3.contains(122));
 		assertTrue(sitesPlayer2_3.contains(63));
 		
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard4 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard4.size(), 3);
 		assertTrue(sitesBoard4.contains(83));
@@ -3144,8 +3081,8 @@ public class GrowingBoardTest {
 		assertTrue(sitesPlayer2_4.contains(87));
 		assertTrue(sitesPlayer2_4.contains(89));
 		
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard5 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard5.size(), 3);
 		assertTrue(sitesBoard5.contains(111));
@@ -3162,8 +3099,8 @@ public class GrowingBoardTest {
 		assertTrue(sitesPlayer2_5.contains(115));
 		assertTrue(sitesPlayer2_5.contains(117));
 		
-		applyMove(context, 226, 119, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+2+",from="+226+",to="+119+",actions=[Move:typeFrom=Cell,from="+226+",typeTo=Cell,to="+119+",decision=true]]"));
+		// board should have been updated
 		TIntArrayList sitesBoard6 = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
 		assertEquals(sitesBoard6.size(), 3);
 		assertTrue(sitesBoard6.contains(143));
@@ -3190,21 +3127,21 @@ public class GrowingBoardTest {
 	{
 		// init
 		Context context = initGame();
-		
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
-		applyMove(context, 226, 119, 2, 0);
-		updateBoard(context);
-		applyMove(context, 146, 129, 1, 0);
-		applyMove(context, 146, 146, 1, 1);
+
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+14+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+14+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+226+",to="+119+",actions=[Move:typeFrom=Cell,from="+226+",typeTo=Cell,to="+119+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+146+",to="+129+",actions=[Move:typeFrom=Cell,from="+146+",typeTo=Cell,to="+129+",decision=true],[SetNextPlayer:player=1]]]"));
+		applyMove(context, new Move("[Move:mover="+1+",to="+146+",actions=[Add:type=Cell,to="+146+",what=1,decision=true]]"));		
 		
 		// test
 		TIntArrayList sitesBoard = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
@@ -3235,22 +3172,22 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
-		applyMove(context, 226, 119, 2, 0);
-		updateBoard(context);
-		applyMove(context, 146, 129, 1, 0);
-		applyMove(context, 146, 146, 1, 1);
-		applyMove(context, 151, 152, 2, 0);
-		updateBoard(context);
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+14+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+14+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+226+",to="+119+",actions=[Move:typeFrom=Cell,from="+226+",typeTo=Cell,to="+119+",decision=true]]"));
+		// board should have been updated		
+		applyMove(context, new Move("[Move:mover="+1+",from="+146+",to="+129+",actions=[Move:typeFrom=Cell,from="+146+",typeTo=Cell,to="+129+",decision=true],[SetNextPlayer:player=1]]]"));		
+		applyMove(context, new Move("[Move:mover="+1+",to="+146+",actions=[Add:type=Cell,to="+146+",what=1,decision=true]]"));		
+		applyMove(context, new Move("[Move:mover="+2+",from="+151+",to="+152+",actions=[Move:typeFrom=Cell,from="+151+",typeTo=Cell,to="+152+",decision=true],[SetNextPlayer:player=2]]]"));
+		// board should have been updated
 		
 		// test
 		TIntArrayList sitesBoard = ((FlatCellOnlyOwned) context.state().owned()).sites(0);
@@ -3284,22 +3221,22 @@ public class GrowingBoardTest {
 		// init
 		Context context = initGame();
 		
-		applyMove(context, 25, 14, 1, 0);
-		updateBoard(context);
-		applyMove(context, 50, 27, 2, 0);
-		updateBoard(context);
-		applyMove(context, 81, 44, 1, 0);
-		updateBoard(context);
-		applyMove(context, 122, 65, 2, 0);
-		updateBoard(context);
-		applyMove(context, 169, 90, 1, 0);
-		updateBoard(context);
-		applyMove(context, 226, 119, 2, 0);
-		updateBoard(context);
-		applyMove(context, 146, 129, 1, 0);
-		applyMove(context, 146, 146, 1, 1);
-		applyMove(context, 151, 152, 2, 0);
-		updateBoard(context);	
+		applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+14+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+14+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+27+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+27+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+81+",to="+44+",actions=[Move:typeFrom=Cell,from="+81+",typeTo=Cell,to="+44+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+122+",to="+65+",actions=[Move:typeFrom=Cell,from="+122+",typeTo=Cell,to="+65+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+169+",to="+90+",actions=[Move:typeFrom=Cell,from="+169+",typeTo=Cell,to="+90+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+226+",to="+119+",actions=[Move:typeFrom=Cell,from="+226+",typeTo=Cell,to="+119+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+1+",from="+146+",to="+129+",actions=[Move:typeFrom=Cell,from="+146+",typeTo=Cell,to="+129+",decision=true],[SetNextPlayer:player=1]]"));
+		applyMove(context, new Move("[Move:mover="+1+",to="+146+",actions=[Add:type=Cell,to="+146+",what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover="+2+",from="+151+",to="+152+",actions=[Move:typeFrom=Cell,from="+151+",typeTo=Cell,to="+152+",decision=true],[SetNextPlayer:player=2]]"));
+		// board should have been updated
 		
 		// test
 		Move lastMove = context.trial().lastMove();
@@ -3307,7 +3244,7 @@ public class GrowingBoardTest {
 
 		Moves moves = context.game().moves(context);
 		assertEquals(1, moves.count());
-		assertEquals(151, moves.get(0).to());
+		assertEquals(187, moves.get(0).to());
 		assertEquals(ActionType.Add, moves.get(0).actionType());
 		assertEquals(2, moves.get(0).state());
 	}
@@ -3323,44 +3260,77 @@ public class GrowingBoardTest {
 		final Context context = new Context(game, new Trial(game));
 		game.start(context, true);
 		
+		/*applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
+		// board should have been updated
+		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
+		// board should have been updated
+		*/
 		
-		applyMove(context, 7, 7, 1, 1);
+		
+		
+		/*applyMove(context, 7, 7, 1, 1);
 		applyMove(context, 8, 8, 2, 1);
-		applyMove(context, 9, 9, 1, 1);
-		updateBoard(context);
+		applyMove(context, 9, 9, 1, 1);*/
+		applyMove(context, new Move("[Move:mover=1,from=7,to=7,actions=[Add:type=Cell,to=7,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=8,to=8,actions=[Add:type=Cell,to=8,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=9,to=9,actions=[Add:type=Cell,to=9,what=1,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 11, 11, 2, 1);
+		/*applyMove(context, 11, 11, 2, 1);
 		applyMove(context, 26, 26, 1, 1);
 		applyMove(context, 32, 32, 2, 1);
 		applyMove(context, 12, 12, 1, 1);
-		applyMove(context, 13, 13, 2, 1);
-		updateBoard(context);
+		applyMove(context, 13, 13, 2, 1);*/
+		applyMove(context, new Move("[Move:mover=2,from=11,to=11,actions=[Add:type=Cell,to=11,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=26,to=26,actions=[Add:type=Cell,to=26,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=32,to=32,actions=[Add:type=Cell,to=32,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=12,to=12,actions=[Add:type=Cell,to=12,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=13,to=13,actions=[Add:type=Cell,to=13,what=2,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 15, 15, 1, 1);
+		/*applyMove(context, 15, 15, 1, 1);
 		applyMove(context, 34, 34, 2, 1);
 		applyMove(context, 43, 43, 1, 1);
-		applyMove(context, 35, 35, 2, 1);
-		updateBoard(context);
+		applyMove(context, 35, 35, 2, 1);*/
+		applyMove(context, new Move("[Move:mover=1,from=15,to=15,actions=[Add:type=Cell,to=15,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=34,to=34,actions=[Add:type=Cell,to=34,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=43,to=43,actions=[Add:type=Cell,to=43,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=35,to=35,actions=[Add:type=Cell,to=35,what=2,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 48, 48, 1, 1);
+		/*applyMove(context, 48, 48, 1, 1);
 		applyMove(context, 59, 59, 2, 1);
 		applyMove(context, 70, 70, 1, 1);
 		applyMove(context, 64, 64, 2, 1);
 		applyMove(context, 42, 42, 1, 1);
 		applyMove(context, 71, 71, 2, 1);
-		applyMove(context, 43, 43, 1, 1);
-		updateBoard(context);
+		applyMove(context, 43, 43, 1, 1);*/
+		applyMove(context, new Move("[Move:mover=1,from=48,to=48,actions=[Add:type=Cell,to=48,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=59,to=59,actions=[Add:type=Cell,to=59,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=70,to=70,actions=[Add:type=Cell,to=70,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=64,to=64,actions=[Add:type=Cell,to=64,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=42,to=42,actions=[Add:type=Cell,to=42,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=71,to=71,actions=[Add:type=Cell,to=71,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=43,to=43,actions=[Add:type=Cell,to=43,what=1,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 82, 82, 2, 1);
+		/*applyMove(context, 82, 82, 2, 1);
 		applyMove(context, 101, 101, 1, 1);
 		applyMove(context, 50, 50, 2, 1);
 		applyMove(context, 46, 46, 1, 1);
 		applyMove(context, 99, 99, 2, 1);
 		applyMove(context, 58, 58, 1, 1);
-		applyMove(context, 51, 51, 2, 1);
-		updateBoard(context);
+		applyMove(context, 51, 51, 2, 1);*/
+		applyMove(context, new Move("[Move:mover=2,from=82,to=82,actions=[Add:type=Cell,to=82,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=101,to=101,actions=[Add:type=Cell,to=101,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=50,to=50,actions=[Add:type=Cell,to=50,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=46,to=46,actions=[Add:type=Cell,to=46,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=99,to=99,actions=[Add:type=Cell,to=99,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=58,to=58,actions=[Add:type=Cell,to=58,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=51,to=51,actions=[Add:type=Cell,to=51,what=2,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 70, 70, 1, 1);
+		/*applyMove(context, 70, 70, 1, 1);
 		applyMove(context, 130, 130, 2, 1);
 		applyMove(context, 81, 81, 1, 1);
 		applyMove(context, 145, 145, 2, 1);
@@ -3371,10 +3341,22 @@ public class GrowingBoardTest {
 		applyMove(context, 88, 88, 1, 1);
 		applyMove(context, 67, 67, 2, 1);
 		applyMove(context, 142, 142, 1, 1);
-		applyMove(context, 74, 74, 2, 1);
-		updateBoard(context);
+		applyMove(context, 74, 74, 2, 1);*/
+		applyMove(context, new Move("[Move:mover=1,from=70,to=70,actions=[Add:type=Cell,to=70,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=130,to=130,actions=[Add:type=Cell,to=130,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=81,to=81,actions=[Add:type=Cell,to=81,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=145,to=145,actions=[Add:type=Cell,to=145,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=57,to=57,actions=[Add:type=Cell,to=57,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=55,to=55,actions=[Add:type=Cell,to=55,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=143,to=143,actions=[Add:type=Cell,to=143,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=53,to=53,actions=[Add:type=Cell,to=53,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=88,to=88,actions=[Add:type=Cell,to=88,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=67,to=67,actions=[Add:type=Cell,to=67,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=142,to=142,actions=[Add:type=Cell,to=142,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=74,to=74,actions=[Add:type=Cell,to=74,what=2,decision=true]]"));
+		// board should have been updated
 		
-		applyMove(context, 159, 159, 1, 1);
+		/*applyMove(context, 159, 159, 1, 1);
 		applyMove(context, 197, 197, 2, 1);
 		applyMove(context, 61, 61, 1, 1);
 		applyMove(context, 132, 132, 2, 1);
@@ -3383,10 +3365,18 @@ public class GrowingBoardTest {
 		applyMove(context, 195, 195, 1, 1);
 		applyMove(context, 80, 80, 2, 1);
 		applyMove(context, 82, 82, 1, 1);
-		System.out.println("GrowingBoardTest.java testTimeRandomPlayouts() moves 1: "+game.moves(context));
-		applyMove(context, 199, 199, 2, 1);
+		applyMove(context, 199, 199, 2, 1);*/
+		applyMove(context, new Move("[Move:mover=1,from=159,to=159,actions=[Add:type=Cell,to=159,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=197,to=197,actions=[Add:type=Cell,to=197,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=61,to=61,actions=[Add:type=Cell,to=61,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=132,to=132,actions=[Add:type=Cell,to=132,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=182,to=182,actions=[Add:type=Cell,to=182,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=177,to=177,actions=[Add:type=Cell,to=177,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=195,to=195,actions=[Add:type=Cell,to=195,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=80,to=80,actions=[Add:type=Cell,to=80,what=2,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=1,from=82,to=82,actions=[Add:type=Cell,to=82,what=1,decision=true]]"));
+		applyMove(context, new Move("[Move:mover=2,from=199,to=199,actions=[Add:type=Cell,to=199,what=2,decision=true]]"));
 
-		System.out.println("GrowingBoardTest.java testTimeRandomPlayouts() moves 2: "+game.moves(context));
 		
 		// End -> If -> Equals (CountMoves, Mul)
 	}
