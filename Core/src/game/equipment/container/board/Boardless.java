@@ -204,13 +204,13 @@ public class Boardless extends Board
 				break;
 			case Triangular:
 				if (nbInitialTiles == 0)
-					dimension = 3;
+					dimension = 4;
 				else
 				{
 					if (nbInitialTiles%2 == 0)
-						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
-					else
 						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS+1;
+					else
+						dimension = nbInitialTiles + Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 				}
 				break;
 			default:
