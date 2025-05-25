@@ -192,19 +192,21 @@ public class Boardless extends Board
 		{
 			case Square:
 				if (nbInitialTiles == 0)
-					dimension = 1;
+					dimension = 3;
 				else
 					dimension = nbInitialTiles + Constants.GROWING_STEP_SQUARE_BOARDLESS;
 				break;
 			case Hexagonal:
-				if (nbInitialTiles % 2 == 0)
+				if (nbInitialTiles == 0)
+		        	dimension = 2;
+				else if (nbInitialTiles % 2 == 0)
 					dimension = nbInitialTiles + Constants.GROWING_STEP_HEX_BOARDLESS;
 				else
 		        	dimension = nbInitialTiles;
 				break;
 			case Triangular:
 				if (nbInitialTiles == 0)
-					dimension = 1;
+					dimension = 3;
 				else
 				{
 					if (nbInitialTiles%2 == 0)
