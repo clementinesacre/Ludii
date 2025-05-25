@@ -3017,35 +3017,6 @@ public class Game extends BaseLudeme implements API, Serializable
 		return realMoveToApply;
 	}
 	
-	/** 
-	 * Check if user touched an edge of the board by performing a dichotomic search on a TopologyElement list.
-	 * 
-	 * @param topologyElements List into the search needs to be done. Made up of edges element.
-	 * @param target Value we are looking for into the list.
-	 * @return Index of the element in the list if found, -1 otherwise.
-	 */
-	public static boolean isTouchingEdge(List<TopologyElement> topologyElements, int target) {
-		if (target == Constants.UNDEFINED) return false;
-		
-        int start = 0;
-        int end = topologyElements.size() - 1;
-
-        while (start <= end) {
-            int midIndex = start + (end - start) / 2;
-            int midValue = topologyElements.get(midIndex).index();
-
-            if (midValue == target) {
-                return true;
-            } else if (midValue < target) {
-            	start = midIndex + 1; // Check on right remaining side
-            } else {
-            	end = midIndex - 1; // Check on left remaining side
-            }
-        }
-
-        return false;
-    }
-	
 	/**
 	 * Applies a move to the current context
 	 * 
