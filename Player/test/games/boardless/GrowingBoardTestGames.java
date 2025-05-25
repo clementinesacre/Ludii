@@ -63,7 +63,7 @@ public class GrowingBoardTestGames {
 		final Game game3 = GameLoader.loadGameFromName("Andantino.lud", options);
 		Context context3 = new Context(game3, new Trial(game3));
 		Boardless board3 = (Boardless) context3.game().board();
-		assertEquals(5, board3.dimension());
+		assertEquals(6, board3.dimension());
 	}
 	
 	
@@ -95,7 +95,7 @@ public class GrowingBoardTestGames {
 		final Game game3 = GameLoader.loadGameFromName("Bravalath.lud", options);
 		Context context3 = new Context(game3, new Trial(game3));
 		Boardless board3 = (Boardless) context3.game().board();
-		assertEquals(5, board3.dimension());
+		assertEquals(6, board3.dimension());
 	}
 	
 	
