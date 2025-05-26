@@ -2447,6 +2447,146 @@ public class Game extends BaseLudeme implements API, Serializable
 		passMove.setMovesLudeme(new Pass(null));
 		return passMove;
 	}
+	
+	/**
+	 * Apply all precomputations needed at the beginning of the game.
+	 * Is also used when the plate is changing size (in boardless cases). 
+	 */
+	public void precomputations() 
+	{
+		// We add the index of the owner at the end of the name of each component.
+		for (int i = 1; i < equipment.components().length; i++)
+		{
+			final Component component = equipment.components()[i];
+
+			if (component.isTile() && component.numSides() == Constants.OFF)
+				component.setNumSides(board().topology().cells().get(0).edges().size());
+
+			final String componentName = component.name();
+			final RoleType role = component.role();
+			
+			// only add owner id after the name of the component if its not done already (= component name does not end with a number)
+			// just in boardless games cases
+			if (!isBoardless() || !componentName.matches(".*\\d$"))
+			{
+				// Not for the puzzle, not for a domino or a die
+				if (players.count() != 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
+					if (role == RoleType.Neutral || (role.owner() > 0 && role.owner() <= Constants.MAX_PLAYERS))
+						component.setName(componentName + role.owner());
+	
+				// For puzzle we modify the name only if the role is equal to Neutral
+				if (players.count() == 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
+					if (role == RoleType.Neutral)
+						component.setName(componentName + role.owner());
+			}
+		}
+
+		// We build the tracks and compute the maps
+		for (final Track track : board().tracks())
+			track.buildTrack(this);
+		for (final game.equipment.other.Map map : equipment.maps())
+			map.computeMap(this);
+
+		// In case of direction for a player, all the pieces of this player will use it.
+		for (int j = 1; j < players.players().size(); j++)
+		{
+			final Player p = players.players().get(j);
+			final DirectionFacing direction = p.direction();
+			final int pid = p.index();
+			if (direction != null)
+			{
+				for (int i = 1; i < equipment.components().length; i++)
+				{
+					final Component component = equipment.components()[i];
+					if (pid == component.owner())
+						component.setDirection(direction);
+				}
+			}
+		}
+
+		for (final Container c : equipment.containers())
+			if (c.isDice())
+				handDice.add((Dice) c);
+			else if (c.isDeck())
+				handDeck.add((Deck) c);
+
+		gameFlags = computeGameFlags();
+
+		if ((gameFlags & GameType.UsesSwapRule) != 0L)
+			metaRules.setUsesSwapRule(true);
+
+		stateReference = new State(this, StateConstructorLock.INSTANCE);
+
+		// No component for the deduction puzzle (for sandbox)
+		if (isDeductionPuzzle())
+			equipment.clearComponents();
+
+		mapContainer.clear();
+		mapComponent.clear();
+
+		for (int e = 0; e < equipment.containers().length; e++)
+		{
+			final Container equip = equipment.containers()[e];
+			mapContainer.put(equip.name(), equip);
+		}
+
+		// e = 0 is the empty component
+		for (int e = 1; e < equipment.components().length; e++)
+		{
+			final Component equip = equipment.components()[e];
+			equip.setIndex(e);
+			mapComponent.put(equip.name(), equip);
+		}
+		// System.out.println(map.size() + " items mapped.");
+
+		// Initialise control: state, number of players, etc.
+		stateReference.initialise(this);
+
+		// preprocess regions
+		final game.equipment.other.Regions[] regions = equipment().regions();
+
+		for (final game.equipment.other.Regions region : regions)
+			region.preprocess(this);
+
+		// preprocessing step for any static ludemes and check if the items name exist.
+		if (rules.start() != null)
+			for (final StartRule start : rules.start().rules())
+				start.preprocess(this);
+
+		if (rules.end() != null)
+			rules.end().preprocess(this);
+
+		for (final Phase phase : rules.phases())
+			phase.preprocess(this);
+
+		booleanConcepts = computeBooleanConcepts();
+		conceptsNonBoolean = computeNonBooleanConcepts();
+		hasMissingRequirement = computeRequirementReport();
+		willCrash = computeCrashReport();
+
+		// System.out.println("Game.create(): numPlayers=" +
+		// stateReference.numPlayers()
+		// + ", active=" + stateReference.active());
+
+		// Create mappings between ints and moves
+//				for (final Phase phase : rules.phases())
+//					phase.play().moves().updateMoveIntMapper(this, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE,
+//							Integer.MIN_VALUE);
+
+		// Precompute distance tables which rely on preprocessing done above
+		// (e.g. regions)
+		if (board().defaultSite() == SiteType.Cell)
+			equipment.containers()[0].topology().preGenerateDistanceToRegionsCells(this, regions);
+		else
+			equipment.containers()[0].topology().preGenerateDistanceToRegionsVertices(this, regions);
+
+		postCreation();
+
+		// Create custom, optimised playout strategies
+		addCustomPlayouts();
+		
+		finishedPreprocessing = true;
+	}
 
 	/**
 	 * Initialise the game graph and other variables.
@@ -2542,133 +2682,7 @@ public class Game extends BaseLudeme implements API, Serializable
 		// Create the times of the equipment.
 		equipment.createItems(this);
 
-		// We add the index of the owner at the end of the name of each component.
-		for (int i = 1; i < equipment.components().length; i++)
-		{
-			final Component component = equipment.components()[i];
-
-			if (component.isTile() && component.numSides() == Constants.OFF)
-				component.setNumSides(board().topology().cells().get(0).edges().size());
-
-			final String componentName = component.name();
-			final RoleType role = component.role();
-
-			// Not for the puzzle, not for a domino or a die
-			if (players.count() != 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
-				if (role == RoleType.Neutral || (role.owner() > 0 && role.owner() <= Constants.MAX_PLAYERS))
-					component.setName(componentName + role.owner());
-
-			// For puzzle we modify the name only if the role is equal to Neutral
-			if (players.count() == 1 && !componentName.contains("Domino") && !componentName.contains("Die"))
-				if (role == RoleType.Neutral)
-					component.setName(componentName + role.owner());
-		}
-
-		// We build the tracks and compute the maps
-		for (final Track track : board().tracks())
-			track.buildTrack(this);
-		for (final game.equipment.other.Map map : equipment.maps())
-			map.computeMap(this);
-
-		// In case of direction for a player, all the pieces of this player will use it.
-		for (int j = 1; j < players.players().size(); j++)
-		{
-			final Player p = players.players().get(j);
-			final DirectionFacing direction = p.direction();
-			final int pid = p.index();
-			if (direction != null)
-			{
-				for (int i = 1; i < equipment.components().length; i++)
-				{
-					final Component component = equipment.components()[i];
-					if (pid == component.owner())
-						component.setDirection(direction);
-				}
-			}
-		}
-
-		for (final Container c : equipment.containers())
-			if (c.isDice())
-				handDice.add((Dice) c);
-			else if (c.isDeck())
-				handDeck.add((Deck) c);
-
-		gameFlags = computeGameFlags();
-
-		if ((gameFlags & GameType.UsesSwapRule) != 0L)
-			metaRules.setUsesSwapRule(true);
-
-		stateReference = new State(this, StateConstructorLock.INSTANCE);
-
-		// No component for the deduction puzzle (for sandbox)
-		if (isDeductionPuzzle())
-			equipment.clearComponents();
-
-		mapContainer.clear();
-		mapComponent.clear();
-
-		for (int e = 0; e < equipment.containers().length; e++)
-		{
-			final Container equip = equipment.containers()[e];
-			mapContainer.put(equip.name(), equip);
-		}
-
-		// e = 0 is the empty component
-		for (int e = 1; e < equipment.components().length; e++)
-		{
-			final Component equip = equipment.components()[e];
-			equip.setIndex(e);
-			mapComponent.put(equip.name(), equip);
-		}
-		// System.out.println(map.size() + " items mapped.");
-
-		// Initialise control: state, number of players, etc.
-		stateReference.initialise(this);
-
-		// preprocess regions
-		final game.equipment.other.Regions[] regions = equipment().regions();
-
-		for (final game.equipment.other.Regions region : regions)
-			region.preprocess(this);
-
-		// preprocessing step for any static ludemes and check if the items name exist.
-		if (rules.start() != null)
-			for (final StartRule start : rules.start().rules())
-				start.preprocess(this);
-
-		if (rules.end() != null)
-			rules.end().preprocess(this);
-
-		for (final Phase phase : rules.phases())
-			phase.preprocess(this);
-
-		booleanConcepts = computeBooleanConcepts();
-		conceptsNonBoolean = computeNonBooleanConcepts();
-		hasMissingRequirement = computeRequirementReport();
-		willCrash = computeCrashReport();
-
-		// System.out.println("Game.create(): numPlayers=" +
-		// stateReference.numPlayers()
-		// + ", active=" + stateReference.active());
-
-		// Create mappings between ints and moves
-//		for (final Phase phase : rules.phases())
-//			phase.play().moves().updateMoveIntMapper(this, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE,
-//					Integer.MIN_VALUE);
-
-		// Precompute distance tables which rely on preprocessing done above
-		// (e.g. regions)
-		if (board().defaultSite() == SiteType.Cell)
-			equipment.containers()[0].topology().preGenerateDistanceToRegionsCells(this, regions);
-		else
-			equipment.containers()[0].topology().preGenerateDistanceToRegionsVertices(this, regions);
-
-		postCreation();
-
-		// Create custom, optimised playout strategies
-		addCustomPlayouts();
-		
-		finishedPreprocessing = true;
+		precomputations();
 	}
 	
 	/**
@@ -4035,4 +4049,13 @@ public class Game extends BaseLudeme implements API, Serializable
 		return true;
 	}
 
+	/**
+	 * Update the equipment and reapply the pre-calculation after updating 
+	 * the board size (in the case of a game without a board).
+	 */
+	public void update()
+	{
+		equipment.updateEquipment(this);
+		precomputations();
+	}
 }

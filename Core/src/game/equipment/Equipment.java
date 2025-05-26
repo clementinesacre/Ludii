@@ -1033,4 +1033,34 @@ public final class Equipment extends BaseLudeme implements Serializable
 		}
 		return new Integer[0][0];
 	}
+	
+	/**
+	 * Updates the equipment to be up to date regarding the (new) 
+	 * Topologys. No need to erase 'containers' and 'components' 
+	 * as we need to keep the same object's instance, helps avoid 
+	 * inconsistency.
+	 * 
+	 * @param game
+	 */
+	public void updateEquipment(Game game) 
+	{
+		//containers = null;
+		//components = null;
+		//regions = null;
+		//maps = null;
+		totalDefaultSites = 0;
+		//private int[] containerId;
+		//private int[] offset;
+		//private int[] sitesFrom;
+		vertexWithHints = new Integer[0][0];
+		cellWithHints = new Integer[0][0];
+		edgeWithHints = new Integer[0][0];
+		vertexHints = new Integer[0];
+		cellHints = new Integer[0];
+		edgeHints = new Integer[0];
+		//private Item[] itemsToCreate;
+		
+		//createItems(game);
+		initContainerAndParameters(game);
+	}
 }

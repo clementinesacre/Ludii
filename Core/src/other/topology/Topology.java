@@ -2750,5 +2750,71 @@ public class Topology implements Serializable
 //
 //		return minWalks;
 //	}
+	
+	/**
+	 * Clear the topology.
+	 */
+	public void clearTopology()
+	{
+		vertices.clear();
+		edges.clear();
+		cells.clear();
+		
+		
+		for (final SiteType type : SiteType.values()) {
+			supportedDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board		
+			supportedOrthogonalDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedDiagonalDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedAdjacentDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			supportedOffDirections.get(type).clear(); // TODO : useful ? does not seems to change between two board // what is this ? it is already empty
+			corners.get(type).clear();
+			cornersConvex.get(type).clear();
+			cornersConcave.get(type).clear(); // TODO : useful ? does not seems to change between two board
+			major.get(type).clear();
+			minor.get(type).clear();
+			outer.get(type).clear();
+			perimeter.get(type).clear();
+			inner.get(type).clear();
+			interlayer.get(type).clear();
+			top.get(type).clear();
+			left.get(type).clear();
+			right.get(type).clear();
+			bottom.get(type).clear();
+			centre.get(type).clear();
+			columns.get(type).clear();
+			rows.get(type).clear();
+			phases.get(type).clear();
+			for (int i = 0; i < Constants.MAX_CELL_COLOURS; i++)
+				phases.get(type).add(new ArrayList<TopologyElement>());
+			layers.get(type).clear();
+			diagonals.get(type).clear();
+			angled.get(type).clear();
+			slash.get(type).clear();
+			slosh.get(type).clear();
+			for (final CompassDirection direction : CompassDirection.values())
+				sides.get(type).get(direction).clear();
+			axials.get(type).clear();
+			horizontal.get(type).clear();
+			vertical.get(type).clear();
+		}
+		this.perimeters = new ArrayList<Perimeter>();
+		
+		for (final SiteType type : distanceToOtherSite.keySet())
+			distanceToOtherSite.put(type, new int[0][0]);
+		for (final SiteType type : distanceToCorners.keySet())
+			distanceToCorners.put(type, new int[0]);
+		for (final SiteType type : distanceToSides.keySet())
+			distanceToSides.put(type, new int[0]);
+		for (final SiteType type : distanceToCentre.keySet())
+			distanceToCentre.put(type, new int[0]);
+		for (final SiteType type : distanceToRegions.keySet())
+			distanceToRegions.put(type, new int[0][0]);
+		for (final SiteType type : phaseByElementIndex.keySet())
+			phaseByElementIndex.put(type, new int[0]);
+		for (final SiteType type : connectivities.keySet())
+			connectivities.get(type).clear();
+		
+		trajectories.clear();
+	}
 
 }

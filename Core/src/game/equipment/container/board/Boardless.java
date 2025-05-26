@@ -29,6 +29,9 @@ import other.concept.Concept;
 public class Boardless extends Board
 {
 	private static final long serialVersionUID = 1L;
+	private int dimension;
+	private TilingBoardlessType tiling;
+	private int initDimension;
 
 	//-------------------------------------------------------------------------
 
@@ -62,6 +65,9 @@ public class Boardless extends Board
 		);
 
 		this.style = ContainerStyleType.Boardless;
+		this.dimension = this.graphFunction.dim()[0];
+		this.initDimension = this.graphFunction.dim()[0];
+		this.tiling = tiling;
 	}
 
 	@Override
@@ -105,5 +111,33 @@ public class Boardless extends Board
 	public String toEnglish(final Game game) 
 	{
 		return "table" ;
+	}
+	
+	/**
+	 * Gets the dimension of the board.
+	 * 
+	 * @return dimension of the board.
+	 */
+	@Override
+	public int dimension()
+	{
+		return this.dimension;
+	}
+	
+	/**
+	 * Set a new dimension to the board.
+	 * 
+	 * @param newDimension the new dimension of the board.
+	 */
+	public void setDimension(int newDimension) {
+		this.dimension = newDimension;
+	}
+	
+	/**
+	 * @return tiling of the board.
+	 */
+	public TilingBoardlessType tiling()
+	{
+		return this.tiling;
 	}
 }
