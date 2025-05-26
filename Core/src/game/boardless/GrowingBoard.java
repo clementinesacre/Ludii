@@ -464,6 +464,22 @@ public class GrowingBoard
 		newRow = newRow > 0 ? newRow : 0;
 	    return rowSizeCumul + col - newRow;
 	}
+	
+	protected static int get_min(final int val, final int dim)
+	{
+		if (val < dim)
+	        return 0;
+	    else
+	        return val - dim + 1;
+	}
+	
+	protected static int get_max(final int val, final int dim)
+	{
+		if (val >= dim)
+	        return (dim * 2) - 2;
+	    else
+	        return val + (dim - 1);
+	}
 	 
 	/**
 	 * Initializes data structures to map the previous indexes to the new indexes, 
@@ -546,7 +562,7 @@ public class GrowingBoard
 				int newRow = prevIndex.row()-1;
 				if (newCol >= 0 && newRow >= 0 && newCol <= newMaxIndexRowOrCol && newRow <= newMaxIndexRowOrCol) 
 				{
-					if (newCol >= newMinPerColRow.get(newRow) && newRow >= newMinPerColRow.get(newCol) && newCol <= newMaxPerColRow.get(newRow) && newRow <= newMaxPerColRow.get(newCol)) 
+					if (newCol >= get_min(newRow, newDimensionBoard()) && newRow >= get_min(newCol, newDimensionBoard()) && newCol <= get_max(newRow, newDimensionBoard()) && newRow <= get_max(newCol, newDimensionBoard())) 
 					{
 						int newIndex = coordToIndexHex(newRow, newCol, newRowsSizeCumul.get(newRow), newDimensionBoard());
 						mappedPrevToNewIndexes().put(prevIndex.index(), newIndex);
@@ -571,7 +587,7 @@ public class GrowingBoard
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
 				
-		if (prevDimensionBoard() < newDimensionBoard() || prevDimensionBoard() == newDimensionBoard()) 
+		if (newDimensionBoard() != initTotalIndexes()) 
 		{
 			int diffInitToPrevDimensionBoard = prevDimensionBoard() - initDimensionBoard();
 			int initMaxIndexRowOrCol = (initDimensionBoard()*2) - 2;
@@ -733,7 +749,7 @@ public class GrowingBoard
 		mappedNewToInitIndexes = new HashMap<Integer, Integer>();
 		surplusInitIndexes = new HashSet<Integer>();
 		
-		if (prevDimensionBoard() < newDimensionBoard() || prevDimensionBoard() == newDimensionBoard()) 
+		if (newDimensionBoard() != initTotalIndexes()) 
 		{
 			int diffInitToPrevDimensionBoard = (prevDimensionBoard() - initDimensionBoard())/Constants.GROWING_STEP_TRIANGLE_BOARDLESS;
 			for (Cell prevIndex : context.topology().cells()) 
