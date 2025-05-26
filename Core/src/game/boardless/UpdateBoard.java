@@ -74,7 +74,7 @@ public class UpdateBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	public static void createMappings(Context context, Move move, final int boardSizeChange)
+	public static void createMappings(final Context context, Move move, final int boardSizeChange)
 	{
 		if (mappingBoardlessBoard() == null)
 			switch(((Boardless) context.game().board()).tiling()) 

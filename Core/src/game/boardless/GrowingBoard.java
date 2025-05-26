@@ -60,7 +60,7 @@ public class GrowingBoard
 	 * @param game
 	 * @return the number of initial tiles on the main board.
 	 */
-	public static int nbInitialTiles(Game game)
+	public static int nbInitialTiles(final Game game)
 	{
 		if (nbInitialTiles == -1)
 			nbInitialTiles = game.rules().start().nbInitialTilesOnBoard();
@@ -73,7 +73,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateTopology(Context context)
+	protected static void updateTopology(final Context context)
 	{
 		context.game().update();
 	}
@@ -87,7 +87,7 @@ public class GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange, Move move) 
+	protected static void updateBoardDimensions(final Context context, final Boardless board, final int boardSizeChange, final Move move) 
 	{
 		UpdateBoard.createMappings(context, move, boardSizeChange);
 		updateTopology(context);
@@ -130,7 +130,7 @@ public class GrowingBoard
 	 * @param maxChunkVal
 	 * @param maxChunkVal
 	 */
-	protected static HashedChunkSet copyChunkWithNewBoardSize(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
+	protected static HashedChunkSet copyChunkWithNewBoardSize(final HashedChunkSet previousHCS, final ZobristHashGenerator generator, final int maxChunkVal, final int numChunks)
 	{
 		HashedChunkSet newHCS = new HashedChunkSet(generator, maxChunkVal, numChunks);
 		if (previousHCS != null)
@@ -156,7 +156,7 @@ public class GrowingBoard
 	 * @param maxChunkVal
 	 * @param maxChunkVal
 	 */
-	protected static HashedChunkSet copyChunk(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
+	protected static HashedChunkSet copyChunk(final HashedChunkSet previousHCS, final ZobristHashGenerator generator, final int maxChunkVal, final int numChunks)
 	{
 		HashedChunkSet newHCS = new HashedChunkSet(generator, maxChunkVal, numChunks);
 		if (previousHCS != null)
@@ -185,7 +185,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	public static void updateChunks(Context context)
+	public static void updateChunks(final Context context)
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
@@ -362,7 +362,7 @@ public class GrowingBoard
 	 * @param mapping Mapping to use to map move from previous to new board.
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge, HashMap<Integer, Integer> mapping)
+	public static Move generateNewMove(final Move prevMove, final boolean isMoveDoneOnEdge, final HashMap<Integer, Integer> mapping)
 	{		
 		List<Action> actions = prevMove.actions();
 		if (actions.size() == 1)
@@ -419,7 +419,7 @@ public class GrowingBoard
 	 * lead to an increase of the board size. 
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge)
+	public static Move generateNewMove(final Move prevMove, final boolean isMoveDoneOnEdge)
 	{
 		return generateNewMove(prevMove, isMoveDoneOnEdge, UpdateBoard.mappedPrevToNewIndexes());
 	}
@@ -430,7 +430,7 @@ public class GrowingBoard
 	 * @param context
 	 * @param movesDone
 	 */
-	protected static void replayMoves(Context context, List<Move> movesDone)
+	protected static void replayMoves(final Context context, final List<Move> movesDone)
 	{
 		Move move = null;
 		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
@@ -456,7 +456,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateOwned(Context context)
+	protected static void updateOwned(final Context context)
 	{	
 		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
 		FastTIntArrayList[][] locations = owned.locations();
@@ -481,7 +481,7 @@ public class GrowingBoard
 	 * @param legalMoves
 	 * @param replayMoves
 	 */
-	protected static void remakeTrial(Context context, List<Move> movesDone, Moves legalMoves, final boolean replayMoves) 
+	protected static void remakeTrial(final Context context, final List<Move> movesDone, final Moves legalMoves, final boolean replayMoves) 
 	{
 		updateChunks(context);
 		updateOwned(context);
@@ -495,12 +495,12 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	public static void updateChunksAndOwned(Context context) 
+	public static void updateChunksAndOwned(final Context context) 
 	{
 		remakeTrial(context, null, null, false);
 	}
 	
-	public static void redoneAllButLast(Context context)
+	public static void redoneAllButLast(final Context context)
 	{	
 		Move move = null;
 		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
@@ -530,27 +530,12 @@ public class GrowingBoard
 	/** 
 	 * Cancel all the moves from the beginning, to have a fresh base with an empty board.
 	 */
-	public static void resetMoves(Context context)
+	public static void resetMoves(final Context context)
 	{
 		context.reset();
 		context.game().start(context, true);
 		context.game().incrementGameStartCount();
 	}
-	
-	/** 
-	 * Start over the game on the new board and apply the historic of move mapped to the new board.
-	 * 
-	 * @param app
-	 */
-	/*protected static void remakeTrial(Context context, final boolean replayMoves) 
-	{
-		Trial trial = context.trial();
-		List<Move> movesDone = trial.generateCompleteMovesList();
-		Moves legalMoves = trial.cachedLegalMoves();
-		if (replayMoves)
-			resetMoves(context);
-		remakeTrial(context, movesDone, legalMoves, replayMoves);
-	}*/
 	
 	/**
 	 * Updates board by making it grow logically.
@@ -561,7 +546,7 @@ public class GrowingBoard
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 * @param replayMove TODO
 	 */
-	public static void updateBoard(Context context, Move move, int boardSizeChange, final boolean replayMoves)
+	public static void updateBoard(final Context context, final Move move, final int boardSizeChange, final boolean replayMoves)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
@@ -584,7 +569,7 @@ public class GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	public static void checkMoveImpactOnBoard(final Context context, final Move move, int boardSizeChange, final boolean replayMoves) 
+	public static void checkMoveImpactOnBoard(final Context context, final Move move, final int boardSizeChange, final boolean replayMoves) 
 	{
 		if (context.game().isBoardless()) 
 		{

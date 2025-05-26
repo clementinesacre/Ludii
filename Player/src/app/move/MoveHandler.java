@@ -130,7 +130,7 @@ public class MoveHandler
 			if (MoveHandler.moveChecks(app, possibleMoves.get(0)))
 			{
 				if (context.game().isBoardless())
-					GrowingBoardVisual.checkMoveImpactOnBoard2(app, possibleMoves.get(0), 1, true);
+					GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), 1, true);
 				
 				app.manager().ref().applyHumanMoveToGame(app.manager(), possibleMoves.get(0));
 				return true; // move found

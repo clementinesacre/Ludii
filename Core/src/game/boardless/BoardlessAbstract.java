@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import game.equipment.container.Container;
 import game.equipment.container.board.Board;
 import game.types.board.SiteType;
 import game.util.graph.Edge;
@@ -113,7 +112,7 @@ public abstract class BoardlessAbstract
 		surplusInitIndexesHistory = new ArrayList<HashSet<Integer>>();
 	}
 	
-	public void initFromScratch(Context context)
+	public void initFromScratch(final Context context)
 	{	
 		reset();
 		
@@ -134,7 +133,7 @@ public abstract class BoardlessAbstract
 		}
 	}
 	
-	public void init(Context context)
+	public void init(final Context context)
 	{
 		// data structures to map cells between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
@@ -166,7 +165,7 @@ public abstract class BoardlessAbstract
 	
 	//------------------------------ Utilities --------------------------------------
 
-	public static String point3dToString(Point3D p)
+	public static String point3dToString(final Point3D p)
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(p.x());
@@ -179,7 +178,7 @@ public abstract class BoardlessAbstract
 		return result;
 	}
 	
-	public void updateGraph(Board board)
+	public void updateGraph(final Board board)
 	{
 		board.setGraphFunction(board.graph());
 	}
@@ -193,7 +192,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param graph
 	 */
-	protected void createVandE(Graph graph)
+	protected void createVandE(final Graph graph)
 	{
 		HashSet<Point3D> newPoint3dEdges = new HashSet<Point3D>();
 		newVertices = new HashSet<game.util.graph.Vertex>();
@@ -262,7 +261,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param graph
 	 */
-	protected void detectNewVertices(Graph graph)
+	protected void detectNewVertices(final Graph graph)
 	{
 		for (int i=0; i<newPoint3dVertices.length; i++)
 		{
@@ -309,7 +308,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param context
 	 */
-	protected void updateBoard(Context context)
+	protected void updateBoard(final Context context)
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
@@ -422,7 +421,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param context
 	 */
-	public void keepSameSize(Context context)
+	public void keepSameSize(final Context context)
 	{
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
 		int nbCells = context.board().graph().faces().size();
@@ -441,7 +440,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param graph
 	 */
-	public void deleteGraphElements(Graph graph)
+	public void deleteGraphElements(final Graph graph)
 	{
 		List<Integer> lastVerticesAdded = addedVerticesSinceInit.get(addedVerticesSinceInit.size()-1);
 		List<Integer> lastEdgesAdded = addedEdgesSinceInit.get(addedEdgesSinceInit.size()-1);
@@ -459,7 +458,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param graph
 	 */
-	public void deleteGraphElementsFromInit(Graph graph)
+	public void deleteGraphElementsFromInit(final Graph graph)
 	{
 		int nbEdgesAddedSinceInit = addedEdgesSinceInit.size();
 		for (int i=nbEdgesAddedSinceInit-1; i>= 0; i--)
@@ -485,7 +484,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param context
 	 */
-	public void rollback(Context context)
+	public void rollback(final Context context)
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
@@ -565,7 +564,7 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param context
 	 */
-	public void rollbackToInit(Context context)
+	public void rollbackToInit(final Context context)
 	{
 		Board board = context.board();
 		Graph graph = board.graph();
@@ -624,5 +623,5 @@ public abstract class BoardlessAbstract
 	 * 
 	 * @param graph
 	 */
-	protected abstract void calculateNewGraphElements(Graph graph);
+	protected abstract void calculateNewGraphElements(final Graph graph);
 }
