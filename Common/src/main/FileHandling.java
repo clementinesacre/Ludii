@@ -119,7 +119,15 @@ public class FileHandling
 				(
 					lud.contains("lud/bad/") ||
 					lud.contains("lud/bad_playout/") ||
-					lud.contains("lud/wishlist/")
+					lud.contains("lud/wishlist/") ||
+					
+					lud.contains("lud/dominoes/Block.lud") ||
+					lud.contains("lud/board/space/line/Andantino.lud") ||
+					lud.contains("lud/board/space/line/Bravalath.lud") ||
+					lud.contains("lud/board/war/replacement/checkmate/chess/Chex.lud") ||
+					lud.contains("lud/board/space/line/Plotto.lud") ||
+					lud.contains("lud/board/space/line/Ringo.lud") ||
+					lud.contains("lud/board/space/connection/Trax.lud")
 				);
 	}
 	
