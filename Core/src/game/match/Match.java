@@ -1,6 +1,7 @@
 package game.match;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Random;
 import annotations.Hide;
 import annotations.Opt;
 import game.Game;
+import game.boardless.GrowingBoard;
 import game.equipment.Equipment;
 import game.equipment.component.Component;
 import game.equipment.container.Container;
@@ -125,6 +127,83 @@ public class Match extends Game
 			final Context subcontext = context.subcontext();
 			final Trial subtrial = subcontext.trial();
 			final int numMovesBeforeApply = subtrial.numMoves();
+				
+			// First just apply the move on the subcontext
+			final Move appliedMove = subcontext.game().apply(subcontext, move, skipEndRules);
+			
+			if (!skipEndRules)
+			{
+				// Will likely have to append some extra moves to the match-wide trial
+				final List<Move> subtrialMoves = subtrial.generateCompleteMovesList();
+				final int numMovesAfterApply = subtrialMoves.size();
+				final int numMovesToAppend = numMovesAfterApply - numMovesBeforeApply;
+				for (int i = 0; i < numMovesToAppend; ++i)
+					context.trial().addMove(subtrialMoves.get(subtrialMoves.size() - 1 - i));
+			}
+				
+			return appliedMove;
+		}
+		finally
+		{
+			context.getLock().unlock();
+		}
+	}
+	
+	/**
+	 * Same logic as the method Override apply() method, but by impacting the board size in 
+	 * case of boardless game, if move is on an edge.
+	 * 
+	 * @param context      The context.
+	 * @param move         The move to apply.
+	 * @param skipEndRules If true, we do not spend any time computing end rules.
+	 *                     Note that this can make the resulting context unsuitable
+	 *                     for further use.
+	 * @param stupidParam  to differentiate between the other apply method with the 
+	 * 					   exact same parameters. TODO: fix this bad implementation.
+	 * @return Applied move (with consequents resolved etc.
+	 */
+	public Move apply(final Context context, final Move move, final boolean skipEndRules, final boolean stupidParam)
+	{
+		context.getLock().lock();
+		
+		try
+		{
+			if (move.containsNextInstance())
+			{
+				// We need to move on to next instance, so apply on match context instead of subcontext
+				assert (context.subcontext().trial().over()); 
+				assert (move.actions().size() == 1 && move.actions().get(0) instanceof ActionNextInstance);
+				context.currentInstanceContext().trial().addMove(move);
+				context.trial().addMove(move);
+				context.advanceInstance();
+				return move;
+			}
+			
+			final Context subcontext = context.subcontext();
+			final Trial subtrial = subcontext.trial();
+			final int numMovesBeforeApply = subtrial.numMoves();
+			
+			if (context.board().isBoardless())
+			{
+				if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time + only boardless game
+					GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+	
+				if (board().isBoardless())
+				{
+					if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time + only boardless game
+						GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
+		
+		
+					if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
+					{
+						if (!GrowingBoard.isVisual)
+							GrowingBoard.checkMoveImpactOnBoard2(context, move, 1, true);
+						GrowingBoard.updateChunksAndOwned(context);
+						GrowingBoard.redoneAllButLast(context);
+						GrowingBoard.generateNewMove(move, true);
+					}
+				}
+			}
 				
 			// First just apply the move on the subcontext
 			final Move appliedMove = subcontext.game().apply(subcontext, move, skipEndRules);
