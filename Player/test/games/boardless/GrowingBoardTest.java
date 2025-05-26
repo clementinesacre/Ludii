@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import game.Game;
 import game.boardless.GrowingBoard;
 import game.equipment.Equipment;
+import game.equipment.container.board.Boardless;
 import game.rules.phase.Phase;
 import game.rules.play.moves.Moves;
 import game.types.board.SiteType;
@@ -3214,10 +3215,7 @@ public class GrowingBoardTest {
 	 */
 	@Test
 	public void testMoveMoveOnEdge()
-	{
-		// TODO BUG : I DONT KNOW HOW TO APPLY A MOVE PROPERLY  - HERE THERE ARE NO LEGAL MOVES AFTER 
-		// I APPLIED THE MOVE - UNLIKE WHEN DOING IT WITH THE VISUAL INTERFACE
-		
+	{	
 		// init
 		Context context = initGame();
 		
@@ -3260,27 +3258,11 @@ public class GrowingBoardTest {
 		final Context context = new Context(game, new Trial(game));
 		game.start(context, true);
 		
-		/*applyMove(context, new Move("[Move:mover="+1+",from="+25+",to="+10+",actions=[Move:typeFrom=Cell,from="+25+",typeTo=Cell,to="+10+",decision=true]]"));
-		// board should have been updated
-		applyMove(context, new Move("[Move:mover="+2+",from="+50+",to="+21+",actions=[Move:typeFrom=Cell,from="+50+",typeTo=Cell,to="+21+",decision=true]]"));
-		// board should have been updated
-		*/
-		
-		
-		
-		/*applyMove(context, 7, 7, 1, 1);
-		applyMove(context, 8, 8, 2, 1);
-		applyMove(context, 9, 9, 1, 1);*/
 		applyMove(context, new Move("[Move:mover=1,from=7,to=7,actions=[Add:type=Cell,to=7,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=8,to=8,actions=[Add:type=Cell,to=8,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=9,to=9,actions=[Add:type=Cell,to=9,what=1,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 11, 11, 2, 1);
-		applyMove(context, 26, 26, 1, 1);
-		applyMove(context, 32, 32, 2, 1);
-		applyMove(context, 12, 12, 1, 1);
-		applyMove(context, 13, 13, 2, 1);*/
 		applyMove(context, new Move("[Move:mover=2,from=11,to=11,actions=[Add:type=Cell,to=11,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=26,to=26,actions=[Add:type=Cell,to=26,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=32,to=32,actions=[Add:type=Cell,to=32,what=2,decision=true]]"));
@@ -3288,23 +3270,12 @@ public class GrowingBoardTest {
 		applyMove(context, new Move("[Move:mover=2,from=13,to=13,actions=[Add:type=Cell,to=13,what=2,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 15, 15, 1, 1);
-		applyMove(context, 34, 34, 2, 1);
-		applyMove(context, 43, 43, 1, 1);
-		applyMove(context, 35, 35, 2, 1);*/
 		applyMove(context, new Move("[Move:mover=1,from=15,to=15,actions=[Add:type=Cell,to=15,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=34,to=34,actions=[Add:type=Cell,to=34,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=43,to=43,actions=[Add:type=Cell,to=43,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=35,to=35,actions=[Add:type=Cell,to=35,what=2,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 48, 48, 1, 1);
-		applyMove(context, 59, 59, 2, 1);
-		applyMove(context, 70, 70, 1, 1);
-		applyMove(context, 64, 64, 2, 1);
-		applyMove(context, 42, 42, 1, 1);
-		applyMove(context, 71, 71, 2, 1);
-		applyMove(context, 43, 43, 1, 1);*/
 		applyMove(context, new Move("[Move:mover=1,from=48,to=48,actions=[Add:type=Cell,to=48,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=59,to=59,actions=[Add:type=Cell,to=59,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=70,to=70,actions=[Add:type=Cell,to=70,what=1,decision=true]]"));
@@ -3314,13 +3285,6 @@ public class GrowingBoardTest {
 		applyMove(context, new Move("[Move:mover=1,from=43,to=43,actions=[Add:type=Cell,to=43,what=1,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 82, 82, 2, 1);
-		applyMove(context, 101, 101, 1, 1);
-		applyMove(context, 50, 50, 2, 1);
-		applyMove(context, 46, 46, 1, 1);
-		applyMove(context, 99, 99, 2, 1);
-		applyMove(context, 58, 58, 1, 1);
-		applyMove(context, 51, 51, 2, 1);*/
 		applyMove(context, new Move("[Move:mover=2,from=82,to=82,actions=[Add:type=Cell,to=82,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=101,to=101,actions=[Add:type=Cell,to=101,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=50,to=50,actions=[Add:type=Cell,to=50,what=2,decision=true]]"));
@@ -3330,18 +3294,6 @@ public class GrowingBoardTest {
 		applyMove(context, new Move("[Move:mover=2,from=51,to=51,actions=[Add:type=Cell,to=51,what=2,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 70, 70, 1, 1);
-		applyMove(context, 130, 130, 2, 1);
-		applyMove(context, 81, 81, 1, 1);
-		applyMove(context, 145, 145, 2, 1);
-		applyMove(context, 57, 57, 1, 1);
-		applyMove(context, 55, 55, 2, 1);
-		applyMove(context, 143, 143, 1, 1);
-		applyMove(context, 53, 53, 2, 1);
-		applyMove(context, 88, 88, 1, 1);
-		applyMove(context, 67, 67, 2, 1);
-		applyMove(context, 142, 142, 1, 1);
-		applyMove(context, 74, 74, 2, 1);*/
 		applyMove(context, new Move("[Move:mover=1,from=70,to=70,actions=[Add:type=Cell,to=70,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=130,to=130,actions=[Add:type=Cell,to=130,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=81,to=81,actions=[Add:type=Cell,to=81,what=1,decision=true]]"));
@@ -3356,16 +3308,6 @@ public class GrowingBoardTest {
 		applyMove(context, new Move("[Move:mover=2,from=74,to=74,actions=[Add:type=Cell,to=74,what=2,decision=true]]"));
 		// board should have been updated
 		
-		/*applyMove(context, 159, 159, 1, 1);
-		applyMove(context, 197, 197, 2, 1);
-		applyMove(context, 61, 61, 1, 1);
-		applyMove(context, 132, 132, 2, 1);
-		applyMove(context, 182, 182, 1, 1);
-		applyMove(context, 177, 177, 2, 1);
-		applyMove(context, 195, 195, 1, 1);
-		applyMove(context, 80, 80, 2, 1);
-		applyMove(context, 82, 82, 1, 1);
-		applyMove(context, 199, 199, 2, 1);*/
 		applyMove(context, new Move("[Move:mover=1,from=159,to=159,actions=[Add:type=Cell,to=159,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=197,to=197,actions=[Add:type=Cell,to=197,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=61,to=61,actions=[Add:type=Cell,to=61,what=1,decision=true]]"));
@@ -3375,9 +3317,6 @@ public class GrowingBoardTest {
 		applyMove(context, new Move("[Move:mover=1,from=195,to=195,actions=[Add:type=Cell,to=195,what=1,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=2,from=80,to=80,actions=[Add:type=Cell,to=80,what=2,decision=true]]"));
 		applyMove(context, new Move("[Move:mover=1,from=82,to=82,actions=[Add:type=Cell,to=82,what=1,decision=true]]"));
-		applyMove(context, new Move("[Move:mover=2,from=199,to=199,actions=[Add:type=Cell,to=199,what=2,decision=true]]"));
-
-		
-		// End -> If -> Equals (CountMoves, Mul)
+		applyMove(context, new Move("[Move:mover=2,from=199,to=199,actions=[Add:type=Cell,to=199,what=2,decision=true]]"));		
 	}
 }
