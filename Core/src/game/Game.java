@@ -3052,7 +3052,8 @@ public class Game extends BaseLudeme implements API, Serializable
 	}
 	
 	/**
-	 * Applies a move to the current context
+	 * Applies a move to the current context, by impacting the board size in 
+	 * case of boardless game, if move is on an edge.
 	 * 
 	 * @param context      The context.
 	 * @param move         The move to apply.
