@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import game.Game;
-import game.equipment.component.Component;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
@@ -23,10 +22,8 @@ import main.Constants;
 import main.collections.ChunkSet;
 import main.collections.FastTIntArrayList;
 import other.action.Action;
-import other.action.ActionType;
 import other.context.Context;
 import other.move.Move;
-import other.move.MoveSequence;
 import other.state.container.ContainerFlatState;
 import other.state.container.ContainerState;
 import other.state.owned.FlatCellOnlyOwned;
@@ -78,138 +75,214 @@ public class GrowingBoard
 	private static HashMap<Integer, Integer> initMaxColPerRow;
 	private static HashMap<Integer, Integer> initMaxRowPerCol;
 	
-	public static List<TopologyElement> perimeter;
-	public static boolean isVisual;
-	
-	public static List<Move> movesDone;
-	
+	public static List<TopologyElement> perimeter; // perimeter of the current board
+	public static boolean isVisual; // is the app used through a visual like PlayerDesktop
+		
 	//--------------------------------Getters----------------------------------
 	
+	/**
+	 * @return mappedPrevToNewIndexes
+	 */
 	public static HashMap<Integer, Integer> mappedPrevToNewIndexes()
 	{
 		return mappedPrevToNewIndexes;
 	}
 	
+	/**
+	 * @return mappedNewToPrevIndexes
+	 */
 	public static HashMap<Integer, Integer> mappedNewToPrevIndexes()
 	{
 		return mappedNewToPrevIndexes;
 	}
 	
+	/**
+	 * @return surplusIndexes
+	 */
 	public static HashSet<Integer> surplusIndexes()
 	{
 		return surplusIndexes;
 	}
 	
+	/**
+	 * @return mappedInitToNewIndexes
+	 */
 	public static HashMap<Integer, Integer> mappedInitToNewIndexes()
 	{
 		return mappedInitToNewIndexes;
 	}
 	
+	/**
+	 * @return mappedNewToInitIndexes
+	 */
 	public static HashMap<Integer, Integer> mappedNewToInitIndexes()
 	{
 		return mappedNewToInitIndexes;
 	}
 	
+	/**
+	 * @return surplusInitIndexes
+	 */
 	public static HashSet<Integer> surplusInitIndexes()
 	{
 		return surplusInitIndexes;
 	}
 	
+	/**
+	 * @return prevDimensionBoard
+	 */
 	public static int prevDimensionBoard()
 	{
 		return prevDimensionBoard;
 	}
 	
+	/**
+	 * @return prevAreaBoard
+	 */
 	public static int prevAreaBoard()
 	{
 		return prevAreaBoard;
 	}
 	
+	/**
+	 * @return prevTotalIndexes
+	 */
 	public static int prevTotalIndexes()
 	{
 		return prevTotalIndexes;
 	}
 	
+	/**
+	 * @return newDimensionBoard
+	 */
 	public static int newDimensionBoard()
 	{
 		return newDimensionBoard;
 	}
 	
+	/**
+	 * @return newAreaBoard
+	 */
 	public static int newAreaBoard()
 	{
 		return newAreaBoard;
 	}
 	
+	/**
+	 * @return newTotalIndexes
+	 */
 	public static int newTotalIndexes()
 	{
 		return newTotalIndexes;
 	}
 	
+	/**
+	 * @return diff
+	 */
 	public static int diff()
 	{
 		return diff;
 	}
 	
+	/**
+	 * @return initDimensionBoard
+	 */
 	public static int initDimensionBoard()
 	{
 		return initDimensionBoard;
 	}
 	
+	/**
+	 * @return initAreaBoard
+	 */
 	public static int initAreaBoard()
 	{
 		return initAreaBoard;
 	}
 	
+	/**
+	 * @return initTotalIndexes
+	 */
 	public static int initTotalIndexes()
 	{
 		return initTotalIndexes;
 	}
 	
+	/**
+	 * @return diffInit
+	 */
 	public static int diffInit()
 	{
 		return diffInit;
 	}
 	
+	/**
+	 * @return initMaxPerColRow
+	 */
 	public static HashMap<Integer, Integer> initMaxPerColRow()
 	{
 		return initMaxPerColRow;
 	}
 	
+	/**
+	 * @return initMinPerColRow
+	 */
 	public static HashMap<Integer, Integer> initMinPerColRow()
 	{
 		return initMinPerColRow;
 	}
 	
+	/**
+	 * @return initRowsSizeCumul
+	 */
 	public static ArrayList<Integer> initRowsSizeCumul()
 	{
 		return initRowsSizeCumul;
 	}
-	
+
+	/**
+	 * @return initMinColPerRowList
+	 */
 	public static ArrayList<Integer> initMinColPerRowList()
 	{
 		return initMinColPerRowList;
 	}
-	
+
+	/**
+	 * @return initRowsSizeCumulTriangular
+	 */
 	public static ArrayList<Integer> initRowsSizeCumulTriangular()
 	{
 		return initRowsSizeCumulTriangular;
 	}
-	
+
+	/**
+	 * @return initMaxIndexRowOrCol
+	 */
 	public static int initMaxIndexRowOrCol()
 	{
 		return initMaxIndexRowOrCol;
 	}
 	
-	public static HashMap<Integer, Integer>initMinColPerRow()
+	/**
+	 * @return initMinColPerRow
+	 */
+	public static HashMap<Integer, Integer> initMinColPerRow()
 	{
 		return initMinColPerRow;
 	}
 	
+	/**
+	 * @return initMaxColPerRow
+	 */
 	public static HashMap<Integer, Integer> initMaxColPerRow()
 	{
 		return initMaxColPerRow;
 	}
 	
+	/**
+	 * @return initMaxRowPerCol
+	 */
 	public static HashMap<Integer, Integer> initMaxRowPerCol()
 	{
 		return initMaxRowPerCol;
@@ -220,7 +293,7 @@ public class GrowingBoard
 	 * @param context
 	 * @return step(s) from which the board will be growing / shrinking
 	 */
-	public static int growingStep(Context context)
+	public static int growingStep(final Context context)
 	{
 		return ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square
 			? Constants.GROWING_STEP_SQUARE_BOARDLESS :  ((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal 
@@ -266,12 +339,10 @@ public class GrowingBoard
 		initMaxRowPerCol = null;
 		
 		perimeter = null;
-		isVisual = false;
-		
-		movesDone = null;
+		isVisual = false;		
 	}
 	
-	protected static void initInitConstants(Context context, int initDimension)
+	protected static void initInitConstants(final Context context, final int initDimension)
 	{
 		initDimensionBoard = initDimension;
 		
@@ -458,7 +529,7 @@ public class GrowingBoard
 	 *
 	 * @return the index based on the coordinates.
 	 */
-	protected static int coordToIndexHex(int row, int col, int rowSizeCumul, int dim)
+	protected static int coordToIndexHex(final int row, final int col, final int rowSizeCumul, final int dim)
 	{
 		int newRow = row - (dim - 1);
 		newRow = newRow > 0 ? newRow : 0;
@@ -487,7 +558,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void initMappingIndexesHexagonal(Context context)
+	protected static void initMappingIndexesHexagonal(final Context context)
 	{
 		// data structures to map between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
@@ -633,7 +704,7 @@ public class GrowingBoard
 	 *
 	 * @return the index based on the coordinates.
 	 */
-	protected static int coordToIndexTriangle(int col, int minColPerRow, int rowsSizeCumul)
+	protected static int coordToIndexTriangle(final int col, final int minColPerRow, final int rowsSizeCumul)
 	{
 		return rowsSizeCumul + (col - minColPerRow)/2;
 	}
@@ -644,7 +715,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void initMappingIndexesTriangle(Context context)
+	protected static void initMappingIndexesTriangle(final Context context)
 	{
 		// data structures to map between current plate and new plate
 		mappedPrevToNewIndexes = new HashMap<Integer, Integer>();
@@ -799,7 +870,7 @@ public class GrowingBoard
 	 * @param currDimensionBoard dimension of the current board (size of one side of the board), that has not changed size yet.
 	 * @param futureDimensionBoard dimension of the new board (size of one side of the board).
 	 */
-	protected static void initMainConstants(Context context, int currDimensionBoard, int futureDimensionBoard) {
+	protected static void initMainConstants(final Context context, final int currDimensionBoard, final int futureDimensionBoard) {
 
 		if (initDimensionBoard() == 0)
 			initInitConstants(context, currDimensionBoard);
@@ -854,23 +925,16 @@ public class GrowingBoard
 	 * mappedNewToInitIndexes : mapping giving the new index as key and the init index as value.
 	 * surplusInitIndexes : new indexes that don't have a mapping to the init plate as they are new existing sites.
 	 */
-	protected static void initMappingIndexes(Context context)
+	protected static void initMappingIndexes(final Context context)
 	{
-		if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square) {
+		if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Square)
 			initMappingIndexesSquare();
-		}
 		else if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Hexagonal)
-		{
 			initMappingIndexesHexagonal(context);
-		}
 		else if (((Boardless) context.game().board()).tiling() == TilingBoardlessType.Triangular)
-		{
 			initMappingIndexesTriangle(context);
-		}
 		else
-		{
 			throw new UnsupportedOperationException("Tiling "+((Boardless) context.game().board()).tiling()+" not implement for boardless games.");
-		}
 	}
 	
 	//-------------------------------------------------------------------------
@@ -881,7 +945,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateTopology(Context context)
+	protected static void updateTopology(final Context context)
 	{
 		context.game().update();
 	}
@@ -892,9 +956,8 @@ public class GrowingBoard
 	 * @param board
 	 * @param newSize new size of the board.
 	 */
-	protected static void updateBoardDimensions(Context context, Boardless board, int newSize) 
+	protected static void updateBoardDimensions(final Context context, final Boardless board, final int newSize) 
 	{
-		System.out.println("GrowingBoard.java updateBoardDimensions() curr size : "+board.dimension()+ " - new size : "+newSize);
 		GraphFunction newGraphFunction = board.tiling() == TilingBoardlessType.Square
 				? new RectangleOnSquare(new DimConstant(newSize), null, null, null) : board.tiling() == TilingBoardlessType.Hexagonal 
 				? new HexagonOnHex(new DimConstant(newSize)) : new TriangleOnTri(new DimConstant(newSize));
@@ -907,11 +970,10 @@ public class GrowingBoard
 	/** 
 	 * Checks if player touched an edge of the board by performing a dichotomic search on a TopologyElement list.
 	 * 
-	 * @param topologyElements List into the search needs to be done. Made up of edges element.
 	 * @param target Value we are looking for into the list.
 	 * @return Index of the element in the list if found, -1 otherwise.
 	 */
-	public static boolean isTouchingEdge(int target) {
+	public static boolean isTouchingEdge(final int target) {
 		if (target == Constants.UNDEFINED) return false;
 		
         int start = 0;
@@ -943,7 +1005,7 @@ public class GrowingBoard
 	 * @param maxChunkVal
 	 * @param mappedPrevToNewIndexes
 	 */
-	protected static HashedChunkSet copyChunkWithNewBoardSize(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks, HashMap<Integer, Integer> mappingIndexes)
+	protected static HashedChunkSet copyChunkWithNewBoardSize(final HashedChunkSet previousHCS, final ZobristHashGenerator generator, final int maxChunkVal, final int numChunks, final HashMap<Integer, Integer> mappingIndexes)
 	{
 		HashedChunkSet newHCS = new HashedChunkSet(generator, maxChunkVal, numChunks);
 		if (previousHCS != null)
@@ -969,7 +1031,7 @@ public class GrowingBoard
 	 * @param maxChunkVal
 	 * @param mappedPrevToNewIndexes
 	 */
-	protected static HashedChunkSet copyChunk(HashedChunkSet previousHCS, ZobristHashGenerator generator, int maxChunkVal, int numChunks)
+	protected static HashedChunkSet copyChunk(final HashedChunkSet previousHCS, final ZobristHashGenerator generator, final int maxChunkVal, final int numChunks)
 	{
 		HashedChunkSet newHCS = new HashedChunkSet(generator, maxChunkVal, numChunks);
 		if (previousHCS != null)
@@ -999,7 +1061,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateChunks(Context context, HashMap<Integer, Integer> mappingIndexes, HashSet<Integer> addedIndexes)
+	protected static void updateChunks(final Context context, final HashMap<Integer, Integer> mappingIndexes, final HashSet<Integer> addedIndexes)
 	{
 		final Game game = context.game();
 		final int numPlayers = game.players().count();
@@ -1024,9 +1086,8 @@ public class GrowingBoard
 				Region empty;
 
 				// update each container state (container state 0 is the board state)
-				if (i == 0) {
-					int[] emptySitesX = containerFlatState.emptySites().sites();
-					
+				if (i == 0) 
+				{					
 					// TODO maybe there is another way to copy a HashedChunkSet
 					who = copyChunkWithNewBoardSize(containerFlatState.who(), generator, numPlayers+1, numSites, mappingIndexes);
 					what = copyChunkWithNewBoardSize(containerFlatState.what(), generator, containerFlatState.getMaxWhatVal(), numSites, mappingIndexes);
@@ -1175,7 +1236,7 @@ public class GrowingBoard
 	 * @param mapping Mapping to use to map move from previous to new board.
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge, HashMap<Integer, Integer> mapping)
+	public static Move generateNewMove(final Move prevMove, final boolean isMoveDoneOnEdge, final HashMap<Integer, Integer> mapping)
 	{
 		List<Action> actions = prevMove.actions();
 		
@@ -1240,7 +1301,7 @@ public class GrowingBoard
 	 * lead to an increase of the board size. 
 	 * @return the new move.
 	 */
-	public static Move generateNewMove(Move prevMove, boolean isMoveDoneOnEdge)
+	public static Move generateNewMove(final Move prevMove, final boolean isMoveDoneOnEdge)
 	{
 		return generateNewMove(prevMove, isMoveDoneOnEdge, mappedPrevToNewIndexes());
 	}
@@ -1250,8 +1311,9 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 * @param movesDone
+	 * @param mappingIndexes
 	 */
-	public static void replayMoves(Context context, List<Move> movesDone, HashMap<Integer, Integer> mappingIndexes)
+	public static void replayMoves(final Context context, final List<Move> movesDone, final HashMap<Integer, Integer> mappingIndexes)
 	{
 		Move move = null;
 		
@@ -1273,7 +1335,7 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	protected static void updateOwnedPrevToNew(Context context, HashMap<Integer, Integer> mappingIndexes)
+	protected static void updateOwnedPrevToNew(final Context context, final HashMap<Integer, Integer> mappingIndexes)
 	{
 		FlatCellOnlyOwned owned = (FlatCellOnlyOwned) context.state().owned();
 		FastTIntArrayList[][] locations = owned.locations();
@@ -1291,23 +1353,6 @@ public class GrowingBoard
 			}
 	}
 	
-	/**
-	 * Update the Owned (contains information about where the pieces are (indexes) for 
-	 * a specific player / board).  Does it by reseting the Owned structure, as moves, 
-	 * when being re-apply, will add proper information to the structure.
-	 * 
-	 * PROBLEM : When re-creating moves with the proper index for the new board size, 
-	 * I don't really re-create Move, but I update the previous ones. And Add Move does'nt 
-	 * re-add data in the Owned, there is a code preventing it, it is only done at 
-	 * initialization of the Object, and it is only initialize once in my current implementation.
-	 * 
-	 * @param context
-	 */
-	protected static void resetOwned(Context context) 
-	{
-		context.state().setOwned(new FlatCellOnlyOwned(context.game())); 
-	}
-	
 	/** 
 	 * Update the chunks and the owned based on the new board. 
 	 * Also apply the historic of move mapped to the new board.
@@ -1316,7 +1361,7 @@ public class GrowingBoard
 	 * @param movesDone
 	 * @param replayMoves
 	 */
-	protected static void remakeTrial(Context context, List<Move> movesDone, final boolean replayMoves) 
+	protected static void remakeTrial(final Context context, final List<Move> movesDone, final boolean replayMoves) 
 	{
 		if (prevDimensionBoard() < newDimensionBoard())
 		{
@@ -1339,26 +1384,9 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 */
-	public static void updateChunksAndOwned(Context context) 
+	public static void updateChunksAndOwned(final Context context) 
 	{
 		remakeTrial(context, null, false);
-	}
-	
-	public static void redoneAllButLast(Context context)
-	{	
-		Move move = null;
-		int numInitialPlacementMoves = context.trial().numInitialPlacementMoves();
-		
-		for (int i = 0; i < movesDone.size(); i++)
-		{
-			move = movesDone.get(i);
-			generateNewMove(move, false);
-			
-			if (i>=numInitialPlacementMoves)
-			{
-				context.game().apply(context, move, false);
-			}
-		}
 	}
 	
 	/**
@@ -1376,7 +1404,7 @@ public class GrowingBoard
 	 * 
 	 * @param app
 	 */
-	protected static void remakeTrial(Context context, final boolean replayMoves) 
+	protected static void remakeTrial(final Context context, final boolean replayMoves) 
 	{
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
@@ -1389,10 +1417,10 @@ public class GrowingBoard
 	 * 
 	 * @param context
 	 * @param fromSize TODO
-	 * @param toSize TODO
-	 * @param replayMove TODO
+	 * @param toSize
+	 * @param replayMoves
 	 */
-	public static void updateBoard(Context context, int fromSize, int toSize, final boolean replayMoves)
+	public static void updateBoard(final Context context, final int fromSize, final int toSize, final boolean replayMoves)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
@@ -1400,7 +1428,6 @@ public class GrowingBoard
 		
 		// TODO check that the move is applied on a board type container
 		updateBoardDimensions(context, board, toSize);
-		remakeTrial(context, replayMoves);
 	}
 	
 	/** 
@@ -1412,58 +1439,13 @@ public class GrowingBoard
 	 * @param fromSize TODO
 	 * @param toSize TODO
 	 */
-	public static void checkMoveImpactOnBoard(Context context, Move move, final int fromSize, final int toSize, final boolean replayMoves)
-	{
-		if (context.game().isBoardless()) 
-		{
-			if (!isVisual)
-				perimeter = context.topology().perimeter(context.board().defaultSite());		
-			if (isTouchingEdge(move.to())) 
-			{
-				updateBoard(context, fromSize, toSize, replayMoves);
-			}
-		}
-	}
-	
-	public static void checkMoveImpactOnBoard3(Context context, final Move move, List<Move> movesDone, int fromSize, final int toSize, final boolean replayMoves) 
-	{
-		
-		if (context.game().isBoardless()) 
-		{
-			if (!isVisual)
-				perimeter = context.topology().perimeter(context.board().defaultSite());
-			
-			if (isTouchingEdge(move.to())) 
-			{
-				Game game = context.game();
-				Boardless board = (Boardless) game.board();
-				
-				if (!isVisual)
-				{
-					initMainConstants(context, fromSize, toSize);
-					updateBoardDimensions(context, board, toSize);
-					updateTopology(context);
-				}
-				
-			}
-		}
-	}
-	
-	
-	public static void checkMoveImpactOnBoard2(final Context context, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
+	public static void checkMoveImpactOnBoard(final Context context, final Move move, int fromSize, final int toSize, final boolean replayMoves) 
 	{
 		if (context.game().isBoardless()) 
 		{
 			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-			if (isTouchingEdge(move.to())) 
-			{
-				Game game = context.game();
-				Boardless board = (Boardless) game.board();
-				initMainConstants(context, fromSize, toSize);
-				
-				// TODO check that the move is applied on a board type container
-				updateBoardDimensions(context, board, toSize);
-			}
+			if (isTouchingEdge(move.to()))
+				updateBoard(context, fromSize, toSize, replayMoves);
 		}
 	}
 }

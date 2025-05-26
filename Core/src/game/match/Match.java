@@ -188,19 +188,22 @@ public class Match extends Game
 			{
 				if (!GrowingBoard.isVisual) //TODO : only if move touches the edge, else useless to calculate that each time
 					GrowingBoard.perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-	
+				
 				if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
 				{
+					List<Move> movesDone = context.trial().generateCompleteMovesList();
 					if (!GrowingBoard.isVisual)
 					{
 						int currDim = ((Boardless) context.board()).dimension();
 						int newDim = currDim + GrowingBoard.growingStep(context);
-	
+						
 						GrowingBoard.checkMoveImpactOnBoard(context, move, currDim, newDim, true);
 					}
 					GrowingBoard.updateChunksAndOwned(context);
-					GrowingBoard.redoneAllButLast(context);
 					GrowingBoard.generateNewMove(move, true);
+					
+					if (!GrowingBoard.isVisual)
+						GrowingBoard.replayMoves(context, movesDone, GrowingBoard.mappedPrevToNewIndexes());
 				}
 			}
 				

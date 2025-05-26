@@ -3088,7 +3088,7 @@ public class Game extends BaseLudeme implements API, Serializable
 						int currDim = ((Boardless) context.board()).dimension();
 						int newDim = currDim + GrowingBoard.growingStep(context);
 						
-						GrowingBoard.checkMoveImpactOnBoard2(context, move, currDim, newDim, true);
+						GrowingBoard.checkMoveImpactOnBoard(context, move, currDim, newDim, true);
 					}
 					GrowingBoard.updateChunksAndOwned(context);
 					GrowingBoard.generateNewMove(move, true);
