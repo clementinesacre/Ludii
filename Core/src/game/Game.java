@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,13 +20,13 @@ import org.apache.commons.rng.RandomProviderState;
 import annotations.Hide;
 import annotations.Opt;
 import game.boardless.GrowingBoard;
+import game.boardless.UpdateBoard;
 //import app.PlayerApp;
 import game.equipment.Equipment;
 import game.equipment.Item;
 import game.equipment.component.Component;
 import game.equipment.container.Container;
 import game.equipment.container.board.Board;
-import game.equipment.container.board.Boardless;
 import game.equipment.container.board.Track;
 import game.equipment.container.other.Deck;
 import game.equipment.container.other.Dice;
@@ -37,7 +36,6 @@ import game.functions.booleans.deductionPuzzle.ForAll;
 import game.functions.booleans.is.Is;
 import game.functions.booleans.is.IsLineType;
 import game.functions.dim.DimConstant;
-import game.functions.dim.DimFunction;
 import game.functions.graph.generators.basis.square.RectangleOnSquare;
 import game.functions.ints.IntConstant;
 import game.functions.ints.IntFunction;
@@ -116,8 +114,6 @@ import other.topology.Topology;
 import other.topology.TopologyElement;
 import other.translation.LanguageUtils;
 import other.trial.Trial;
-import game.functions.graph.GraphFunction;
-//import app.DesktopApp;
 
 /**
  * Defines the main ludeme that describes the players, mode, equipment and rules of a game.
@@ -163,9 +159,6 @@ public class Game extends BaseLudeme implements API, Serializable
 	
 	/** Maximum number of moves for this game */
 	protected int maxMovesLimit = Constants.DEFAULT_MOVES_LIMIT;
-	
-	/** Keep track of whether the last move was made on an edge - only used in the case of Boardless game */
-	private boolean lastMoveOnEdge = false;
 
 	//-----------------------------State/Context-------------------------------
 
@@ -3085,17 +3078,13 @@ public class Game extends BaseLudeme implements API, Serializable
 				{
 					List<Move> movesDone = context.trial().generateCompleteMovesList();
 					if (!GrowingBoard.isVisual)
-					{
-						int currDim = ((Boardless) context.board()).dimension();
-						int newDim = currDim + GrowingBoard.growingStep(context);
-						
-						GrowingBoard.checkMoveImpactOnBoard(context, move, currDim, newDim, true);
-					}
-					GrowingBoard.updateChunksAndOwned(context);
+						GrowingBoard.checkMoveImpactOnBoard(context, move, 1, true);
+
+					GrowingBoard.updateChunksAndOwned(context, 1);
 					GrowingBoard.generateNewMove(move, true);
 					
 					if (!GrowingBoard.isVisual)
-						GrowingBoard.replayMoves(context, movesDone, GrowingBoard.mappedPrevToNewIndexes());
+						GrowingBoard.replayMoves(context, movesDone, UpdateBoard.mappedPrevToNewIndexes());
 				}
 			}
 

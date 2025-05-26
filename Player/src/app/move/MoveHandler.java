@@ -134,9 +134,7 @@ public class MoveHandler
 			{
 				if (context.game().isBoardless()) 
 				{
-					int currDim = ((Boardless) context.board()).dimension();
-					int newDim = currDim + GrowingBoardVisual.growingStep(context);
-					boolean isMoveOnEdge = GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), currDim, newDim, true);
+					boolean isMoveOnEdge = GrowingBoardVisual.checkMoveImpactOnBoard(app, possibleMoves.get(0), 1, true);
 					
 					if (isMoveOnEdge)
 						GrowingBoardVisual.generateNewMove(possibleMoves.get(0), true);

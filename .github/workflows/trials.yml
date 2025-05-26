@@ -5,9 +5,9 @@ name: Run Trials
 
 on:
   push:
-    branches: [ "master", "dev", "dev_clean", "boardless-growing-state-start-to-end"]
+    branches: [ "master", "dev", "dev_clean", "boardless-growing-target-zone-start-to-end"]
   pull_request:
-    branches: [ "master", "dev", "dev_clean", "boardless-growing-state-start-to-end"]
+    branches: [ "master", "dev", "dev_clean", "boardless-growing-target-zone-start-to-end"]
 
 jobs:
   build:

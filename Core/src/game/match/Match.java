@@ -12,6 +12,7 @@ import annotations.Hide;
 import annotations.Opt;
 import game.Game;
 import game.boardless.GrowingBoard;
+import game.boardless.UpdateBoard;
 import game.equipment.Equipment;
 import game.equipment.component.Component;
 import game.equipment.container.Container;
@@ -193,17 +194,11 @@ public class Match extends Game
 				{
 					List<Move> movesDone = context.trial().generateCompleteMovesList();
 					if (!GrowingBoard.isVisual)
-					{
-						int currDim = ((Boardless) context.board()).dimension();
-						int newDim = currDim + GrowingBoard.growingStep(context);
-						
-						GrowingBoard.checkMoveImpactOnBoard(context, move, currDim, newDim, true);
-					}
-					GrowingBoard.updateChunksAndOwned(context);
+						GrowingBoard.checkMoveImpactOnBoard(context, move, 1, true);
 					GrowingBoard.generateNewMove(move, true);
 					
 					if (!GrowingBoard.isVisual)
-						GrowingBoard.replayMoves(context, movesDone, GrowingBoard.mappedPrevToNewIndexes());
+						GrowingBoard.replayMoves(context, movesDone, UpdateBoard.mappedPrevToNewIndexes());
 				}
 			}
 				

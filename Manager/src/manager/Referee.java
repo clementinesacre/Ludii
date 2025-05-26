@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import game.Game;
 import game.boardless.GrowingBoard;
+import game.boardless.UpdateBoard;
 import game.equipment.container.board.Boardless;
 import game.functions.dim.DimConstant;
 import game.functions.graph.GraphFunction;
@@ -296,7 +297,7 @@ public class Referee
 		// map initial moves to initial board, to be able to start a new run of the game
 		List<Move> initialMovesList = context.trial().generateCompleteMovesList();
 		for (int i=0; i<initialMovesList.size(); i++)
-			initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, GrowingBoard.mappedNewToInitIndexes()));			
+			initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, UpdateBoard.mappedNewToInitIndexes()));			
 		
 		GrowingBoard.reset();
 	}

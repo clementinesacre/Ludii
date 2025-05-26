@@ -231,15 +231,15 @@ public class ToolView extends View
 		
 		// Topology must be updated before state is reset as when it is boardless, it will refer at the center of the board to start over
 		if (context.game().isBoardless()) {
-			int currDim = ((Boardless) context.board()).dimension();
-			int newDim;
+			int boardSizeChange;
 			if (moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
-				newDim = ((Boardless) context.board()).initDimension();
+				boardSizeChange = -2;
 			else if (currMove.isOnEdge())
-				newDim = currDim - GrowingBoardVisual.growingStep(context);
+				boardSizeChange = -1;
 			else 
-				newDim = currDim;
-			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, currDim, newDim);
+				boardSizeChange = 0;
+			
+			GrowingBoardVisual.updateBoardWithoutRemakeTrial(app, context, boardSizeChange, currMove);
 		}
 		
 		GameUtil.resetGame(app, true);
@@ -248,9 +248,17 @@ public class ToolView extends View
 		// -------------
 		if (context.game().isBoardless()) 
 		{
+			int boardSizeChange;
+			if (moveToJumpToWithSetup == context.currentInstanceContext().trial().numInitialPlacementMoves())
+				boardSizeChange = -2;
+			else if (currMove.isOnEdge())
+				boardSizeChange = -1;
+			else 
+				boardSizeChange = 0;
+			
 			// the board is updated even if last move was not done on edge as when the game is reset lines above, it reset the board to 
 			// its initial state - which must be updated
-			GrowingBoardVisual.remakeTrial(app, false);
+			GrowingBoardVisual.remakeTrial(app, boardSizeChange, false);
 
 			for (int i=0; i<moveToJumpToWithSetup; i++)
 				allMoves.set(i, GrowingBoardVisual.generateNewMove(allMoves.get(i), false));			

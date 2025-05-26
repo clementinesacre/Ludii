@@ -540,4 +540,18 @@ public class Face extends GraphElement
 	
 	//-------------------------------------------------------------------------
 	
+	/**
+	 * @param x         The x position.
+	 * @param y         The y position.
+	 * @param z         The z position.
+	 * @param tolerance The tolerance.
+	 * @return Face at same location within specified tolerance (e.g. 0.1).
+	 */
+	public boolean coincident(final double x, final double y, final double z, final double tolerance)
+	{
+		final double error = Math.abs(x - pt.x()) + Math.abs(y - pt.y()) + Math.abs(z - pt.z());
+		if (error < tolerance)
+			return true;
+		return false;
+	}
 }

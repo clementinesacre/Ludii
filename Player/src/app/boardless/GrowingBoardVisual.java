@@ -19,13 +19,13 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * Updates the board dimensions and update the visual to reflect the new size.
 	 * 
 	 * @param app
-	 * @param newSize new size of the board.
+	 * @param boardSizeChange
 	 */
-	public static void updateBoardDimensions(final PlayerApp app, final int newSize) 
+	public static void updateBoardDimensions(final PlayerApp app, final int boardSizeChange, final Move move) 
 	{
 		Game game = app.manager().ref().context().game();
 		Boardless board = (Boardless) game.board();
-		updateBoardDimensions(app.manager().ref().context(), board, newSize);
+		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange, move);
 
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -43,12 +43,14 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * 
 	 * @param app
 	 */
-	public static void remakeTrial(final PlayerApp app, final boolean replayMoves) 
+	public static void remakeTrial(final PlayerApp app, final int boardSizeChange, final boolean replayMoves) 
 	{
 		Context context = app.manager().ref().context();
+		
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
-		remakeTrial(context, movesDone, replayMoves);
+
+		remakeTrial(context, movesDone, boardSizeChange, replayMoves);
 	}
 	
 	/**
@@ -61,12 +63,10 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * @param toSize TODO
 	 * @param replayMoves TODO
 	 */
-	public static void updateBoardWithoutRemakeTrial(final PlayerApp app, final Context context, final int fromSize, final int toSize)
+	public static void updateBoardWithoutRemakeTrial(final PlayerApp app, final Context context, final int boardSizeChange, final Move move)
 	{
-		initMainConstants(context, fromSize, toSize);
-
 		// TODO check that the move is applied on a board type container
-		updateBoardDimensions(app, toSize);
+		updateBoardDimensions(app, boardSizeChange, move);
 		perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 	}
 	
@@ -79,13 +79,11 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * @param toSize TODO
 	 * @param replayMoves TODO
 	 */
-	private static void updateBoard(final PlayerApp app, final Context context, final int fromSize, final int toSize, final boolean replayMoves)
+	private static void updateBoard(final PlayerApp app, final Context context, final int boardSizeChange, final Move move, final boolean replayMoves)
 	{
-		initMainConstants(context, fromSize, toSize);
-
 		// TODO check that the move is applied on a board type container
-		updateBoardDimensions(app, toSize);
-		remakeTrial(app, replayMoves);
+		updateBoardDimensions(app, boardSizeChange, move);
+		remakeTrial(app, boardSizeChange, replayMoves);
 	}
 	
 	/** 
@@ -99,7 +97,7 @@ public class GrowingBoardVisual extends GrowingBoard
 	 * @param replayMoves if wee need to re-apply the moves 
 	 * @return true if move was applied on edge
 	 */
-	public static boolean checkMoveImpactOnBoard(final PlayerApp app, final Move move, final int fromSize, final int toSize, final boolean replayMoves) 
+	public static boolean checkMoveImpactOnBoard(final PlayerApp app, final Move move, final int boardSizeChange, final boolean replayMoves) 
 	{
 		final Context context = app.manager().ref().context();
 
@@ -108,7 +106,7 @@ public class GrowingBoardVisual extends GrowingBoard
 			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 			if (isTouchingEdge(move.to())) 
 			{
-				updateBoard(app, context, fromSize, toSize, replayMoves);
+				updateBoard(app, context, boardSizeChange, move, replayMoves);
 				return true;
 			}
 		}
