@@ -58,7 +58,7 @@ public class UpdateBoard
 	{
 		if (mappingBoardlessBoard != null)
 		{
-			mappingBoardlessBoard.firsTime = true;
+			mappingBoardlessBoard.firstTime = true;
 			mappingBoardlessBoard.reset();
 			mappingBoardlessBoard = null;
 		}

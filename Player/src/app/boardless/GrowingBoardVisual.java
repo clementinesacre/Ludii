@@ -35,8 +35,6 @@ public class GrowingBoardVisual extends GrowingBoard
 	private static void updateBoardDimensions(final PlayerApp app, Boardless board, int boardSizeChange, Move move) 
 	{
 		updateBoardDimensions(app.manager().ref().context(), board, boardSizeChange, move);
-
-		//updateTopology(app.manager().ref().context());
 		
 		// Update the visual 
 		// TODO Check if all the code inside setMVC is useful (inspired from GameUtil.resetUIVariables())
@@ -114,8 +112,6 @@ public class GrowingBoardVisual extends GrowingBoard
 		Boardless board = (Boardless) game.board();
 		
 		// TODO check that the move is applied on a board type container
-		System.out.println("GrowingBoardVisual.java updateBoard() : touching an edge in a boardless game --> need to increase board size");
-		// update dimensions only if board change size
 		updateBoardDimensions(app, board, boardSizeChange, move);
 		perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
 	}
@@ -131,7 +127,7 @@ public class GrowingBoardVisual extends GrowingBoard
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 * @param replayMoves TODO
 	 */
-	public static void updateBoard(final PlayerApp app, Context context, Move move, int boardSizeChange, final boolean replayMoves)
+	/*public static void updateBoard(final PlayerApp app, Context context, Move move, int boardSizeChange, final boolean replayMoves)
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
@@ -142,7 +138,7 @@ public class GrowingBoardVisual extends GrowingBoard
 		updateBoardDimensions(app, board, boardSizeChange, move);
 		
 		remakeTrial(app, replayMoves);
-	}
+	}*/
 	
 	/** 
 	 * Check if the move was made on a boardless board and on one edge of the board. 
@@ -155,7 +151,7 @@ public class GrowingBoardVisual extends GrowingBoard
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 * @param replayMoves if wee need to re-apply the moves 
 	 */
-	public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int boardSizeChange, final boolean replayMoves) 
+	/*public static void checkMoveImpactOnBoard(final PlayerApp app, final Move move, int boardSizeChange, final boolean replayMoves) 
 	{
 		final Context context = app.manager().ref().context();
 
@@ -169,7 +165,7 @@ public class GrowingBoardVisual extends GrowingBoard
 				updateBoard(app, context, move, boardSizeChange, replayMoves);				
 			}
 		}
-	}
+	}*/
 	
 	public static void checkMoveImpactOnBoard2(final PlayerApp app, final Move move, int boardSizeChange, final boolean replayMoves) 
 	{
@@ -180,10 +176,6 @@ public class GrowingBoardVisual extends GrowingBoard
 		if (context.game().isBoardless()) 
 		{
 			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
 			if (isTouchingEdge(move.to())) 
 			{
 				Game game = context.game();
@@ -195,7 +187,6 @@ public class GrowingBoardVisual extends GrowingBoard
 				if (replayMoves) // TODO does not change if we call it or not - test that
 					resetMoves(app);
 				
-				//remakeTrial(context, movesDone, legalMoves, replayMoves);
 			}
 		}
 	}

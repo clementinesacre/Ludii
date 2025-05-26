@@ -3082,7 +3082,7 @@ public class Game extends BaseLudeme implements API, Serializable
 				if (stupidParam && GrowingBoard.isTouchingEdge(move.to()) && board().topology().centre(SiteType.Cell).size() > 0)
 				{
 					if (!GrowingBoard.isVisual)
-						GrowingBoard.checkMoveImpactOnBoard2(context, move, 1, true);
+						GrowingBoard.checkMoveImpactOnBoard(context, move, 1, true);
 					GrowingBoard.updateChunksAndOwned(context);
 					GrowingBoard.redoneAllButLast(context);
 					GrowingBoard.generateNewMove(move, true);

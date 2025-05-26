@@ -88,18 +88,8 @@ public class GrowingBoard
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
 	protected static void updateBoardDimensions(Context context, Boardless board, int boardSizeChange, Move move) 
-	{			
-		System.out.println("GrowingBoard.java updateBoardDimensions() boardSizeChange : "+boardSizeChange);
-		
-		
-		//Graph newGraph = GrowingBoardInterface.generateGraph(context, boardSizeChange, (Cell) context.topology().getGraphElement(SiteType.Cell, move.to()));
-		//board.setGraphFunction(newGraph);
-		
+	{
 		UpdateBoard.createMappings(context, move, boardSizeChange);
-		
-		//board.setGraphFunction(newGraphFunction);
-		//board.setDimension(newSize);
-		
 		updateTopology(context);
 	}
 	
@@ -482,23 +472,6 @@ public class GrowingBoard
 			}
 	}
 	
-	/**
-	 * Update the Owned (contains information about where the pieces are (indexes) for 
-	 * a specific player / board).  Does it by reseting the Owned structure, as moves, 
-	 * when being re-apply, will add proper information to the structure.
-	 * 
-	 * PROBLEM : When re-creating moves with the proper index for the new board size, 
-	 * I don't really re-create Move, but I update the previous ones. And Add Move does'nt 
-	 * re-add data in the Owned, there is a code preventing it, it is only done at 
-	 * initialization of the Object, and it is only initialize once in my current implementation.
-	 * 
-	 * @param context
-	 */
-	protected static void resetOwned(Context context) 
-	{
-		context.state().setOwned(new FlatCellOnlyOwned(context.game())); 
-	}
-	
 	/** 
 	 * Update the chunks and the owned based on the new board. 
 	 * Also apply the historic of move mapped to the new board.
@@ -569,7 +542,7 @@ public class GrowingBoard
 	 * 
 	 * @param app
 	 */
-	protected static void remakeTrial(Context context, final boolean replayMoves) 
+	/*protected static void remakeTrial(Context context, final boolean replayMoves) 
 	{
 		Trial trial = context.trial();
 		List<Move> movesDone = trial.generateCompleteMovesList();
@@ -577,7 +550,7 @@ public class GrowingBoard
 		if (replayMoves)
 			resetMoves(context);
 		remakeTrial(context, movesDone, legalMoves, replayMoves);
-	}
+	}*/
 	
 	/**
 	 * Updates board by making it grow logically.
@@ -592,11 +565,13 @@ public class GrowingBoard
 	{
 		Game game = context.game();
 		Boardless board = (Boardless) game.board();
-		
-		// TODO check that the move is applied on a board type container
-		// update dimensions only if board change size
+
 		updateBoardDimensions(context, board, boardSizeChange, move);
-		remakeTrial(context, replayMoves);
+
+		Trial trial = context.trial();
+		movesDone = trial.generateCompleteMovesList();
+		if (replayMoves)
+			resetMoves(context);		
 	}
 	
 	/** 
@@ -609,72 +584,13 @@ public class GrowingBoard
 	 * -2: Reset the board to its initial size ; -1: Reduce the board size based on last move ;
 	 *  0: Keep the board at its current size ; 1: Expand the board size based on the last move.
 	 */
-	public static void checkMoveImpactOnBoard(Context context, Move move, final int boardSizeChange, final boolean replayMoves)
-	{
-		if (context.game().isBoardless()) 
-		{
-			if (!isVisual)
-				perimeter = context.topology().perimeter(context.board().defaultSite());
-			if (isTouchingEdge(move.to())) 
-			{
-				updateBoard(context, move, boardSizeChange, replayMoves);
-			}
-		}
-	}
-	
-	public static void checkMoveImpactOnBoard3(Context context, final Move move, List<Move> movesDone, int boardSizeChange, final boolean replayMoves) 
-	{
-		
-		if (context.game().isBoardless()) 
-		{
-			if (!isVisual)
-				perimeter = context.topology().perimeter(context.board().defaultSite());
-			
-			System.out.println("GrowingBoard.java checkMoveImpactOnBoard3() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
-			if (isTouchingEdge(move.to())) 
-			{
-				Game game = context.game();
-				Boardless board = (Boardless) game.board();
-				
-				if (!isVisual)
-				{
-
-					updateBoardDimensions(context, board, boardSizeChange, move);
-					updateTopology(context);
-				}
-				
-			}
-		}
-		System.out.println("\n\n\n");
-	}
-	
-	
-	public static void checkMoveImpactOnBoard2(final Context context, final Move move, int boardSizeChange, final boolean replayMoves) 
+	public static void checkMoveImpactOnBoard(final Context context, final Move move, int boardSizeChange, final boolean replayMoves) 
 	{
 		if (context.game().isBoardless()) 
 		{
 			perimeter = new ArrayList<>(context.topology().perimeter(context.board().defaultSite()));
-			System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard2() isTouchingEdge : "+isTouchingEdge(move.to())+" - move : "+move);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.containers : "+game.equipment().containers().length);
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() game.equipment.sitesFrom : "+Arrays.toString(game.equipment().sitesFrom()));
-			//System.out.println("GrowingBoardVisual.java checkMoveImpactOnBoard() context.containerId : "+Arrays.toString(context.containerId()));
-			if (isTouchingEdge(move.to())) 
-			{
-				Game game = context.game();
-				Boardless board = (Boardless) game.board();
-
-				updateBoardDimensions(context, board, boardSizeChange, move);
-
-				Trial trial = context.trial();
-				movesDone = trial.generateCompleteMovesList();
-				if (replayMoves) // TODO does not change if we call it or not - test that
-					resetMoves(context);
-				
-				//remakeTrial(context, movesDone, legalMoves, replayMoves);
-			}
+			if (isTouchingEdge(move.to()))
+				updateBoard(context, move, boardSizeChange, replayMoves);
 		}
 	}
 }

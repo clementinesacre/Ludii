@@ -53,7 +53,7 @@ public abstract class BoardlessAbstract
 	protected Point3D[] newPoint3dVertices;
 	
 	// first time the class is called - this will allow initializing some specific data structures
-	protected boolean firsTime = true;
+	protected boolean firstTime = true;
 
 	protected int newTotalIndexesCells;
 	protected int initialNbCells;
@@ -142,10 +142,10 @@ public abstract class BoardlessAbstract
 		
 		surplusInitIndexes = new HashSet<Integer>();
 				
-		if (firsTime)
+		if (firstTime)
 		{
 			initFromScratch(context);
-			firsTime = false;
+			firstTime = false;
 		}
 	}
 	
@@ -466,7 +466,7 @@ public abstract class BoardlessAbstract
 		{
 			List<Integer> addedEdges = addedEdgesSinceInit.get(i);
 			for (Integer edgeId : addedEdges)
-				graph.removeFace(edgeId, false);
+				graph.removeEdge(edgeId);
 		}
 
 		int nbVerticesAddedSinceInit = addedVerticesSinceInit.size();
@@ -475,7 +475,7 @@ public abstract class BoardlessAbstract
 			List<Integer> addedVertices = addedVerticesSinceInit.get(i);
 			for (Integer vertexId : addedVertices)
 				graph.removeVertex(vertexId);
-		}
+		}		
 	}
 	
 	/**
@@ -574,7 +574,7 @@ public abstract class BoardlessAbstract
 			nbContainers += context.game().equipment().containers()[i].topology().getGraphElements(SiteType.Cell).size();
 		
 		init(context);
-		
+
 		int nbCellsAddedSinceInit = addedCellsSinceInit.size();
 		initialNbCells = graph.faces().size();
 
@@ -616,7 +616,7 @@ public abstract class BoardlessAbstract
 			}			
 		}
 		
-		firsTime = true;
+		firstTime = true;
 	}
 	
 	/**
