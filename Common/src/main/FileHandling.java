@@ -127,7 +127,8 @@ public class FileHandling
 					lud.contains("lud/board/war/replacement/checkmate/chess/Chex.lud") ||
 					lud.contains("lud/board/space/line/Plotto.lud") ||
 					lud.contains("lud/board/space/line/Ringo.lud") ||
-					lud.contains("lud/board/space/connection/Trax.lud")
+					lud.contains("lud/board/space/connection/Trax.lud") ||
+					lud.contains("lud/board/space/line/TestClementine.lud")
 				);
 	}
 	
