@@ -143,7 +143,16 @@ public final class PlayoutsPerSec
 		board.setDimension(size);
 
 		context.game().update();
-		GrowingBoard.resetMoves(context);
+
+		// reset moves
+		context.reset();
+		context.game().start(context, true);
+		context.game().incrementGameStartCount();
+
+		// map initial moves to initial board, to be able to start a new run of the game
+		List<Move> initialMovesList = context.trial().generateCompleteMovesList();
+		for (int i=0; i<initialMovesList.size(); i++)
+			initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, GrowingBoard.mappedNewToInitIndexes()));			
 		
 		GrowingBoard.reset();
 	}
