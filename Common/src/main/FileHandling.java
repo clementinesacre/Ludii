@@ -119,7 +119,18 @@ public class FileHandling
 				(
 					lud.contains("lud/bad/") ||
 					lud.contains("lud/bad_playout/") ||
-					lud.contains("lud/wishlist/") ||
+					lud.contains("lud/wishlist/")
+						);
+	}
+	
+	/**
+	 * @param lud
+	 * @return True if we wish to ignore the given lud
+	 */
+	public static boolean shouldIgnoreBoardlessLud(final String lud)
+	{
+		return 
+				(
 					
 					lud.contains("lud/dominoes/Block.lud") ||
 					lud.contains("lud/board/space/line/Andantino.lud") ||
