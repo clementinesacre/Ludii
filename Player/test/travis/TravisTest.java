@@ -102,225 +102,228 @@ public class TravisTest
 
 		for (final String filePath : choices)
 		{
-			final long startGameAt = System.nanoTime();
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/bad/"))
-				continue;
-
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/wip/"))
-				continue;
-
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/wishlist/"))
-				continue;
-
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/reconstruction/"))
-				continue;
-
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/WishlistDLP/"))
-				continue;
-
-			if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/test/"))
-				continue;
-
-			// We exclude that game from the tests because the legal moves are
-			// too slow to test.
-//			if (!filePath.replaceAll(Pattern.quote("\\"), "/").contains("Tavli"))
-//				continue;
-
-			// Get game description from resource
-			// System.out.println("Game: " + filePath);
-
-			String path = filePath.replaceAll(Pattern.quote("\\"), "/");
-			path = path.substring(path.indexOf("/lud/"));
-
-			String desc = "";
-			String line;
-			try 
-			(
-				final InputStream in = GameLoader.class.getResourceAsStream(path);
-				final BufferedReader rdr = new BufferedReader(new InputStreamReader(in));	
-			)
+			if (!FileHandling.shouldIgnoreBoardlessLud(filePath))
 			{
-				while ((line = rdr.readLine()) != null)
+				final long startGameAt = System.nanoTime();
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/bad/"))
+					continue;
+	
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/wip/"))
+					continue;
+	
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/wishlist/"))
+					continue;
+	
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/reconstruction/"))
+					continue;
+	
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/WishlistDLP/"))
+					continue;
+	
+				if (filePath.replaceAll(Pattern.quote("\\"), "/").contains("/lud/test/"))
+					continue;
+	
+				// We exclude that game from the tests because the legal moves are
+				// too slow to test.
+	//			if (!filePath.replaceAll(Pattern.quote("\\"), "/").contains("Tavli"))
+	//				continue;
+	
+				// Get game description from resource
+				// System.out.println("Game: " + filePath);
+	
+				String path = filePath.replaceAll(Pattern.quote("\\"), "/");
+				path = path.substring(path.indexOf("/lud/"));
+	
+				String desc = "";
+				String line;
+				try 
+				(
+					final InputStream in = GameLoader.class.getResourceAsStream(path);
+					final BufferedReader rdr = new BufferedReader(new InputStreamReader(in));	
+				)
 				{
-					desc += line + "\n";
-					// System.out.println("line: " + line);
+					while ((line = rdr.readLine()) != null)
+					{
+						desc += line + "\n";
+						// System.out.println("line: " + line);
+					}
 				}
-			}
-			catch (final IOException e1)
-			{
-				e1.printStackTrace();
-				fail();
-			}
-
-			// Parse and compile the game
-			Game game = null;
-			try
-			{
-				game = (Game)compiler.Compiler.compileTest(new Description(desc), false);
-				pathGameCompiled = filePath;
-			}
-			catch (final Exception e)
-			{
-				System.err.println("** FAILED TO COMPILE: " + filePath + ".");
-				e.printStackTrace();
-				fail();
-			}
-
-			if (game != null)
-			{
-				System.out.println("Compiled " + game.name() + ".");
-				this.gameCompiled = game;
-
-				final int indexLastSlash = filePath.lastIndexOf('/');
-				final String fileName = filePath.substring(indexLastSlash + 1, filePath.length() - ".lud".length());
-
-				if (!fileName.equals(game.name()))
+				catch (final IOException e1)
 				{
-					System.err.println("The fileName of " + fileName
-							+ ".lud is not equals to the name of the game which is " + game.name());
+					e1.printStackTrace();
 					fail();
 				}
+	
+				// Parse and compile the game
+				Game game = null;
+				try
+				{
+					game = (Game)compiler.Compiler.compileTest(new Description(desc), false);
+					pathGameCompiled = filePath;
+				}
+				catch (final Exception e)
+				{
+					System.err.println("** FAILED TO COMPILE: " + filePath + ".");
+					e.printStackTrace();
+					fail();
+				}
+	
+				if (game != null)
+				{
+					System.out.println("Compiled " + game.name() + ".");
+					this.gameCompiled = game;
+	
+					final int indexLastSlash = filePath.lastIndexOf('/');
+					final String fileName = filePath.substring(indexLastSlash + 1, filePath.length() - ".lud".length());
+	
+					if (!fileName.equals(game.name()))
+					{
+						System.err.println("The fileName of " + fileName
+								+ ".lud is not equals to the name of the game which is " + game.name());
+						fail();
+					}
+				}
+				else
+				{
+					System.err.println("** FAILED TO COMPILE: " + filePath + ".");
+					fail();
+				}
+	
+				// TO REMOVE WHEN MATCH WILL BE FIXED
+	//			if (game.hasSubgames())
+	//				continue;
+	
+				if (game.hasMissingRequirement())
+				{
+					System.err.println(game.name() + " has missing requirements.");
+					fail();
+				}
+	
+				if (game.willCrash())
+				{
+					System.err.println(game.name() + " is going to crash.");
+					fail();
+				}
+	
+				final List<String> excludedIntegrity = new ArrayList<String>();
+				excludedIntegrity.add("Pagade Kayi Ata (Sixteen-handed)");
+	
+				try
+				{
+					if (!containsPartOf(excludedIntegrity, game.name()))
+						testIntegrity();
+				}
+				catch (final IOException e)
+				{
+					e.printStackTrace();
+				}
+	
+				final List<String> excludedCustomPlayouts = new ArrayList<String>();
+				excludedCustomPlayouts.add("Kriegsspiel");
+				excludedCustomPlayouts.add("Throngs ");
+				excludedCustomPlayouts.add("Omny");
+				excludedCustomPlayouts.add("Lifeline");
+				excludedCustomPlayouts.add("Shisen-Sho");
+				excludedCustomPlayouts.add("Allemande");
+				excludedCustomPlayouts.add("Affinage");
+				excludedCustomPlayouts.add("Chains of Thought");
+				excludedCustomPlayouts.add("Dai Seireigi");
+	
+				if (!containsPartOf(excludedCustomPlayouts, game.name()))
+					testCustomPlayouts();
+	
+				//-------------------------------------------------------------------------
+	
+				final List<String> excludedTensors = new ArrayList<String>();
+				excludedTensors.add("Kriegsspiel");
+				excludedTensors.add("Throngs");
+				excludedTensors.add("Omny");
+				excludedTensors.add("Lifeline");
+				excludedTensors.add("Shisen-Sho");
+				excludedTensors.add("Allemande");
+				excludedTensors.add("Affinage");
+				excludedTensors.add("Chains of Thought");
+				excludedTensors.add("Dai Seireigi");
+	
+				if (!containsPartOf(excludedTensors, game.name()))
+					testStateMoveTensors();
+	
+				//-------------------------------------------------------------------------
+	
+				final List<String> excludedPlayoutPerOption = new ArrayList<String>();
+				excludedPlayoutPerOption.add("Kriegsspiel");
+				excludedPlayoutPerOption.add("Throngs");
+				excludedPlayoutPerOption.add("Mini Wars");
+				excludedPlayoutPerOption.add("Omny");
+				excludedPlayoutPerOption.add("Lifeline");
+				excludedPlayoutPerOption.add("Shisen-Sho");
+				excludedPlayoutPerOption.add("Allemande");
+				excludedPlayoutPerOption.add("Chains of Thought");
+				excludedPlayoutPerOption.add("Pagade Kayi Ata (Sixteen-handed)");
+				excludedPlayoutPerOption.add("Dai Seireigi");
+				excludedPlayoutPerOption.add("Affinage");
+				excludedPlayoutPerOption.add("Garrisons");
+	
+				if (!containsPartOf(excludedPlayoutPerOption, game.name()))
+					testPlayoutPerOption((USE_TIME) ? (hour < MIN_HOUR || hour > MAX_HOUR) : true);
+	
+				//-------------------------------------------------------------------------
+	
+				// testParallelPlayouts((USE_TIME) ? (hour < MIN_HOUR || hour >
+				// MAX_HOUR) : true);
+	
+				final List<String> excludedParallelPlayouts = new ArrayList<String>();
+				excludedParallelPlayouts.add("Kriegsspiel");
+				excludedParallelPlayouts.add("Throngs");
+				excludedParallelPlayouts.add("Omny");
+				excludedParallelPlayouts.add("Lifeline");
+				excludedParallelPlayouts.add("Shisen-Sho");
+				excludedParallelPlayouts.add("Allemande");
+				excludedParallelPlayouts.add("Chains of Thought");
+				excludedParallelPlayouts.add("Nodal Chess");
+				excludedParallelPlayouts.add("Affinage");
+				excludedParallelPlayouts.add("Dai Seireigi");
+	
+				if (!containsPartOf(excludedParallelPlayouts, game.name()))
+					testParallelPlayouts(true);
+	
+				//-------------------------------------------------------------------------
+	
+				// testDefaultAIs((USE_TIME) ? (hour < MIN_HOUR || hour >
+				// MAX_HOUR)
+				// : true);
+	
+				final List<String> excludedDefaultAI = new ArrayList<String>();
+	
+				if (!containsPartOf(excludedDefaultAI, game.name()))
+					testDefaultAIs(true);
+	
+				//-------------------------------------------------------------------------
+	
+				/**
+				 * WARNING: the Trial Serialisation test must always be the LAST
+				 * test! It modifies the Game objects, which makes any tests that
+				 * run afterwards and re-use the same Game object invalid!
+				 */
+	
+				final List<String> excludedSerialisation = new ArrayList<String>();
+				excludedSerialisation.add("Kriegsspiel");
+				excludedSerialisation.add("Throngs");
+				excludedSerialisation.add("Omny");
+				excludedSerialisation.add("Lifeline");
+				excludedSerialisation.add("Shisen-Sho");
+				excludedSerialisation.add("Allemande");
+				excludedSerialisation.add("Chains of Thought");
+				excludedSerialisation.add("Affinage");
+				excludedSerialisation.add("Dai Seireigi");
+	
+				if (!containsPartOf(excludedSerialisation, game.name()))
+					testTrialSerialisation();
+	
+				final long stopGameAt = System.nanoTime();
+				final double Gamesecs = (stopGameAt - startGameAt) / 1000000000.0;
+				System.out.println("All tests on this game done in " + Gamesecs + "s.\n");
 			}
-			else
-			{
-				System.err.println("** FAILED TO COMPILE: " + filePath + ".");
-				fail();
-			}
-
-			// TO REMOVE WHEN MATCH WILL BE FIXED
-//			if (game.hasSubgames())
-//				continue;
-
-			if (game.hasMissingRequirement())
-			{
-				System.err.println(game.name() + " has missing requirements.");
-				fail();
-			}
-
-			if (game.willCrash())
-			{
-				System.err.println(game.name() + " is going to crash.");
-				fail();
-			}
-
-			final List<String> excludedIntegrity = new ArrayList<String>();
-			excludedIntegrity.add("Pagade Kayi Ata (Sixteen-handed)");
-
-			try
-			{
-				if (!containsPartOf(excludedIntegrity, game.name()))
-					testIntegrity();
-			}
-			catch (final IOException e)
-			{
-				e.printStackTrace();
-			}
-
-			final List<String> excludedCustomPlayouts = new ArrayList<String>();
-			excludedCustomPlayouts.add("Kriegsspiel");
-			excludedCustomPlayouts.add("Throngs ");
-			excludedCustomPlayouts.add("Omny");
-			excludedCustomPlayouts.add("Lifeline");
-			excludedCustomPlayouts.add("Shisen-Sho");
-			excludedCustomPlayouts.add("Allemande");
-			excludedCustomPlayouts.add("Affinage");
-			excludedCustomPlayouts.add("Chains of Thought");
-			excludedCustomPlayouts.add("Dai Seireigi");
-
-			if (!containsPartOf(excludedCustomPlayouts, game.name()))
-				testCustomPlayouts();
-
-			//-------------------------------------------------------------------------
-
-			final List<String> excludedTensors = new ArrayList<String>();
-			excludedTensors.add("Kriegsspiel");
-			excludedTensors.add("Throngs");
-			excludedTensors.add("Omny");
-			excludedTensors.add("Lifeline");
-			excludedTensors.add("Shisen-Sho");
-			excludedTensors.add("Allemande");
-			excludedTensors.add("Affinage");
-			excludedTensors.add("Chains of Thought");
-			excludedTensors.add("Dai Seireigi");
-
-			if (!containsPartOf(excludedTensors, game.name()))
-				testStateMoveTensors();
-
-			//-------------------------------------------------------------------------
-
-			final List<String> excludedPlayoutPerOption = new ArrayList<String>();
-			excludedPlayoutPerOption.add("Kriegsspiel");
-			excludedPlayoutPerOption.add("Throngs");
-			excludedPlayoutPerOption.add("Mini Wars");
-			excludedPlayoutPerOption.add("Omny");
-			excludedPlayoutPerOption.add("Lifeline");
-			excludedPlayoutPerOption.add("Shisen-Sho");
-			excludedPlayoutPerOption.add("Allemande");
-			excludedPlayoutPerOption.add("Chains of Thought");
-			excludedPlayoutPerOption.add("Pagade Kayi Ata (Sixteen-handed)");
-			excludedPlayoutPerOption.add("Dai Seireigi");
-			excludedPlayoutPerOption.add("Affinage");
-			excludedPlayoutPerOption.add("Garrisons");
-
-			if (!containsPartOf(excludedPlayoutPerOption, game.name()))
-				testPlayoutPerOption((USE_TIME) ? (hour < MIN_HOUR || hour > MAX_HOUR) : true);
-
-			//-------------------------------------------------------------------------
-
-			// testParallelPlayouts((USE_TIME) ? (hour < MIN_HOUR || hour >
-			// MAX_HOUR) : true);
-
-			final List<String> excludedParallelPlayouts = new ArrayList<String>();
-			excludedParallelPlayouts.add("Kriegsspiel");
-			excludedParallelPlayouts.add("Throngs");
-			excludedParallelPlayouts.add("Omny");
-			excludedParallelPlayouts.add("Lifeline");
-			excludedParallelPlayouts.add("Shisen-Sho");
-			excludedParallelPlayouts.add("Allemande");
-			excludedParallelPlayouts.add("Chains of Thought");
-			excludedParallelPlayouts.add("Nodal Chess");
-			excludedParallelPlayouts.add("Affinage");
-			excludedParallelPlayouts.add("Dai Seireigi");
-
-			if (!containsPartOf(excludedParallelPlayouts, game.name()))
-				testParallelPlayouts(true);
-
-			//-------------------------------------------------------------------------
-
-			// testDefaultAIs((USE_TIME) ? (hour < MIN_HOUR || hour >
-			// MAX_HOUR)
-			// : true);
-
-			final List<String> excludedDefaultAI = new ArrayList<String>();
-
-			if (!containsPartOf(excludedDefaultAI, game.name()))
-				testDefaultAIs(true);
-
-			//-------------------------------------------------------------------------
-
-			/**
-			 * WARNING: the Trial Serialisation test must always be the LAST
-			 * test! It modifies the Game objects, which makes any tests that
-			 * run afterwards and re-use the same Game object invalid!
-			 */
-
-			final List<String> excludedSerialisation = new ArrayList<String>();
-			excludedSerialisation.add("Kriegsspiel");
-			excludedSerialisation.add("Throngs");
-			excludedSerialisation.add("Omny");
-			excludedSerialisation.add("Lifeline");
-			excludedSerialisation.add("Shisen-Sho");
-			excludedSerialisation.add("Allemande");
-			excludedSerialisation.add("Chains of Thought");
-			excludedSerialisation.add("Affinage");
-			excludedSerialisation.add("Dai Seireigi");
-
-			if (!containsPartOf(excludedSerialisation, game.name()))
-				testTrialSerialisation();
-
-			final long stopGameAt = System.nanoTime();
-			final double Gamesecs = (stopGameAt - startGameAt) / 1000000000.0;
-			System.out.println("All tests on this game done in " + Gamesecs + "s.\n");
 		}
 
 		// Check if all the games using ADD_TO_EMPTY have been checked.

@@ -375,7 +375,7 @@ public class Face extends GraphElement
 			final Vertex otherVertex = vertex.edgeAwayFrom(this);
 			if (otherVertex == null)
 			{
-				System.out.println("** Null otherVertex in Face non-adjacent diagonals test.");
+				//System.out.println("** Null otherVertex in Face non-adjacent diagonals test.");
 				continue;
 			}
 			for (final Face otherFace : otherVertex.faces())
