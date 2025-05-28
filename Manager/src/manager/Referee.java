@@ -293,10 +293,13 @@ public class Referee
 		context.game().start(context, true);
 		context.game().incrementGameStartCount();
 
-		// map initial moves to initial board, to be able to start a new run of the game
-		List<Move> initialMovesList = context.trial().generateCompleteMovesList();
-		for (int i=0; i<initialMovesList.size(); i++)
-			initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, GrowingBoard.mappedNewToInitIndexes()));			
+		if (GrowingBoard.mappedNewToInitIndexes() != null)
+		{
+			// map initial moves to initial board, to be able to start a new run of the game
+			List<Move> initialMovesList = context.trial().generateCompleteMovesList();
+			for (int i=0; i<initialMovesList.size(); i++)
+				initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, GrowingBoard.mappedNewToInitIndexes()));	
+		}
 		
 		GrowingBoard.reset();
 	}
