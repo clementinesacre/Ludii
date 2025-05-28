@@ -244,7 +244,8 @@ public abstract class BoardlessAbstract
             		{
             			Edge newEdge = new Edge(0, newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
             			// if edge does not exist yet and both of the vertices do not exist yet
-                		if (!newPoint3dEdges.contains(newEdge.pt()) && !(indexToVertex.containsKey(newVertex.id()) && indexToVertex.containsKey(point3dToVertex.get(point3dToString(p3dNeighbor)).id())))
+                		if ((!newPoint3dEdges.contains(newEdge.pt()) && !(indexToVertex.containsKey(newVertex.id()) && indexToVertex.containsKey(point3dToVertex.get(point3dToString(p3dNeighbor)).id())))
+                				|| (graph.findEdge(newVertex.id(), point3dToVertex.get(point3dToString(p3dNeighbor)).id()) == null))
             			{
             				newEdge = graph.addEdge(newVertex, point3dToVertex.get(point3dToString(p3dNeighbor)));
                 			newPoint3dEdges.add(newEdge.pt());
@@ -333,10 +334,11 @@ public abstract class BoardlessAbstract
 		
         // Mappings current to new
         HashMap<Integer, Integer> mappedNewToInitIndexesTmp = new HashMap<Integer, Integer>();
-		int nbAddedCells = 0;
+        int initNbAddedCells = 0;
+		int curNbAddedCells = 0;
 		for (int i=0; i<graph.faces().size(); i++)
 		{
-			int prevCellId = i-nbAddedCells;
+			int prevCellId = i-initNbAddedCells;
 			if (newCells.contains(graph.faces().get(i)))
 			{
 				if (i > initialNbCells)
@@ -345,20 +347,20 @@ public abstract class BoardlessAbstract
 					surplusInitIndexes.add(i);
 
 					if (mappedNewToInitIndexes.containsKey(prevCellId))
-		                nbAddedCells += 1;
+						initNbAddedCells += 1;
 				}
 				else
 				{
 					surplusIndexes.add(i);
 					surplusInitIndexes.add(i);
-					nbAddedCells += 1;
+					initNbAddedCells += 1;
 				}
+				curNbAddedCells += 1;
 			}
 			else
+			{
 				if (prevCellId <= initialNbCells)
 				{	
-					mappedPrevToNewIndexes.put(prevCellId, i);
-					
 					if (mappedNewToInitIndexes.containsKey(prevCellId))
 					{
 						mappedInitToNewIndexes.put(mappedNewToInitIndexes.get(prevCellId), i);
@@ -367,6 +369,10 @@ public abstract class BoardlessAbstract
 					else
 						surplusInitIndexes.add(i);
 				}
+				else
+					surplusInitIndexes.add(i);
+				mappedPrevToNewIndexes.put(i-curNbAddedCells, i);
+			}
 		}
 
 		// map other containers that board TODO what if multiple cells inside a hand ? 

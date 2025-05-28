@@ -150,10 +150,13 @@ public final class PlayoutsPerSec
 		context.game().start(context, true);
 		context.game().incrementGameStartCount();
 
-		// map initial moves to initial board, to be able to start a new run of the game
-		List<Move> initialMovesList = context.trial().generateCompleteMovesList();
-		for (int i=0; i<initialMovesList.size(); i++)
-			initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, UpdateBoard.mappedNewToInitIndexes()));			
+		if (UpdateBoard.mappingBoardlessBoard() != null && UpdateBoard.mappedPrevToNewIndexes().size() > 0)
+		{
+			// map initial moves to initial board, to be able to start a new run of the game
+			List<Move> initialMovesList = context.trial().generateCompleteMovesList();
+			for (int i=0; i<initialMovesList.size(); i++)
+				initialMovesList.set(i, GrowingBoard.generateNewMove(initialMovesList.get(i), false, UpdateBoard.mappedNewToInitIndexes()));	
+		}
 		
 		GrowingBoard.reset();
 	}
