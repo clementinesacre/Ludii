@@ -291,7 +291,7 @@ public class Referee
 		context.game().update();
 		GrowingBoard.resetMoves(context);
 		
-		if (UpdateBoard.mappedPrevToNewIndexes().size() > 0)
+		if (UpdateBoard.mappingBoardlessBoard() != null && UpdateBoard.mappedPrevToNewIndexes().size() > 0)
 		{
 			List<Move> moves = context.trial().generateCompleteMovesList();
 			for (Move m : moves)
