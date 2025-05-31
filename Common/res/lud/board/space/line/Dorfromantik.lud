@@ -1,38 +1,158 @@
 
+(define "MoveNextToDisc"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscRed" "DiscBlue" "DiscGreen" "DiscOrange" "DiscYellow" "DiscPurple"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToStar"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"StarRed" "StarBlue" "StarGreen" "StarOrange" "StarYellow" "StarPurple"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+
+(define "MoveNextToRed"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscRed" "StarRed"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToBlue"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscBlue" "StarBlue"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToGreen"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscGreen" "StarGreen"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToOrange"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscOrange" "StarOrange"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToYellow"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscYellow" "StarYellow"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
+(define "MoveNextToPurple"
+	(move 
+		(from (sites Hand Shared))
+		(to 
+			(sites Around (sites Occupied by:All components:{"DiscPurple" "StarPurple"}) Orthogonal if:(is Empty (to)))
+		)
+	)
+)
+
 
 //-----------------------------------------------
 // Main routine
 
-(game "DorfRomantik"
-    (players <Players:nb>)
-        (equipment {
-            (boardless Hexagonal 5)
+(game "Qwirkle" 
+    (players 2) 
+    (equipment { 
+        (boardless Square 5) 
+        
+        (hand Shared size:13)
+        
+        (piece "starOutline" Shared (or {"MoveNextToDisc" "MoveNextToRed"}))
+        
+        (tile "DiscRed" numSides:4 (or {"MoveNextToDisc" "MoveNextToRed"}))
+        (tile "DiscBlue" numSides:4 (or {"MoveNextToDisc" "MoveNextToBlue"}))
+        (tile "DiscGreen" numSides:4 (or {"MoveNextToDisc" "MoveNextToGreen"}))
+        (tile "DiscOrange" numSides:4 (or {"MoveNextToDisc" "MoveNextToOrange"}))
+        (tile "DiscYellow" numSides:4 (or {"MoveNextToDisc" "MoveNextToYellow"}))
+        (tile "DiscPurple" numSides:4 (or {"MoveNextToDisc" "MoveNextToPurple"}))
+        (tile "StarRed" numSides:4 (or {"MoveNextToStar" "MoveNextToRed"}))
+        (tile "StarBlue" numSides:4 (or {"MoveNextToStar" "MoveNextToBlue"}))
+        (tile "StarGreen" numSides:4 (or {"MoveNextToStar" "MoveNextToGreen"}))
+        (tile "StarOrange" numSides:4 (or {"MoveNextToStar" "MoveNextToOrange"}))
+        (tile "StarYellow" numSides:4 (or {"MoveNextToStar" "MoveNextToYellow"}))
+        (tile "StarPurple" numSides:4 (or {"MoveNextToStar" "MoveNextToPurple"}))
+    }) 
+    
+    (rules 
+   		(start {
+        	(place "starOutline" (handSite Shared 12) count:3)
+        	
+        	(place "DiscRed" (handSite Shared 0) count:3)
+        	(place "DiscBlue" (handSite Shared 1) count:3)
+        	(place "DiscGreen" (handSite Shared 2) count:3)
+        	(place "DiscOrange" (handSite Shared 3) count:3)
+        	(place "DiscYellow" (handSite Shared 4) count:3)
+        	(place "DiscPurple" (handSite Shared 5) count:3)
+        	(place "StarRed" (handSite Shared 6) count:3)
+        	(place "StarBlue" (handSite Shared 7) count:3)
+        	(place "StarGreen" (handSite Shared 8) count:3)
+        	(place "StarOrange" (handSite Shared 9) count:3)
+        	(place "StarYellow" (handSite Shared 10) count:3)
+        	(place "StarPurple" (handSite Shared 11) count:3)
         })
-        (rules
-            (start {
-                (place <Tiling:piece0> (centrePoint))
-            })
-
-            (play
-                
-            )
-
-            (end {
-               
-            })
-        )
+        
+        
+        phases:{
+	        (phase "Opening"
+	            (play     	
+	            	(move 
+		        		(from (sites Hand Shared))
+		        		(to (sites Playable))
+		        	)
+	            )
+	            
+	            (nextPhase "Connection")
+	        )
+	        
+	        (phase "Connection"
+	            (play
+	            (or {
+				 	(if (= (site) (var "DiscRed")) "MoveNextToRed")
+				 	(if (= (site) (var "DiscBlue")) "MoveNextToBlue")
+				 })
+				 
+				)
+	            
+	            (end ("NoMoves" Loss))
+	        )
+        }
+        
+        //(end ("Line3Win"))
+    )
 )
-
 //------------------------------------------------------------------------------
 
-(option "Players" <Tiling> args:{ <nb> }
+(option "Players" <Players> args:{ <nb> }
 {
-	 (item "1 player" <1> "The game has one players.")**
 	 (item "2 players" <2> "The game has two players.")
-	 (item "3 players" <3> "The game has three players.")
+	 (item "3 players" <3> "The game has three players.")**
 	 (item "4 players" <4> "The game has four players.")
-	 (item "5 players" <5> "The game has five players.")
-	 (item "5 players" <6> "The game has six players.")
 })
 
 //------------------------------------------------------------------------------
@@ -47,6 +167,59 @@
     })
     (graphics {
 
+		(player Colour P1 (colour White))
+        (player Colour P2 (colour Red))
+        (player Colour P3 (colour Green))
+        (player Colour P4 (colour Blue))
+        
+        
+        (piece Foreground "DiscRed" image:"disc.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "DiscBlue" image:"disc.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "DiscGreen" image:"disc.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "DiscOrange" image:"disc.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "DiscYellow" image:"disc.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "DiscPurple" image:"disc.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        (piece Foreground "StarRed" image:"starOutline.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "StarBlue" image:"starOutline.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "StarGreen" image:"starOutline.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "StarOrange" image:"starOutline.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "StarYellow" image:"starOutline.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "StarPurple" image:"starOutline.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        (piece Foreground "SquareRed" image:"square-alt1.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "SquareBlue" image:"square-alt1.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "SquareGreen" image:"square-alt1.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "SquareOrange" image:"square-alt1.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "SquareYellow" image:"square-alt1.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "SquarePurple" image:"square-alt1.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        (piece Foreground "PawnRed" image:"byeong_western.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "PawnBlue" image:"byeong_western.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "PawnGreen" image:"byeong_western.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "PawnOrange" image:"byeong_western.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "PawnYellow" image:"byeong_western.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "PawnPurple" image:"byeong_western.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        (piece Foreground "TriangleRed" image:"triangle.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TriangleBlue" image:"triangle.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TriangleGreen" image:"triangle.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TriangleOrange" image:"triangle.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TriangleYellow" image:"triangle.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "TrianglePurple" image:"triangle.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        (piece Foreground "OctagonRed" image:"octagon.svg" fillColour:(colour 230 31 41) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "OctagonBlue" image:"octagon.svg" fillColour:(colour 0 152 212) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "OctagonGreen" image:"octagon.svg" fillColour:(colour 0 166 77) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "OctagonOrange" image:"octagon.svg" fillColour:(colour 234 107 38) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "OctagonYellow" image:"octagon.svg" fillColour:(colour 254 218 0) edgeColour:(colour 0 0 0 0))
+        (piece Foreground "OctagonPurple" image:"octagon.svg" fillColour:(colour 126 102 174) edgeColour:(colour 0 0 0 0))
+        
+        
+        
+        
+        
+        
         (board Style Board)
     })
 )
